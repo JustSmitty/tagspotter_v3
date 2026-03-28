@@ -1,192 +1,538 @@
-.premium-toolbar {
-  --background: transparent;
-  --color: var(--ion-color-dark);
-  padding-top: 10px;
+// ─────────────────────────────────────────────
+// RETRO ROAD TRIP · HOME PAGE STYLES
+// Design: 1950s Americana Highway Aesthetic
+// ─────────────────────────────────────────────
 
-  .header-content {
+// ── HEADER ────────────────────────────────────
+.retro-header {
+  // Non-translucent mode: Ionic will push content below automatically.
+  // Give the header a solid opaque background so nothing bleeds through.
+  background: var(--app-bg-cream);
+  z-index: 100;
+}
+
+.header-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--app-bg-cream);
+  padding: calc(10px + var(--ion-safe-area-top, 0px)) 14px 6px;
+  border-bottom: 5px solid var(--ion-color-primary);
+  position: relative;
+
+  // Subtle hatching texture
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 8px,
+    rgba(0,0,0,0.015) 8px,
+    rgba(0,0,0,0.015) 9px
+  );
+}
+
+.header-badge {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--ion-color-primary);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.12), inset 0 1px 2px rgba(255,255,255,0.8);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+
+  .logo-img {
+    width: 40px; height: 40px;
+    display: block;
+  }
+}
+
+.header-title-block {
+  flex: 1;
+}
+
+.header-eyebrow {
+  font-family: 'Special Elite', cursive;
+  font-size: 0.5rem;
+  letter-spacing: 2px;
+  color: var(--ion-color-secondary);
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.header-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: var(--ion-color-primary);
+  line-height: 1;
+  text-shadow: 3px 3px 0 rgba(211, 84, 0, 0.15);
+}
+
+.header-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.retro-btn {
+  width: 38px; height: 38px;
+  background: var(--ion-color-primary);
+  border: 2px solid rgba(0,0,0,0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+  transition: all 0.1s ease;
+
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+  }
+
+  .retro-btn-icon {
     display: flex;
     align-items: center;
-    gap: 12px;
-    
-    .logo-img {
-      height: 44px;
-      width: 44px;
-      object-fit: contain;
-      filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.1));
-    }
-
-    .retro-title {
-      font-family: 'Playfair Display', serif;
-      font-weight: 900;
-      font-style: italic;
-      font-size: 1.4rem;
-      color: var(--ion-color-primary);
-      text-transform: uppercase;
-      letter-spacing: -0.5px;
+    color: #fff;
+    svg {
+      width: 20px;
+      height: 20px;
     }
   }
 }
 
-.ledger-stripe {
-  display: flex;
-  justify-content: space-around;
-  background: var(--ion-color-dark);
-  color: var(--app-bg-cream);
-  padding: 20px 10px;
-  border-bottom: 6px solid var(--ion-color-tertiary);
-  margin-bottom: 20px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-
-  .ledger-item {
-    text-align: center;
-    border-right: 1px solid rgba(255,255,255,0.1);
-    flex: 1;
-    &:last-child { border-right: none; }
-
-    .label {
-      display: block;
-      font-size: 0.7rem;
-      letter-spacing: 3px;
-      font-family: 'Special Elite', cursive;
-      opacity: 0.7;
-      margin-bottom: 4px;
-    }
-    .value {
-      font-size: 2.2rem;
-      font-weight: 900;
-      font-family: 'Playfair Display', serif;
-      color: var(--ion-color-tertiary);
-      line-height: 1;
-    }
-  }
+.header-stripe {
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--ion-color-secondary) 0px,
+    var(--ion-color-secondary) 24px,
+    var(--ion-color-primary) 24px,
+    var(--ion-color-primary) 48px
+  );
 }
 
-.privacy-note {
-  margin: 0 0 8px;
-  color: rgba(37, 44, 58, 0.76);
-  font-family: 'Special Elite', cursive;
-  font-size: 0.8rem;
-  letter-spacing: 0.5px;
-  line-height: 1.5;
+// ── CONTENT BACKGROUND ────────────────────────
+.road-content {
+  --background: transparent;
 }
 
-.state-grid {
-  padding: 10px;
+.content-inner {
+  padding: 0 0 40px;
 }
 
-.license-plate {
+// ── VINTAGE MOTEL MARQUEE ─────────────────────
+.motel-marquee {
+  margin: 16px;
   position: relative;
-  background: #fff;
-  border: 4px solid #333;
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 20px;
-  height: 160px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 8px 8px 0px rgba(0,0,0,0.1);
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  align-items: flex-end; // Sign off to the right a bit like a roadside pole? Actually let's center it.
+  align-items: center;
+}
 
-  &:active { 
-    transform: translate(4px, 4px);
-    box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
-  }
+.marquee-pole {
+  height: 12px;
+  width: 60%;
+  background: linear-gradient(to bottom, #d35400, #9e3600);
+  border-radius: 4px 4px 0 0;
+  border: 1px solid #7a2700;
+  border-bottom: none;
+}
 
-  &.found {
-    border-color: var(--ion-color-secondary);
-    background: linear-gradient(135deg, #fff 0%, var(--app-bg-paper) 100%);
-    
-    .state-name { color: var(--ion-color-secondary); }
-    .plate-code { color: var(--ion-color-dark); opacity: 0.15; }
-  }
+.marquee-board {
+  width: 100%;
+  position: relative;
+  background: #0b5345; // Deep Teal base
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 
+    0 8px 0 #06362d,
+    0 12px 24px rgba(0,0,0,0.4),
+    inset 0 2px 4px rgba(255,255,255,0.1);
+  border: 2px solid #084035;
+}
 
-  &.disabled {
-    cursor: default;
-    opacity: 0.72;
-    pointer-events: none;
-    transform: none;
-    box-shadow: 8px 8px 0px rgba(0,0,0,0.06);
-  }
+.marquee-neon-border {
+  border: 4px solid #e67e22; // Dusty Orange Neon
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 
+    0 0 8px rgba(230, 126, 34, 0.6),
+    inset 0 0 8px rgba(230, 126, 34, 0.4);
+}
 
-  .plate-top {
-    text-align: center;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 4px;
+.marquee-inner {
+  background: #117a65; // Lighter Teal Inner
+  border-radius: 4px;
+  padding: 12px 8px;
+  position: relative;
+}
 
-    .state-name {
-      font-family: 'Playfair Display', serif;
-      font-size: 1rem;
-      font-weight: 800;
-      letter-spacing: 4px;
-      color: var(--ion-color-primary);
-    }
-  }
-
-  .plate-center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-    position: relative;
-
-    .plate-code {
-      font-size: 4.5rem;
-      font-weight: 900;
-      font-family: 'Playfair Display', serif;
-      color: #eee;
-      line-height: 1;
-      letter-spacing: -2px;
-    }
-
-    .found-stamp {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-12deg);
-      border: 5px double var(--ion-color-danger);
-      color: var(--ion-color-danger);
-      padding: 6px 20px;
-      font-family: 'Special Elite', cursive;
-      font-size: 1.6rem;
-      font-weight: bold;
-      opacity: 0.9;
-      border-radius: 6px;
-      z-index: 2;
-      animation: stampIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
-      background: rgba(255, 255, 255, 0.8);
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-  }
-
-  @keyframes stampIn {
-    0% {
-      transform: translate(-50%, -50%) scale(3) rotate(0deg);
-      opacity: 0;
-    }
-    100% {
-      transform: translate(-50%, -50%) scale(1) rotate(-12deg);
-      opacity: 0.9;
-    }
-  }
-
-  .plate-bottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    font-family: 'Special Elite', cursive;
-    font-size: 0.8rem;
-    color: #888;
-    border-top: 2px solid #eee;
-    padding-top: 4px;
-
-    .motto { letter-spacing: 2px; }
-    .distance { color: var(--ion-color-secondary); font-weight: bold; }
+.marquee-header {
+  font-family: 'Playfair Display', serif;
+  font-weight: 800;
+  text-align: center;
+  color: #fdf6e3; // Cream
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  border-bottom: 1px dashed rgba(253, 246, 227, 0.3);
+  padding-bottom: 6px;
+  
+  .star-dec {
+    color: #e67e22; // Orange stars
+    font-size: 0.9rem;
+    vertical-align: middle;
   }
 }
 
-.card-col {
-  padding: 10px;
+.stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 8px;
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-bulb {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fdf6e3;
+  background: #0b5345; // Dark teal sockets
+  border: 2px solid #084035;
+  border-radius: 6px;
+  padding: 4px 0;
+  line-height: 1;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.1);
+  text-shadow: 0 0 8px rgba(253, 246, 227, 0.5); // Bulb glow
+}
+
+.stat-label {
+  font-family: 'Special Elite', cursive;
+  font-size: 0.55rem;
+  color: #f1c40f; // Antique gold labels
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 6px;
+  font-weight: bold;
+}
+
+// Outer edge bulbs
+.marquee-bulbs {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  border-radius: 12px;
+  overflow: hidden;
+  
+  .bulb {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: #fdf6e3;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #fdf6e3, 0 0 12px #f1c40f;
+    
+    // Top edge
+    &:nth-child(1) { top: 4px; left: 10%; }
+    &:nth-child(2) { top: 4px; left: 50%; transform: translateX(-50%); }
+    &:nth-child(3) { top: 4px; right: 10%; }
+    // Bottom edge
+    &:nth-child(4) { bottom: 4px; left: 10%; }
+    &:nth-child(5) { bottom: 4px; left: 50%; transform: translateX(-50%); }
+    &:nth-child(6) { bottom: 4px; right: 10%; }
+  }
+}
+
+// ── SECTION HEADER ─────────────────────────────
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px 4px;
+}
+
+.section-rule {
+  flex: 1;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--ion-color-primary) 0px,
+    var(--ion-color-primary) 6px,
+    transparent 6px,
+    transparent 10px
+  );
+  opacity: 0.3;
+}
+
+.section-label {
+  font-family: 'Special Elite', cursive;
+  font-size: 0.6rem;
+  letter-spacing: 4px;
+  color: var(--ion-color-primary);
+  opacity: 0.7;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+// ── LICENSE PLATE GRID ────────────────────────
+.plate-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  padding: 4px 8px;
+}
+
+// ── PLATE WRAPPER + FRAME ─────────────────────
+.plate-wrapper {
+  padding: 8px;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &:active:not(.plate-busy):not(.plate-found) {
+    transform: scale(0.94);
+  }
+
+  &.plate-busy {
+    cursor: default;
+    opacity: 0.65;
+  }
+
+  &.plate-found {
+    cursor: default;
+
+    .plate-body {
+      filter: sepia(0.4) saturate(0.6) brightness(1.1);
+    }
+
+    .plate-abbrev {
+      opacity: 0.2;
+    }
+  }
+}
+
+.plate-frame {
+  position: relative;
+  background: linear-gradient(to bottom, #c0c0c0 0%, #a8a8a8 30%, #989898 70%, #b8b8b8 100%);
+  border-radius: 10px;
+  padding: 6px 6px 5px;
+  box-shadow:
+    0 4px 8px rgba(0,0,0,0.25),
+    0 1px 0 rgba(255,255,255,0.5) inset,
+    0 -1px 0 rgba(0,0,0,0.2) inset;
+}
+
+// Frame screws (corners of the metal frame)
+.frame-screw {
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #d8d8d8, #888 60%, #555);
+  border: 0.5px solid rgba(0,0,0,0.3);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  z-index: 5;
+
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    background: rgba(0,0,0,0.3);
+  }
+  &::before { top: 3.5px; left: 0.5px; right: 0.5px; height: 1px; border-radius: 1px; }
+  &::after { left: 3.5px; top: 0.5px; bottom: 0.5px; width: 1px; border-radius: 1px; }
+
+  &--tl { top: -2px; left: -2px; }
+  &--tr { top: -2px; right: -2px; }
+  &--bl { bottom: -2px; left: -2px; }
+  &--br { bottom: -2px; right: -2px; }
+}
+
+// ── PLATE BODY ─────────────────────────────────
+// Each plate gets a unique-ish color via CSS custom property set dynamically
+.plate-body {
+  position: relative;
+  background: var(--plate-bg, #eef2f7);
+  // Apply a vintage sepia/dust wash to mute the random plate colors and merge them into the Americana palette
+  filter: sepia(0.35) contrast(1.1) brightness(0.9);
+  border-radius: 6px;
+  overflow: hidden;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px 4px;
+  gap: 0;
+
+  // Stamped metal look: subtle inset shadow + glossy top edge
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,0.7),
+    inset 0 -2px 4px rgba(0,0,0,0.08),
+    inset 2px 0 4px rgba(0,0,0,0.04),
+    inset -2px 0 4px rgba(0,0,0,0.04);
+}
+
+
+// Horizontal rib lines (stamped aluminum texture)
+.plate-rib {
+  position: absolute;
+  left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.4) 0%,
+    rgba(255,255,255,0.15) 40%,
+    rgba(0,0,0,0.06) 60%,
+    rgba(0,0,0,0.06) 100%
+  );
+
+  &--top { top: 10px; }
+  &--bottom { bottom: 10px; }
+}
+
+// Mounting holes
+.plate-hole {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #555, #111);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+
+  &--left { left: 5px; }
+  &--right { right: 5px; }
+}
+
+.plate-state-name {
+  font-family: 'Oswald', 'Special Elite', cursive;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: var(--plate-text, #333);
+  text-transform: uppercase;
+  line-height: 1;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+  // Embossed look
+  -webkit-text-stroke: 0.2px var(--plate-text, #333);
+}
+
+.plate-abbrev {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.6rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--plate-text, #222);
+  letter-spacing: -2px;
+  // Debossed / stamped metal
+  text-shadow:
+    1px 1px 0 rgba(255,255,255,0.6),
+    -1px -1px 0 rgba(0,0,0,0.1);
+  -webkit-text-stroke: 0.5px var(--plate-text, #222);
+  transition: opacity 0.3s ease;
+}
+
+.plate-motto {
+  font-family: 'Special Elite', cursive;
+  font-size: 0.45rem;
+  letter-spacing: 2.5px;
+  color: var(--plate-text, #555);
+  opacity: 0.6;
+  text-transform: uppercase;
+  line-height: 1;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+}
+
+.plate-found-badge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(22, 166, 133, 0.15);
+  border: 1px solid var(--ion-color-secondary);
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin-top: 2px;
+
+  .plate-found-icon {
+    color: var(--ion-color-secondary);
+    font-size: 0.65rem;
+    font-weight: bold;
+  }
+
+  .plate-found-text {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.45rem;
+    color: var(--ion-color-secondary);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+}
+
+// Found stamp overlay
+.found-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  border: 3px double var(--ion-color-danger);
+  color: var(--ion-color-danger);
+  padding: 2px 10px;
+  font-family: 'Special Elite', cursive;
+  font-size: 1.1rem;
+  font-weight: bold;
+  letter-spacing: 3px;
+  opacity: 0;
+  border-radius: 3px;
+  z-index: 2;
+  animation: stampIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) 0.1s forwards;
+  background: rgba(255,255,255,0.85);
+  pointer-events: none;
+
+  @keyframes stampIn {
+    0%   { transform: translate(-50%, -50%) scale(2.5) rotate(0deg); opacity: 0; }
+    60%  { opacity: 0.95; }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(-15deg); opacity: 0.9; }
+  }
+}
+
+// ── STATE PLATE COLORS ─────────────────────────
+// Each plate gets a unique warm/vintage color based on state index
+// We cycle through 8 authentic 1950s plate palettes
+@for $i from 1 through 8 {
+  $palettes: (
+    1: (#ddeeff, #1a4a7a),   // blue (like CA, NY style)
+    2: (#fff8dc, #8b6914),   // golden yellow (like AZ, NM)
+    3: (#f0f5e8, #3a5a20),   // sage green (like VT, NH)
+    4: (#fde8d8, #7a2a10),   // peach/terra (like FL, GA)
+    5: (#e8e8f0, #2a2a5a),   // slate blue (like IL, PA)
+    6: (#f8f0e0, #5a4a14),   // warm cream (original style)
+    7: (#e8f5f0, #1a5a4a),   // mint teal (Pacific NW)
+    8: (#f5e8e8, #6a1a1a),   // dusty rose (TX, OK)
+  );
+}
+
+// Apply colors via nth-child (simpler and works without JS)
+.plate-wrapper:nth-child(8n+1) .plate-body { --plate-bg: #ddeeff; --plate-text: #1a4a7a; }
+.plate-wrapper:nth-child(8n+2) .plate-body { --plate-bg: #fffbdc; --plate-text: #7a5a10; }
+.plate-wrapper:nth-child(8n+3) .plate-body { --plate-bg: #eef5e8; --plate-text: #2a5020; }
+.plate-wrapper:nth-child(8n+4) .plate-body { --plate-bg: #fde8d4; --plate-text: #7a2a10; }
+.plate-wrapper:nth-child(8n+5) .plate-body { --plate-bg: #e8e8f4; --plate-text: #22225a; }
+.plate-wrapper:nth-child(8n+6) .plate-body { --plate-bg: #f5f0e0; --plate-text: #5a4a14; }
+.plate-wrapper:nth-child(8n+7) .plate-body { --plate-bg: #e4f5ef; --plate-text: #1a4a3a; }
+.plate-wrapper:nth-child(8n+8) .plate-body { --plate-bg: #f5e8e4; --plate-text: #6a1a1a; }
+
+// ── FOOTER NOTE ───────────────────────────────
+.footer-note {
+  text-align: center;
+  font-family: 'Special Elite', cursive;
+  font-size: 0.6rem;
+  color: rgba(37, 44, 58, 0.45);
+  letter-spacing: 1px;
+  padding: 16px 20px calc(48px + var(--ion-safe-area-bottom, 0px));
 }

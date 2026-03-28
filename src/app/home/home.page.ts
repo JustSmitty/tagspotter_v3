@@ -1,20 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { DecimalPipe, NgIf, NgFor, UpperCasePipe } from '@angular/common';
 import {
   IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonIcon,
-  IonButton,
-  IonButtons,
   ModalController
 } from '@ionic/angular/standalone';
-import { CommonModule } from '@angular/common';
-import { addIcons } from 'ionicons';
-import { refreshCircle, ribbonOutline, search } from 'ionicons/icons';
 import { Router } from '@angular/router';
 
 import { QuizDismissResult, QuizSession, StateCardViewModel } from '../models/game-state.model';
@@ -27,17 +17,12 @@ import { QuizModalComponent } from '../shared/quiz-modal/quiz-modal.component';
   styleUrls: ['home.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
+    NgIf,
+    NgFor,
+    UpperCasePipe,
+    DecimalPipe,
     IonHeader,
-    IonToolbar,
-    IonTitle,
     IonContent,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonIcon,
-    IonButton,
-    IonButtons
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -48,9 +33,6 @@ export class HomePage implements OnInit {
 
   readonly viewModel = this.gameStateStore.homeViewModel;
 
-  constructor() {
-    addIcons({ search, refreshCircle, ribbonOutline });
-  }
 
   async ngOnInit(): Promise<void> {
     await this.gameStateStore.hydrate();

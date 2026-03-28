@@ -1,68 +1,126 @@
-<ion-header [translucent]="true" class="ion-no-border">
-  <ion-toolbar class="premium-toolbar">
-    <ion-title>
-      <div class="header-content">
-        <img src="assets/logo.png" class="logo-img" alt="Tag Spotter Logo">
-        <span class="retro-title">Tag Spotter</span>
-      </div>
-    </ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="openDashboard()" color="primary" [disabled]="viewModel().isBusy">
-        <ion-icon slot="icon-only" name="ribbon-outline"></ion-icon>
-      </ion-button>
-      <ion-button (click)="onRefresh()" color="medium" [disabled]="viewModel().isBusy">
-        <ion-icon slot="icon-only" name="refresh-circle"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content class="paper-texture">
-  <div class="ledger-stripe">
-    <div class="ledger-item">
-      <span class="label">TOTAL</span>
-      <span class="value">{{ viewModel().points.total }}</span>
+<ion-header class="ion-no-border retro-header" [translucent]="false">
+  <div class="header-banner">
+    <div class="header-badge">
+      <img src="assets/logo.png" class="logo-img" alt="Tag Spotter Logo">
     </div>
-    <div class="ledger-item">
-      <span class="label">COLLECTED</span>
-      <span class="value">{{ viewModel().points.states }}</span>
+    <div class="header-title-block">
+      <div class="header-eyebrow">EST. 1950 · AMERICA'S ROAD GAME</div>
+      <div class="header-title">TAG SPOTTER</div>
     </div>
-    <div class="ledger-item">
-      <span class="label">TRIVIA</span>
-      <span class="value">{{ viewModel().points.quiz }}</span>
+    <div class="header-actions">
+      <button class="retro-btn" (click)="openDashboard()" title="Dashboard">
+        <span class="retro-btn-icon">
+          <!-- Sheriff Star / Badge SVG -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </span>
+      </button>
+      <button class="retro-btn" (click)="onRefresh()" title="Reset">
+        <span class="retro-btn-icon">
+          <!-- Retro Refresh SVG -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-9.21l5.67-5.67"></path>
+          </svg>
+        </span>
+      </button>
     </div>
   </div>
+  <div class="header-stripe"></div>
+</ion-header>
 
-  <p class="privacy-note ion-padding-horizontal">
-    Distance points use your current location once when you mark a plate found. Exact coordinates are not saved, and
-    the plate still counts if location is unavailable.
-  </p>
+<ion-content class="road-content">
+  <div class="content-inner">
 
-  <ion-grid class="state-grid">
-    <ion-row>
-      <ion-col
-        size="12"
-        size-md="6"
-        *ngFor="let state of viewModel().states; trackBy: trackByStateId"
-        class="card-col">
-        <div
-          class="license-plate"
-          [class.found]="state.isFound"
-          [class.disabled]="viewModel().isBusy || state.isFound"
-          (click)="onRecord(state)">
-          <div class="plate-top">
-            <span class="state-name">{{ state.name | uppercase }}</span>
-          </div>
-          <div class="plate-center">
-            <span class="plate-code">{{ state.code }}</span>
-            <div class="found-stamp" *ngIf="state.isFound">FOUND</div>
-          </div>
-          <div class="plate-bottom">
-            <span class="distance" *ngIf="state.isFound">{{ state.distanceFound }} mi</span>
-            <span class="motto" *ngIf="!state.isFound">EXPLORE AMERICA</span>
+    <!-- Vintage Motel Marquee -->
+    <div class="motel-marquee">
+      <div class="marquee-pole"></div>
+      <div class="marquee-board">
+        <div class="marquee-neon-border">
+          <div class="marquee-inner">
+            <div class="marquee-header">
+              <span class="star-dec">★</span> CURRENT STATS <span class="star-dec">★</span>
+            </div>
+            <div class="stat-row">
+              <div class="stat-item">
+                <div class="stat-bulb">{{ viewModel().points.states }}</div>
+                <div class="stat-label">STATES</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-bulb">{{ viewModel().points.total }}</div>
+                <div class="stat-label">PTS</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-bulb">{{ viewModel().points.miles | number:'1.0-0' }}</div>
+                <div class="stat-label">MI</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-bulb">{{ viewModel().points.quiz }}</div>
+                <div class="stat-label">TRIVIA</div>
+              </div>
+            </div>
           </div>
         </div>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+        <!-- Lightbulbs wrapper -->
+        <div class="marquee-bulbs">
+          <div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Header -->
+    <div class="section-header">
+      <div class="section-rule"></div>
+      <span class="section-label">SPOT THE PLATE</span>
+      <div class="section-rule"></div>
+    </div>
+
+    <!-- License Plate Grid -->
+    <div class="plate-grid">
+      <div
+        *ngFor="let state of viewModel().states; trackBy: trackByStateId"
+        class="plate-wrapper"
+        [class.plate-found]="state.isFound"
+        [class.plate-busy]="viewModel().isBusy && !state.isFound"
+        (click)="onRecord(state)">
+
+        <!-- Plate Frame (mounting bracket) -->
+        <div class="plate-frame">
+          <!-- Plate Body -->
+          <div class="plate-body" [attr.data-state-id]="state.id">
+            <!-- Horizontal rib lines (embossed metal effect) -->
+            <div class="plate-rib plate-rib--top"></div>
+            <div class="plate-rib plate-rib--bottom"></div>
+
+            <!-- Mounting holes -->
+            <div class="plate-hole plate-hole--left"></div>
+            <div class="plate-hole plate-hole--right"></div>
+
+            <!-- Content -->
+            <div class="plate-state-name">{{ state.name | uppercase }}</div>
+            <div class="plate-abbrev">{{ state.code }}</div>
+            <div class="plate-motto" *ngIf="!state.isFound">EXPLORE AMERICA</div>
+            <div class="plate-found-badge" *ngIf="state.isFound">
+              <span class="plate-found-icon">✓</span>
+              <span class="plate-found-text">SPOTTED · {{ state.distanceFound }} MI</span>
+            </div>
+
+            <!-- Found overlay stamp -->
+            <div class="found-stamp" *ngIf="state.isFound">FOUND</div>
+          </div>
+
+          <!-- Frame screws -->
+          <div class="frame-screw frame-screw--tl"></div>
+          <div class="frame-screw frame-screw--tr"></div>
+          <div class="frame-screw frame-screw--bl"></div>
+          <div class="frame-screw frame-screw--br"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <span>📍 Location used once at time of spotting · never stored</span>
+    </div>
+
+  </div>
 </ion-content>

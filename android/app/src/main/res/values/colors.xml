@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Retro Road Trip brand colors for Android system bars -->
+    <color name="colorPrimary">#D35400</color>      <!-- Dusty Orange -->
+    <color name="colorPrimaryDark">#BA4A00</color>   <!-- Darker orange for status bar -->
+    <color name="colorAccent">#16A085</color>        <!-- Retro Teal -->
+</resources>
