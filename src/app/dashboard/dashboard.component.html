@@ -1,50 +1,77 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="premium-toolbar">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" color="dark"></ion-back-button>
-    </ion-buttons>
-    <ion-title>
-      <span class="retro-title">Travel Log</span>
-    </ion-title>
-  </ion-toolbar>
+<ion-header class="ion-no-border digital-ephemera-header">
+  <div class="stats-ribbon dashboard-ribbon">
+    <div class="stat-unit" routerLink="/home">
+      <div class="stat-value">←</div>
+      <div class="stat-key">BACK</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-unit">
+      <div class="stat-value">TRAVEL LOG</div>
+      <div class="stat-key">YOUR COLLECTION</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-unit">
+      <div class="stat-value">★</div>
+      <div class="stat-key">SOUVENIRS</div>
+    </div>
+  </div>
 </ion-header>
 
 <ion-content class="paper-texture">
   <div class="dashboard-container">
-    <!-- State Visual Map (Grid Version) -->
-    <ion-card class="map-card">
-      <ion-card-header>
-        <ion-card-title>UNITED STATES PROGRESS</ion-card-title>
-      </ion-card-header>
-      <div class="state-grid-small">
+    
+    <!-- UNITED STATES PROGRESS (The "Atlas" View) -->
+    <div class="section-header">
+      <div class="section-label">THE GREAT AMERICAN ROAD TRIP</div>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="atlas-card cardstock-layer">
+      <div class="atlas-header">
+        <h3>COAST TO COAST PROGRESS</h3>
+        <p>STAMPED & VERIFIED</p>
+      </div>
+      <div class="state-stamp-grid">
         <div 
           *ngFor="let state of viewModel().states" 
-          class="state-stamp" 
-          [class.filled]="state.isFound"
+          class="stamp-slot" 
+          [class.stamped]="state.isFound"
+          [attr.data-region]="state.region"
           [title]="state.name">
-          {{ state.code }}
-        </div>
-      </div>
-    </ion-card>
-
-    <!-- Achievement Badges -->
-    <div class="achievement-section">
-      <h2>SOUVENIRS & BADGES</h2>
-      <div class="achievement-log">
-        <div 
-          *ngFor="let ach of viewModel().achievements" 
-          class="postcard-badge" 
-          [class.locked]="!ach.unlocked">
-          <div class="badge-icon">
-            <ion-icon [name]="ach.icon"></ion-icon>
-          </div>
-          <div class="badge-info">
-            <span class="badge-name">{{ ach.title | uppercase }}</span>
-            <p class="badge-desc">{{ ach.description }}</p>
-          </div>
-          <div class="earned-status" *ngIf="ach.unlocked">COLLECTED</div>
+          <span class="stamp-code">{{ state.code }}</span>
+          <div class="stamp-overlay" *ngIf="state.isFound"></div>
         </div>
       </div>
     </div>
+
+    <!-- SOUVENIRS & BADGES (The "Glovebox" View) -->
+    <div class="section-header">
+      <div class="section-label">GLOVEBOX SOUVENIRS</div>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="souvenir-grid">
+      <div 
+        *ngFor="let ach of viewModel().achievements" 
+        class="souvenir-card cardstock-layer" 
+        [class.locked]="!ach.unlocked">
+        <div class="souvenir-visual">
+          <ion-icon [name]="ach.icon"></ion-icon>
+          <div class="souvenir-stamp" *ngIf="ach.unlocked">PASSED</div>
+        </div>
+        <div class="souvenir-content">
+          <h4 class="souvenir-title">{{ ach.title }}</h4>
+          <p class="souvenir-desc">{{ ach.description }}</p>
+        </div>
+        <div class="souvenir-postmark" *ngIf="ach.unlocked">
+          COLLECTED
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      Keep your eyes on the road and your hands on the wheel.
+    </div>
+
   </div>
 </ion-content>

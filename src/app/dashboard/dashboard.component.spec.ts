@@ -37,6 +37,7 @@ describe('DashboardComponent', () => {
               distanceFound: 210,
               questionsCorrect: 2,
               flagUrl: '/assets/stateflags/Alabama.svg',
+              region: 'south',
             },
             {
               id: 2,
@@ -46,6 +47,7 @@ describe('DashboardComponent', () => {
               distanceFound: 0,
               questionsCorrect: 0,
               flagUrl: '/assets/stateflags/Alaska.svg',
+              region: 'west',
             },
           ],
           achievements: [
@@ -81,8 +83,8 @@ describe('DashboardComponent', () => {
   it('renders stamps and achievements from the store view model', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
-    expect(compiled.querySelectorAll('.state-stamp').length).toBe(2);
-    expect(compiled.querySelector('.state-stamp.filled')?.textContent?.trim()).toBe('AL');
-    expect(compiled.querySelector('.badge-name')?.textContent).toContain('THE PIONEER');
+    expect(compiled.querySelectorAll('.stamp-slot').length).toBe(2);
+    expect(compiled.querySelector('.stamp-slot.stamped')?.textContent?.trim()).toBe('AL');
+    expect(compiled.querySelector('.souvenir-title')?.textContent).toContain('The Pioneer');
   });
 });

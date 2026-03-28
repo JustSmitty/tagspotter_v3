@@ -1,26 +1,81 @@
-# Tag Spotter
+# 🚗 Tag Spotter: The Digital Ephemera
 
-Tag Spotter is an Ionic Angular mobile app for spotting state plates, answering trivia, and earning distance bonuses on the road.
+**Tag Spotter** is a premium mobile experience designed for the modern road-tripper with a vintage soul. It turns the classic license plate game into a physical, collectible digital scrapbook, complete with regional trivia and distance-based achievements.
 
-## Development
+---
 
-- `npm.cmd run start` starts the Angular dev server.
-- `npm.cmd run lint` runs ESLint.
-- `npm.cmd run test -- --watch=false --browsers=ChromeHeadless` runs the Karma suite.
-- `npm.cmd run build` creates the production web bundle in `www/`.
+## ✨ The "Digital Ephemera" Aesthetic
 
-## Mobile release workflow
+Our design philosophy is rooted in the **Golden Age of American Travel (1950s-60s)**. Every pixel is crafted to feel like a physical artifact found in a dusty glovebox:
 
-- `npm.cmd run assets:mobile` refreshes the Android and iOS app icons and splash artwork.
-- `npm.cmd run build:mobile` builds the web app, regenerates mobile assets, and syncs Capacitor.
-- `npm.cmd run android:open` opens the Android project in Android Studio.
-- `npm.cmd run ios:open` opens the iOS project in Xcode on macOS.
+*   **Physicality:** Stamped metal license plates, layered cardstock ribbons, and grainy paper textures.
+*   **Cohesive Diversity:** A unique visual identity for every US region—from the "High Desert" West to the "Established" Northeast.
+*   **Motel Modernism:** An iconic "Motel Marquee" header with a pulsating neon "Vacancy" glow that tracks your overall progress.
 
-See `docs/app-store-release.md` for signing and upload steps, and `docs/store-submission.md` for store listing copy and privacy answers.
+---
 
-## Store publishing assets
+## 🛠 Features
 
-- docs/privacy-policy.md is the publishable privacy-policy source.
-- docs/store-metadata.google-play.json and docs/store-metadata.app-store-connect.json hold the app-record metadata defaults.
-- store-assets/ is the checked-in folder structure for screenshots and store graphics.
+### 📬 The Collection
+Collect all 50 state license plates. Each plate is a unique piece of digital art, dynamically styled based on its geographic region.
 
+### 🧠 Roadside Trivia
+Test your knowledge of state capitals, birds, flowers, and nicknames to earn extra points and unlock rare souvenirs.
+
+### 🗺️ The Atlas (Dashboard)
+A centralized "Travel Log" to track your Coast-to-Coast progress, view your souvenir collection, and audit your total miles traveled.
+
+### 🚀 Seamless Navigation
+A global, tactile bottom navigation bar featuring iconic mid-century symbols for effortless browsing between the road and your collection.
+
+---
+
+## 💻 Technology Stack
+
+*   **Framework:** [Ionic](https://ionicframework.com/) + [Angular](https://angular.io/) (Standalone Components)
+*   **Native Engine:** [Capacitor](https://capacitorjs.com/)
+*   **State Management:** Angular Signals & RxJS
+*   **Styling:** Vanilla SCSS with a custom HSL-based design system.
+*   **Typography:** Newsreader (Serif), Work Sans (Sans), and Special Elite (Typewriter).
+
+---
+
+## 🔨 Development Workflow
+
+### Local Development
+```bash
+# Start the Angular dev server
+npm.cmd run start
+
+# Run unit tests (Karma + ChromeHeadless)
+npm.cmd run test -- --watch=false --browsers=ChromeHeadless
+
+# Run linting
+npm.cmd run lint
+```
+
+### Mobile Workflow
+```bash
+# Refresh app icons and splash artwork
+npm.cmd run assets:mobile
+
+# Complete build (Web + Mobile Assets + Capacitor Sync)
+npm.cmd run build:mobile
+
+# Open in Native IDEs
+npm.cmd run android:open
+npm.cmd run ios:open
+```
+
+---
+
+## 📦 Store Publishing & Assets
+
+*   `docs/design_principles.md`: The authoritative guide for the UI/UX.
+*   `docs/privacy-policy.md`: Publishable privacy policy source.
+*   `store-assets/`: Checked-in folder structure for screenshots and store graphics.
+
+---
+
+> [!TIP]
+> **Pro-Tip for Contributors:** Always use the `.stamped-effect` and `.cardstock-layer` utility classes in `global.scss` to maintain the "physical object" feel of new components.

@@ -1,3 +1,24 @@
 <ion-app>
   <ion-router-outlet></ion-router-outlet>
+  
+  <ion-footer class="ion-no-border">
+    <div class="bottom-nav">
+      <div class="nav-item" [ngClass]="{'active': isRouteActive('/home')}" (click)="navigateTo('/home')">
+        <div class="nav-icon map-icon"></div>
+        <span class="nav-label">EXPLORE</span>
+      </div>
+      <div class="nav-item" [ngClass]="{'active': isRouteActive('/dashboard')}" (click)="navigateTo('/dashboard')">
+        <div class="nav-icon car-icon"></div>
+        <span class="nav-label">LOG</span>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon diner-icon"></div>
+        <span class="nav-label">TRIVIA</span>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon bulb-icon"></div>
+        <span class="nav-label">GOALS</span>
+      </div>
+    </div>
+  </ion-footer>
 </ion-app>

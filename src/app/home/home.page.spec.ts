@@ -42,6 +42,7 @@ describe('HomePage', () => {
               distanceFound: 0,
               questionsCorrect: 0,
               flagUrl: '/assets/stateflags/Alabama.svg',
+              region: 'south',
             },
           ],
           isLoaded: true,
@@ -78,9 +79,11 @@ describe('HomePage', () => {
   it('renders state cards from the shared view model', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
-    expect(compiled.querySelector('.ledger-stripe')?.textContent).toContain('4');
-    expect(compiled.querySelectorAll('.license-plate').length).toBe(1);
-    expect(compiled.querySelector('.plate-code')?.textContent?.trim()).toBe('AL');
+    expect(compiled.querySelector('.motel-marquee')?.textContent).toContain('4');
+    expect(compiled.querySelector('.stats-ribbon')?.textContent).toContain('2');
+    expect(compiled.querySelector('.stats-ribbon')?.textContent).toContain('732');
+    expect(compiled.querySelectorAll('.plate-wrapper').length).toBe(1);
+    expect(compiled.querySelector('.plate-tag-text')?.textContent?.trim()).toBe('AL');
   });
 
   it('records a state and completes the quiz session through the store', async () => {

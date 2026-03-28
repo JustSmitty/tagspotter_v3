@@ -40,6 +40,8 @@ export interface PointsSummary extends StoredPoints {
   miles: number;
 }
 
+export type StateRegion = 'northeast' | 'south' | 'west' | 'midwest';
+
 export interface StateCardViewModel {
   id: number;
   code: string;
@@ -48,6 +50,7 @@ export interface StateCardViewModel {
   distanceFound: number;
   questionsCorrect: number;
   flagUrl: string;
+  region: StateRegion;
 }
 
 export interface AchievementViewModel {

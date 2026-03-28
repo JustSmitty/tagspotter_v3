@@ -31,26 +31,25 @@
  * For more info, please see:
  * https://ionicframework.com/docs/theming/dark-mode
  */
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Oswald:wght@300..700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Special+Elite&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Work+Sans:ital,wght@0,100..900;1,100..900&family=Special+Elite&display=swap');
 
-/* Vintage Theme Enhancements */
+/* Digital Ephemera Theme Enhancements */
 .paper-texture {
-  background-color: #f2e3c9; // A slightly deeper cream map base
-  // Crosshatch pattern on warm cream
+  background-color: #fdfae9; // Antique White / Creamy Paper
   background-image:
     repeating-linear-gradient(
       0deg,
       transparent,
       transparent 22px,
-      rgba(150, 110, 60, 0.12) 22px,
-      rgba(150, 110, 60, 0.12) 23px
+      rgba(150, 110, 60, 0.08) 22px,
+      rgba(150, 110, 60, 0.08) 23px
     ),
     repeating-linear-gradient(
       90deg,
       transparent,
       transparent 22px,
-      rgba(150, 110, 60, 0.12) 22px,
-      rgba(150, 110, 60, 0.12) 23px
+      rgba(150, 110, 60, 0.08) 22px,
+      rgba(150, 110, 60, 0.08) 23px
     );
   background-size: 23px 23px;
   position: relative;
@@ -61,16 +60,28 @@
   content: "";
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  opacity: 0.08;
+  opacity: 0.12;
   pointer-events: none;
-  // Grain noise overlay
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
+  // Finer Grain noise overlay
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 150px 150px;
 }
 
+/* Object Physicality Utilities */
+.stamped-effect {
+  box-shadow: 
+    inset 1px 1px 2px rgba(0,0,0,0.2), 
+    inset -1px -1px 2px rgba(255,255,255,0.4),
+    0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.05);
+}
 
-ion-content {
-  --background: transparent;
+.cardstock-layer {
+  box-shadow: 
+    0 1px 1px rgba(0,0,0,0.1),
+    0 2px 4px rgba(0,0,0,0.1),
+    0 4px 8px rgba(0,0,0,0.05);
+  position: relative;
 }
 
 .vintage-badge {
@@ -81,4 +92,47 @@ ion-content {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+ion-content {
+  --background: transparent;
+}
+
+/* Animations & Transitions */
+@keyframes paperFlipIn {
+  from {
+    transform: rotateY(-15deg) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: rotateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes vacancyGlow {
+  0% { box-shadow: 0 0 5px rgba(241, 196, 15, 0.2); }
+  50% { box-shadow: 0 0 12px rgba(241, 196, 15, 0.7), 0 0 20px rgba(241, 196, 15, 0.4); }
+  100% { box-shadow: 0 0 5px rgba(241, 196, 15, 0.2); }
+}
+
+@keyframes stampPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.paper-flip-enter {
+  animation: paperFlipIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  perspective: 1000px;
+}
+
+/* Global Polish */
+ion-router-outlet {
+  perspective: 1500px;
+  background: var(--app-bg-paper);
+}
+
+.ion-page {
+  animation: paperFlipIn 0.4s ease-out forwards;
 }

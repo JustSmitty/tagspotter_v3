@@ -227,7 +227,19 @@ export class GameStateStore {
       distanceFound: state.fnd.distance,
       questionsCorrect: state.fnd.questionsCorrect,
       flagUrl: state.flagURL,
+      region: this.getRegion(state.Abbrv),
     };
+  }
+
+  private getRegion(code: string): any {
+    const northeast = ['CT', 'ME', 'MA', 'NH', 'RI', 'VT', 'NJ', 'NY', 'PA'];
+    const south = ['AL', 'AR', 'DE', 'FL', 'GA', 'KY', 'LA', 'MD', 'MS', 'NC', 'OK', 'SC', 'TN', 'TX', 'VA', 'WV', 'DC'];
+    const midwest = ['IL', 'IN', 'IA', 'KS', 'MI', 'MN', 'MO', 'NE', 'ND', 'OH', 'SD', 'WI'];
+    
+    if (northeast.includes(code)) return 'northeast';
+    if (south.includes(code)) return 'south';
+    if (midwest.includes(code)) return 'midwest';
+    return 'west'; // Default to West for AK, AZ, CA, CO, HI, ID, MT, NV, NM, OR, UT, WA, WY
   }
 
   private getDistanceReward(distance: number): number {
