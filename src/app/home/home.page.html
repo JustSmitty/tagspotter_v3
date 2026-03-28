@@ -1,38 +1,60 @@
-<!-- Digital Ephemera Header (Marquee + Ribbon) -->
+<!-- Digital Ephemera Dashboard (Physical Artifacts) -->
 <ion-header class="ion-no-border digital-ephemera-header">
   
-  <!-- Motel Marquee (Original Aesthetic) -->
-  <div class="motel-marquee">
-    <div class="marquee-sign">
-      <span class="brand-text">TAG SPOTTER</span>
-      <div class="vacancy-pod">
-        <span class="vacancy-label">VACANCY</span>
-        <div class="vacancy-light" [class.on]="viewModel().points.total > 0"></div>
+  <div class="artifacts-row">
+    <!-- Postcard Artifact (Branding + Main Score) -->
+    <div class="postcard-container paper-flip-enter">
+      <div class="postcard-front stamped-effect">
+        <div class="postcard-marks">
+          <div class="postmark">ROAD TRIP USA</div>
+          <div class="air-mail-stripe"></div>
+        </div>
+        
+        <div class="postcard-content">
+          <h1 class="brand-logotype">TAG SPOTTER</h1>
+          <div class="points-badge">
+            <span class="points-value">{{ viewModel().points.total }}</span>
+            <span class="points-label">TOTAL PTS</span>
+          </div>
+          
+          <div class="vacancy-sign" [class.on]="viewModel().points.total > 0">
+            <div class="neon-tube">VACANCY</div>
+            <div class="neon-glow"></div>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <button class="action-pin star-pin" (click)="openDashboard()" aria-label="Favorites">⭐</button>
+          <button class="action-pin reset-pin" (click)="onRefresh()" aria-label="Reset">🔄</button>
+        </div>
       </div>
     </div>
-    <div class="marquee-score">
-      <span class="score-value">{{ viewModel().points.total }}</span>
-      <span class="score-unit">PTS</span>
+
+    <!-- Matchbook Artifact (Detailed Stats) -->
+    <div class="matchbook-fold paper-flip-enter">
+      <div class="matchbook-cover cardstock-layer">
+        <div class="matchbook-label">ROAD LOG · 1950</div>
+        
+        <div class="matchbook-stats">
+          <div class="m-stat">
+            <span class="m-val">{{ viewModel().points.states }}</span>
+            <span class="m-key">STATES</span>
+          </div>
+          <div class="m-stat">
+            <span class="m-val">{{ viewModel().points.miles | number:'1.0-0' }}</span>
+            <span class="m-key">MILES</span>
+          </div>
+          <div class="m-stat">
+            <span class="m-val">{{ viewModel().points.quiz }}</span>
+            <span class="m-key">TRIVIA</span>
+          </div>
+        </div>
+        
+        <div class="striker-strip"></div>
+      </div>
     </div>
   </div>
 
-  <!-- Stats Ribbon (Detailed Metrics) -->
-  <div class="stats-ribbon">
-    <div class="stat-unit" (click)="openDashboard()">
-      <span class="stat-value">{{ viewModel().points.states }}</span>
-      <span class="stat-key">STATES</span>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-unit">
-      <span class="stat-value">{{ viewModel().points.miles | number:'1.0-0' }}</span>
-      <span class="stat-key">MILES</span>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-unit">
-      <span class="stat-value">{{ viewModel().points.quiz }}</span>
-      <span class="stat-key">TRIVIA</span>
-    </div>
-  </div>
 </ion-header>
 
 <ion-content class="road-content paper-texture">

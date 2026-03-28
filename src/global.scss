@@ -33,6 +33,68 @@
  */
 @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Work+Sans:ital,wght@0,100..900;1,100..900&family=Special+Elite&display=swap');
 
+html,
+body,
+ion-app {
+  background: var(--app-bg-cream);
+}
+
+.digital-ephemera-header {
+  background: var(--page-header-gradient, linear-gradient(180deg, rgba(253, 250, 233, 0.98) 0%, rgba(253, 250, 233, 0.92) 75%, rgba(253, 250, 233, 0) 100%));
+  padding: calc(var(--app-safe-top) + 12px) 16px 10px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: var(--section-header-padding, 16px 20px 8px);
+}
+
+.section-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--ion-color-primary);
+  opacity: var(--section-rule-opacity, 0.2);
+}
+
+.section-label {
+  font-family: var(--section-label-font, 'Newsreader', serif);
+  font-style: var(--section-label-style, italic);
+  font-weight: var(--section-label-weight, 600);
+  font-size: var(--section-label-size, 0.8rem);
+  color: var(--section-label-color, var(--ion-color-primary));
+  letter-spacing: var(--section-label-spacing, 2px);
+  text-transform: uppercase;
+}
+
+.footer-note {
+  text-align: center;
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 0.7rem;
+  color: rgba(0,0,0,0.3);
+  padding: var(--footer-note-padding, 40px 20px 0);
+}
+
+.content-inner {
+  min-height: 100%;
+  padding-bottom: var(--content-inner-padding, calc(var(--app-bottom-nav-total-height) + 24px));
+}
+
+.plate-wrapper:active .plate-body {
+  transform: translateY(1px) scale(0.985);
+  box-shadow:
+    inset 2px 2px 4px rgba(0, 0, 0, 0.16),
+    inset -1px -1px 2px rgba(255, 248, 239, 0.4);
+}
+
+.plate-top-row,
+.plate-bottom-row {
+  line-height: 1;
+  z-index: 2;
+}
+
 /* Digital Ephemera Theme Enhancements */
 .paper-texture {
   background-color: #fdfae9; // Antique White / Creamy Paper
@@ -130,7 +192,7 @@ ion-content {
 /* Global Polish */
 ion-router-outlet {
   perspective: 1500px;
-  background: var(--app-bg-paper);
+  background: var(--app-bg-cream);
 }
 
 .ion-page {

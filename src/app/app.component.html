@@ -1,24 +1,35 @@
-<ion-app>
+<ion-app class="app-shell">
   <ion-router-outlet></ion-router-outlet>
-  
-  <ion-footer class="ion-no-border">
-    <div class="bottom-nav">
-      <div class="nav-item" [ngClass]="{'active': isRouteActive('/home')}" (click)="navigateTo('/home')">
-        <div class="nav-icon map-icon"></div>
-        <span class="nav-label">EXPLORE</span>
-      </div>
-      <div class="nav-item" [ngClass]="{'active': isRouteActive('/dashboard')}" (click)="navigateTo('/dashboard')">
-        <div class="nav-icon car-icon"></div>
-        <span class="nav-label">LOG</span>
-      </div>
-      <div class="nav-item">
-        <div class="nav-icon diner-icon"></div>
-        <span class="nav-label">TRIVIA</span>
-      </div>
-      <div class="nav-item">
-        <div class="nav-icon bulb-icon"></div>
-        <span class="nav-label">GOALS</span>
-      </div>
-    </div>
-  </ion-footer>
+
+  <nav class="bottom-nav" aria-label="Primary">
+    <button
+      type="button"
+      class="nav-item"
+      [ngClass]="{ active: isRouteActive('/home') }"
+      [attr.aria-current]="isRouteActive('/home') ? 'page' : null"
+      (click)="navigateTo('/home')">
+      <div class="nav-icon map-icon" aria-hidden="true"></div>
+      <span class="nav-label">EXPLORE</span>
+    </button>
+
+    <button
+      type="button"
+      class="nav-item"
+      [ngClass]="{ active: isRouteActive('/dashboard') }"
+      [attr.aria-current]="isRouteActive('/dashboard') ? 'page' : null"
+      (click)="navigateTo('/dashboard')">
+      <div class="nav-icon car-icon" aria-hidden="true"></div>
+      <span class="nav-label">LOG</span>
+    </button>
+
+    <button type="button" class="nav-item" disabled aria-disabled="true">
+      <div class="nav-icon diner-icon" aria-hidden="true"></div>
+      <span class="nav-label">TRIVIA</span>
+    </button>
+
+    <button type="button" class="nav-item" disabled aria-disabled="true">
+      <div class="nav-icon bulb-icon" aria-hidden="true"></div>
+      <span class="nav-label">GOALS</span>
+    </button>
+  </nav>
 </ion-app>

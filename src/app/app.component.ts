@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
-import { IonApp, IonRouterOutlet, IonFooter } from '@ionic/angular/standalone';
+import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
-import { Router, NavigationEnd, RouterLink } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { NgClass } from '@angular/common';
 
@@ -11,7 +11,7 @@ import { NgClass } from '@angular/common';
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [IonApp, IonRouterOutlet, IonFooter, RouterLink, NgClass],
+  imports: [IonApp, IonRouterOutlet, NgClass],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnInit {
@@ -27,11 +27,9 @@ export class AppComponent implements OnInit {
   }
   async ngOnInit(): Promise<void> {
     if (Capacitor.isNativePlatform()) {
-      // Prevent the WebView from drawing behind the status bar and nav bar.
-      // This is the authoritative fix — the native XML styles are a fallback.
       await StatusBar.setOverlaysWebView({ overlay: false });
-      await StatusBar.setStyle({ style: Style.Light });
-      await StatusBar.setBackgroundColor({ color: '#BA4A00' }); // Dark Dusty Orange
+      await StatusBar.setStyle({ style: Style.Dark }); // Black icons for cream background
+      await StatusBar.setBackgroundColor({ color: '#fdfae9' }); // Match app cream
     }
   }
 

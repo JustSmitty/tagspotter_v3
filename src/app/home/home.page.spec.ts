@@ -79,9 +79,9 @@ describe('HomePage', () => {
   it('renders state cards from the shared view model', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
-    expect(compiled.querySelector('.motel-marquee')?.textContent).toContain('4');
-    expect(compiled.querySelector('.stats-ribbon')?.textContent).toContain('2');
-    expect(compiled.querySelector('.stats-ribbon')?.textContent).toContain('732');
+    expect(compiled.querySelector('.postcard-container')?.textContent).toContain('4');
+    expect(compiled.querySelector('.matchbook-fold')?.textContent).toContain('2');
+    expect(compiled.querySelector('.matchbook-fold')?.textContent).toContain('732');
     expect(compiled.querySelectorAll('.plate-wrapper').length).toBe(1);
     expect(compiled.querySelector('.plate-tag-text')?.textContent?.trim()).toBe('AL');
   });

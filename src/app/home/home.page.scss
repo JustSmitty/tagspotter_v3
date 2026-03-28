@@ -1,176 +1,257 @@
-// ── DIGITAL EPHEMERA HEADER (MARQUEE & RIBBON) ──
-.digital-ephemera-header {
-  background: var(--app-bg-cream);
-  padding: var(--ion-safe-area-top) 0 4px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+// ── DIGITAL EPHEMERA ARTIFACTS (POSTCARD & MATCHBOOK) ──
+:host {
+  --page-header-gradient: linear-gradient(180deg, rgba(253, 250, 233, 0.98) 0%, rgba(253, 250, 233, 0.92) 75%, rgba(253, 250, 233, 0) 100%);
+  --section-header-padding: 16px 20px 8px;
+  --section-label-font: 'Newsreader', serif;
+  --section-label-style: italic;
+  --section-label-weight: 600;
+  --section-label-size: 0.8rem;
+  --section-label-spacing: 2px;
 }
 
-.motel-marquee {
+.digital-ephemera-header {
+  overflow: visible; // Allow artifacts to shadow onto content
+  z-index: 1000;
+}
+
+.artifacts-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 12px 12px 4px;
-  padding: 16px;
-  background: #2c3e50;
-  border-radius: 8px;
-  border: 4px solid #1a252f;
-  box-shadow: 
-    0 8px 0 #1a252f,
-    0 12px 20px rgba(0,0,0,0.2),
-    inset 0 0 40px rgba(0,0,0,0.5);
-  position: relative;
-  overflow: hidden;
+  align-items: flex-start;
+  gap: 12px;
+  perspective: 1000px;
+  margin-top: 10px;
+}
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 50%;
-    background: rgba(255,255,255,0.05);
-  }
+// 📮 THE POSTCARD
+.postcard-container {
+  flex: 3;
+  transform: rotate(-1.5deg);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+  transition: transform 0.3s ease;
 
-  .marquee-sign {
+  &:active { transform: rotate(-1deg) scale(0.98); }
+
+  .postcard-front {
+    background: var(--app-surface-card);
+    padding: 12px;
+    border: 1px solid rgba(88, 73, 49, 0.14);
+    position: relative;
+    min-height: 140px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    justify-content: space-between;
 
-    .brand-text {
-      font-family: 'Newsreader', serif;
-      font-weight: 900;
-      font-style: italic;
-      font-size: 1.2rem;
-      color: #ecf0f1;
-      letter-spacing: 2px;
-      text-shadow: 0 0 10px rgba(236, 240, 241, 0.3);
-    }
-
-    .vacancy-pod {
+    // Classic Postcard "Stamp" area
+    &::after {
+      content: 'PLACE STAMP HERE';
+      position: absolute;
+      top: 10px; right: 10px;
+      width: 40px; height: 50px;
+      border: 2px dashed rgba(127, 140, 141, 0.45);
+      font-size: 5px;
+      color: rgba(127, 140, 141, 0.58);
       display: flex;
       align-items: center;
-      gap: 8px;
-      
-      .vacancy-label {
-        font-family: 'Work Sans', sans-serif;
-        font-size: 0.6rem;
-        font-weight: 800;
-        color: rgba(255,255,255,0.4);
-        letter-spacing: 1px;
-      }
-
-      .vacancy-light {
-        width: 8px; height: 8px;
-        border-radius: 50%;
-        background: #333;
-        box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
-        
-        &.on {
-          background: #f1c40f;
-          box-shadow: 0 0 8px #f1c40f, 0 0 15px rgba(241, 196, 15, 0.4);
-          animation: vacancyGlow 2s infinite alternate ease-in-out;
-        }
-      }
+      text-align: center;
+      padding: 4px;
     }
   }
 
-  .marquee-score {
+  .postcard-marks {
+    position: absolute;
+    top: 8px; left: 8px;
+    opacity: 0.6;
+
+    .postmark {
+      font-family: 'Special Elite', cursive;
+      font-size: 0.6rem;
+      border: 1px solid #4834d4;
+      color: #4834d4;
+      padding: 2px 6px;
+      border-radius: 50%;
+      transform: rotate(-15deg);
+    }
+  }
+
+  .postcard-content {
+    margin-top: 20px;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    
-    .score-value {
-      font-family: 'Special Elite', cursive;
-      font-size: 2.2rem;
-      color: var(--ion-color-primary);
-      line-height: 1;
-      text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+    gap: 8px;
+
+    .brand-logotype {
+      font-family: 'Newsreader', serif;
+      font-weight: 900;
+      font-size: 1.6rem;
+      color: var(--ion-color-primary); // Burnt Orange
+      margin: 0;
+      line-height: 0.9;
+      letter-spacing: -1px;
     }
 
-    .score-unit {
+    .points-badge {
+      display: flex;
+      flex-direction: column;
+      
+      .points-value {
+        font-family: 'Special Elite', cursive;
+        font-size: 2rem;
+        color: var(--app-ink-deep);
+        line-height: 1;
+      }
+      .points-label {
+        font-family: 'Work Sans', sans-serif;
+        font-size: 0.5rem;
+        font-weight: 700;
+        color: #7f8c8d;
+        letter-spacing: 1px;
+      }
+    }
+  }
+
+  // Neon Vacancy Sign on Postcard
+  .vacancy-sign {
+    align-self: flex-start;
+    padding: 4px 10px;
+    background: #263238;
+    border-radius: 2px;
+    position: relative;
+    border: 1px solid rgba(38, 50, 56, 0.88);
+
+    .neon-tube {
       font-family: 'Work Sans', sans-serif;
-      font-size: 0.6rem;
-      font-weight: 800;
-      color: #bdc3c7;
+      font-weight: 900;
+      font-size: 0.65rem;
+      color: rgba(253, 250, 233, 0.32);
       letter-spacing: 1px;
+      transition: color 0.3s ease;
+    }
+
+    &.on {
+      .neon-tube { color: #fff5d6; text-shadow: 0 0 5px #f1c40f, 0 0 10px #f1c40f; }
+      .neon-glow {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);
+        animation: vacancyGlow 2s infinite alternate;
+      }
     }
   }
 }
 
-.stats-ribbon {
+// 🎆 TOP ACTION PINS
+.top-actions {
+  position: absolute;
+  top: 10px; // MOVED INSIDE THE CARD to prevent status bar overlap
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  background: var(--ion-color-secondary); // Pine Green
-  margin: 0 12px 8px;
-  padding: 8px 4px;
-  border-radius: 4px;
-  border: 1px solid rgba(0,0,0,0.2);
-  box-shadow: 
-    0 2px 0 rgba(255,255,255,0.1),
-    inset 0 1px 3px rgba(0,0,0,0.3);
-}
+  gap: 20px;
 
-.stat-unit {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  cursor: pointer;
-
-  .stat-value {
-    font-family: 'Newsreader', serif;
-    font-weight: 700;
-    font-size: 1.4rem;
+  .action-pin {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: #eb4d4b;
     color: var(--app-bg-cream);
-    line-height: 1;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-  }
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 2px 2px rgba(255,255,255,0.4);
+    cursor: pointer;
+    z-index: 10;
 
-  .stat-key {
-    font-family: 'Work Sans', sans-serif;
-    font-size: 0.55rem;
-    font-weight: 700;
-    color: var(--ion-color-tertiary);
-    letter-spacing: 1px;
-    margin-top: 2px;
-    opacity: 0.9;
+    &:active {
+      transform: translateY(1px) scale(0.96);
+      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.22), inset 0 1px 2px rgba(255, 248, 239, 0.35);
+    }
+    
+    &::before { // Pin head detail
+       content: '';
+       position: absolute;
+       top: 4px; left: 4px;
+       width: 4px; height: 4px;
+       background: rgba(255,255,255,0.6);
+       border-radius: 50%;
+    }
+
+    &.reset-pin { background: #f0932b; }
   }
 }
 
-.stat-divider {
-  width: 1px;
-  height: 24px;
-  background: rgba(255,255,255,0.15);
-  box-shadow: 1px 0 0 rgba(0,0,0,0.1);
+// 📗 THE MATCHBOOK
+.matchbook-fold {
+  flex: 2;
+  transform: rotate(2deg) translateY(10px);
+  filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+
+  .matchbook-cover {
+    background: var(--ion-color-secondary); // Pine Green
+    padding: 10px;
+    border-radius: 2px 2px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 150px;
+
+    .matchbook-label {
+      font-family: 'Work Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.5rem;
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 4px;
+    }
+  }
+
+  .matchbook-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .m-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+
+      .m-val {
+        font-family: 'Newsreader', serif;
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: var(--app-bg-cream);
+      }
+      .m-key {
+        font-family: 'Work Sans', sans-serif;
+        font-size: 0.5rem;
+        font-weight: 700;
+        color: rgba(255,255,255,0.4);
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+
+  .striker-strip {
+    margin-top: auto;
+    height: 20px;
+    background: #31413f;
+    border-radius: 0 0 8px 8px;
+    position: relative;
+    
+    &::after { // "Matches" visual
+      content: 'CLOSE COVER BEFORE STRIKING';
+      position: absolute;
+      bottom: 2px; left: 0; right: 0;
+      font-size: 4px;
+      color: rgba(253, 250, 233, 0.24);
+      text-align: center;
+    }
+  }
 }
+
 
 // ── SECTION HEADER ─────────────────────────────
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 20px 8px;
-}
-
-.section-rule {
-  flex: 1;
-  height: 1px;
-  background: var(--ion-color-primary);
-  opacity: 0.2;
-}
-
-.section-label {
-  font-family: 'Newsreader', serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 0.8rem;
-  color: var(--ion-color-primary);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
 
 // ── LICENSE PLATE COLLECTION ──────────────────
 .plate-grid {
@@ -199,7 +280,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  background: #eee;
+  background: var(--app-surface-paper);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -211,11 +292,6 @@
     background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%, rgba(0,0,0,0.05) 100%);
     pointer-events: none;
   }
-}
-
-.plate-top-row {
-  line-height: 1;
-  z-index: 2;
 }
 
 .plate-state-name {
@@ -243,11 +319,6 @@
   text-shadow: 
     1px 1px 0 rgba(255,255,255,0.6),
     -1px -1px 0 rgba(0,0,0,0.2);
-}
-
-.plate-bottom-row {
-  line-height: 1;
-  z-index: 2;
 }
 
 .plate-motto, .plate-found-text {
@@ -314,7 +385,7 @@
   font-family: 'Special Elite', cursive;
   font-size: 1.2rem;
   font-weight: 900;
-  background: rgba(255,255,255,0.8);
+  background: rgba(253, 250, 233, 0.92);
   border-radius: 4px;
   pointer-events: none;
   z-index: 5;

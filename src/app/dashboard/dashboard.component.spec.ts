@@ -1,5 +1,6 @@
 import { signal, WritableSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { DashboardViewModel } from '../models/game-state.model';
 import { GameStateStore } from '../services/game-state.store';
@@ -67,7 +68,10 @@ describe('DashboardComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
-      providers: [{ provide: GameStateStore, useValue: gameStateStore }],
+      providers: [
+        provideRouter([]),
+        { provide: GameStateStore, useValue: gameStateStore },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardComponent);

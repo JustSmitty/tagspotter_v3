@@ -1,8 +1,16 @@
 /** Digital Ephemera CSS Variables **/
 :root {
+  --app-safe-top: env(safe-area-inset-top, 0px);
+  --app-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --app-bottom-nav-height: 74px;
+  --app-bottom-nav-total-height: calc(var(--app-bottom-nav-height) + var(--app-safe-bottom) + 22px);
+
   /** background palette **/
   --app-bg-cream: #fdfae9;
   --app-bg-paper: #F2E3C9;
+  --app-surface-paper: #f7efdb;
+  --app-surface-card: #fff7ec;
+  --app-ink-deep: #2f3640;
   
   /** primary: Interstate Rust **/
   --ion-color-primary: #D9541C;
@@ -77,7 +85,7 @@
   --ion-color-light-tint: #edf1f2;
   
   /** card variables **/
-  --card-bg: #FFFFFF;
+  --card-bg: #fff7ec;
   --card-border: #DBCDB7;
   --card-shadow: rgba(0, 0, 0, 0.08);
 

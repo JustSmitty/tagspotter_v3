@@ -1,17 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import {
   IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
   IonIcon,
-  IonButtons,
-  IonBackButton
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
   bookOutline,
@@ -31,15 +25,9 @@ import { GameStateStore } from '../services/game-state.store';
   imports: [
     CommonModule,
     IonHeader,
-    IonToolbar,
-    IonTitle,
     IonContent,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
     IonIcon,
-    IonButtons,
-    IonBackButton
+    RouterLink,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

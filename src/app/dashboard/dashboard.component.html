@@ -1,25 +1,28 @@
 <ion-header class="ion-no-border digital-ephemera-header">
-  <div class="stats-ribbon dashboard-ribbon">
-    <div class="stat-unit" routerLink="/home">
-      <div class="stat-value">←</div>
-      <div class="stat-key">BACK</div>
+  <div class="stats-ribbon dashboard-ribbon cardstock-layer">
+    <a class="stat-unit actionable" routerLink="/home">
+      <ion-icon name="map-outline" aria-hidden="true"></ion-icon>
+      <span class="stat-value">BACK TO MAP</span>
+      <span class="stat-key">EXPLORE</span>
+    </a>
+    <div class="stat-divider"></div>
+    <div class="stat-unit current">
+      <ion-icon name="book-outline" aria-hidden="true"></ion-icon>
+      <span class="stat-value">TRAVEL LOG</span>
+      <span class="stat-key">YOUR COLLECTION</span>
     </div>
     <div class="stat-divider"></div>
     <div class="stat-unit">
-      <div class="stat-value">TRAVEL LOG</div>
-      <div class="stat-key">YOUR COLLECTION</div>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-unit">
-      <div class="stat-value">★</div>
-      <div class="stat-key">SOUVENIRS</div>
+      <ion-icon name="trophy-outline" aria-hidden="true"></ion-icon>
+      <span class="stat-value">SOUVENIRS</span>
+      <span class="stat-key">{{ viewModel().achievements.length }} BADGES</span>
     </div>
   </div>
 </ion-header>
 
 <ion-content class="paper-texture">
   <div class="dashboard-container">
-    
+
     <!-- UNITED STATES PROGRESS (The "Atlas" View) -->
     <div class="section-header">
       <div class="section-label">THE GREAT AMERICAN ROAD TRIP</div>
@@ -32,9 +35,9 @@
         <p>STAMPED & VERIFIED</p>
       </div>
       <div class="state-stamp-grid">
-        <div 
-          *ngFor="let state of viewModel().states" 
-          class="stamp-slot" 
+        <div
+          *ngFor="let state of viewModel().states"
+          class="stamp-slot"
           [class.stamped]="state.isFound"
           [attr.data-region]="state.region"
           [title]="state.name">
@@ -51,9 +54,9 @@
     </div>
 
     <div class="souvenir-grid">
-      <div 
-        *ngFor="let ach of viewModel().achievements" 
-        class="souvenir-card cardstock-layer" 
+      <div
+        *ngFor="let ach of viewModel().achievements"
+        class="souvenir-card cardstock-layer"
         [class.locked]="!ach.unlocked">
         <div class="souvenir-visual">
           <ion-icon [name]="ach.icon"></ion-icon>
