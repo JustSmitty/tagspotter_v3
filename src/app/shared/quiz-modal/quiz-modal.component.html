@@ -1,0 +1,48 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="premium-toolbar">
+    <ion-title>
+      <span class="retro-title">Roadside Trivia</span>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onClose()" color="dark">
+        <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="paper-texture">
+  <div class="quiz-ticket">
+    <div class="ticket-header">
+      <div class="state-id">{{ stateCode }}</div>
+      <div class="ticket-type">OFFICIAL TRIVIA PASS</div>
+    </div>
+    
+    <div class="question-box">
+      <p class="question-text">{{ question.prompt }}</p>
+    </div>
+
+    <div class="options-grid">
+      <button 
+        *ngFor="let option of question.options" 
+        class="quiz-option" 
+        type="button"
+        (click)="onSelect(option)">
+        <span class="option-label">{{ option }}</span>
+        <div class="indicator"></div>
+      </button>
+    </div>
+
+    <div class="ticket-footer">
+      <div class="progress-dots">
+        <div 
+          *ngFor="let i of progressDots" 
+          class="dot" 
+          [class.active]="i < questionIndex"
+          [class.current]="i === questionIndex">
+        </div>
+      </div>
+      <div class="footer-seal">VALID FOR BONUS POINTS</div>
+    </div>
+  </div>
+</ion-content>

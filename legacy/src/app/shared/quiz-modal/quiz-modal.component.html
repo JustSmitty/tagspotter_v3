@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{foundStateName}} State Quiz</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-content fullscreen>
+    <ion-card>
+      <img src={{imageSrc}} />
+      <ion-card-content>
+        <h1>What is the state {{topic}} of {{foundStateName}}?</h1>
+      </ion-card-content>
+    </ion-card>
+    <ion-item>
+      <ion-label color="tertiary">Answered Correctly:</ion-label>
+      <b>
+        <ion-note color="tertiary">{{ratio}}/3</ion-note>
+      </b>
+    </ion-item><br />
+    <ion-item>
+      <ion-label class="ion-text-wrap">{{buttonA}}</ion-label>
+      <ion-button (click)="onAClick()">
+        <ion-icon name="checkbox-outline"></ion-icon>
+      </ion-button>
+    </ion-item><br />
+    <ion-item>
+      <ion-label class="ion-text-wrap">{{buttonB}}</ion-label>
+      <ion-button expand="block" (click)="onBClick()">
+        <ion-icon name="checkbox-outline"></ion-icon>
+      </ion-button>
+    </ion-item><br />
+    <ion-item>
+      <ion-label class="ion-text-wrap">{{buttonC}}</ion-label>
+      <ion-button expand="block" (click)="onCClick()">
+        <ion-icon name="checkbox-outline"></ion-icon>
+      </ion-button>
+    </ion-item><br />
+    <ion-item>
+      <ion-label class="ion-text-wrap">{{buttonD}}</ion-label>
+      <ion-button expand="block" (click)="onDClick()">
+        <ion-icon name="checkbox-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+
+
+  </ion-content>
+</ion-content>

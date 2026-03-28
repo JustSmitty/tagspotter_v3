@@ -1,0 +1,30 @@
+/* Card
+    ==================================*/
+.card {
+	box-shadow: 0px 2px 5px 0 rgba(0, 0, 0, 0.26);
+	//border-radius: 2px;
+	margin: 8px 0px 0px 5px;
+	position: relative;
+}
+
+.card-header {
+	padding: 0px;
+}
+
+.card-content {
+	padding: 3px 6px 3px 3px;
+}
+
+.item-block {
+	width: 97%;
+}
+
+.label-md {
+	margin: 3px 8px 3px 0;
+}
+
+ion-col>div {
+	background-color: #f7f7f7;
+	border: solid 1px #ddd;
+	padding: 10px;
+}

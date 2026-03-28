@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tag Spotter</string>
+    <string name="title_activity_main">Tag Spotter</string>
+    <string name="package_name">com.tagspotter.app</string>
+    <string name="custom_url_scheme">com.tagspotter.app</string>
+</resources>

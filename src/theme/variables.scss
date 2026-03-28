@@ -1,77 +1,93 @@
-// Ionic Variables and Theming. For more info, please see:
-// http://ionicframework.com/docs/theming/
-
-/** Ionic CSS Variables **/
+/** Retro Road Trip CSS Variables **/
 :root {
-  /** primary **/
-  --ion-color-primary: #3880ff;
-  --ion-color-primary-rgb: 56, 128, 255;
+  /** background palette **/
+  --app-bg-cream: #F9F1E7;
+  --app-bg-paper: #F4EAD5;
+  
+  /** primary: Dusty Orange **/
+  --ion-color-primary: #D35400;
+  --ion-color-primary-rgb: 211, 84, 0;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #3171e0;
-  --ion-color-primary-tint: #4c8dff;
+  --ion-color-primary-shade: #ba4a00;
+  --ion-color-primary-tint: #d7651a;
 
-  /** secondary **/
-  --ion-color-secondary: #0cd1e8;
-  --ion-color-secondary-rgb: 12, 209, 232;
+  /** secondary: Retro Teal **/
+  --ion-color-secondary: #16A085;
+  --ion-color-secondary-rgb: 22, 160, 133;
   --ion-color-secondary-contrast: #ffffff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #0bb8cc;
-  --ion-color-secondary-tint: #24d6ea;
+  --ion-color-secondary-shade: #138d75;
+  --ion-color-secondary-tint: #2db397;
 
-  /** tertiary **/
-  --ion-color-tertiary: #7044ff;
-  --ion-color-tertiary-rgb: 112, 68, 255;
-  --ion-color-tertiary-contrast: #ffffff;
-  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
-  --ion-color-tertiary-shade: #633ce0;
-  --ion-color-tertiary-tint: #7e57ff;
+  /** tertiary: Antique Gold **/
+  --ion-color-tertiary: #F1C40F;
+  --ion-color-tertiary-rgb: 241, 196, 15;
+  --ion-color-tertiary-contrast: #000000;
+  --ion-color-tertiary-contrast-rgb: 0, 0, 0;
+  --ion-color-tertiary-shade: #d4ac0d;
+  --ion-color-tertiary-tint: #f2ca27;
 
   /** success **/
-  --ion-color-success: #10dc60;
-  --ion-color-success-rgb: 16, 220, 96;
+  --ion-color-success: #27ae60;
+  --ion-color-success-rgb: 39, 174, 96;
   --ion-color-success-contrast: #ffffff;
   --ion-color-success-contrast-rgb: 255, 255, 255;
-  --ion-color-success-shade: #0ec254;
-  --ion-color-success-tint: #28e070;
+  --ion-color-success-shade: #229954;
+  --ion-color-success-tint: #3db970;
 
   /** warning **/
-  --ion-color-warning: #ffce00;
-  --ion-color-warning-rgb: 255, 206, 0;
+  --ion-color-warning: #f39c12;
+  --ion-color-warning-rgb: 243, 156, 18;
   --ion-color-warning-contrast: #ffffff;
   --ion-color-warning-contrast-rgb: 255, 255, 255;
-  --ion-color-warning-shade: #e0b500;
-  --ion-color-warning-tint: #ffd31a;
+  --ion-color-warning-shade: #d68910;
+  --ion-color-warning-tint: #f4a62a;
 
   /** danger **/
-  --ion-color-danger: #f04141;
-  --ion-color-danger-rgb: 245, 61, 61;
+  --ion-color-danger: #c0392b;
+  --ion-color-danger-rgb: 192, 57, 43;
   --ion-color-danger-contrast: #ffffff;
   --ion-color-danger-contrast-rgb: 255, 255, 255;
-  --ion-color-danger-shade: #d33939;
-  --ion-color-danger-tint: #f25454;
+  --ion-color-danger-shade: #a93226;
+  --ion-color-danger-tint: #c64d40;
 
   /** dark **/
-  --ion-color-dark: #222428;
-  --ion-color-dark-rgb: 34, 34, 34;
+  --ion-color-dark: #2c3e50;
+  --ion-color-dark-rgb: 44, 62, 80;
   --ion-color-dark-contrast: #ffffff;
   --ion-color-dark-contrast-rgb: 255, 255, 255;
-  --ion-color-dark-shade: #1e2023;
-  --ion-color-dark-tint: #383a3e;
+  --ion-color-dark-shade: #273746;
+  --ion-color-dark-tint: #415162;
 
   /** medium **/
-  --ion-color-medium: #989aa2;
-  --ion-color-medium-rgb: 152, 154, 162;
+  --ion-color-medium: #7f8c8d;
+  --ion-color-medium-rgb: 127, 140, 141;
   --ion-color-medium-contrast: #ffffff;
   --ion-color-medium-contrast-rgb: 255, 255, 255;
-  --ion-color-medium-shade: #86888f;
-  --ion-color-medium-tint: #a2a4ab;
+  --ion-color-medium-shade: #707b7c;
+  --ion-color-medium-tint: #8c9798;
 
   /** light **/
-  --ion-color-light: #f4f5f8;
-  --ion-color-light-rgb: 244, 244, 244;
+  --ion-color-light: #ecf0f1;
+  --ion-color-light-rgb: 236, 240, 241;
   --ion-color-light-contrast: #000000;
   --ion-color-light-contrast-rgb: 0, 0, 0;
-  --ion-color-light-shade: #d7d8da;
-  --ion-color-light-tint: #f5f6f9;
+  --ion-color-light-shade: #d0d3d4;
+  --ion-color-light-tint: #edf1f2;
+  
+  /** card variables **/
+  --card-bg: #FFFFFF;
+  --card-border: #E0D4C5;
+  --card-shadow: rgba(0, 0, 0, 0.05);
+}
+
+body {
+  --ion-font-family: 'Lora', 'Georgia', serif;
+  background-color: var(--app-bg-cream);
+}
+
+h1, h2, h3, h4, h5, h6, .ion-title {
+  font-family: 'Playfair Display', 'serif';
+  letter-spacing: -0.5px;
 }

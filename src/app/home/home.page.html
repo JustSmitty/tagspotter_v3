@@ -1,14 +1,68 @@
-<ion-header>
-  <ion-toolbar>
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar class="premium-toolbar">
     <ion-title>
-      Ionic Blank
+      <div class="header-content">
+        <img src="assets/logo.png" class="logo-img" alt="Tag Spotter Logo">
+        <span class="retro-title">Tag Spotter</span>
+      </div>
     </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openDashboard()" color="primary" [disabled]="viewModel().isBusy">
+        <ion-icon slot="icon-only" name="ribbon-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="onRefresh()" color="medium" [disabled]="viewModel().isBusy">
+        <ion-icon slot="icon-only" name="refresh-circle"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <div class="ion-padding">
-    The world is your oyster.
-    <p>If you get lost, the <a target="_blank" rel="noopener" href="https://ionicframework.com/docs/">docs</a> will be your guide.</p>
+<ion-content class="paper-texture">
+  <div class="ledger-stripe">
+    <div class="ledger-item">
+      <span class="label">TOTAL</span>
+      <span class="value">{{ viewModel().points.total }}</span>
+    </div>
+    <div class="ledger-item">
+      <span class="label">COLLECTED</span>
+      <span class="value">{{ viewModel().points.states }}</span>
+    </div>
+    <div class="ledger-item">
+      <span class="label">TRIVIA</span>
+      <span class="value">{{ viewModel().points.quiz }}</span>
+    </div>
   </div>
+
+  <p class="privacy-note ion-padding-horizontal">
+    Distance points use your current location once when you mark a plate found. Exact coordinates are not saved, and
+    the plate still counts if location is unavailable.
+  </p>
+
+  <ion-grid class="state-grid">
+    <ion-row>
+      <ion-col
+        size="12"
+        size-md="6"
+        *ngFor="let state of viewModel().states; trackBy: trackByStateId"
+        class="card-col">
+        <div
+          class="license-plate"
+          [class.found]="state.isFound"
+          [class.disabled]="viewModel().isBusy || state.isFound"
+          (click)="onRecord(state)">
+          <div class="plate-top">
+            <span class="state-name">{{ state.name | uppercase }}</span>
+          </div>
+          <div class="plate-center">
+            <span class="plate-code">{{ state.code }}</span>
+            <div class="found-stamp" *ngIf="state.isFound">FOUND</div>
+          </div>
+          <div class="plate-bottom">
+            <span class="distance" *ngIf="state.isFound">{{ state.distanceFound }} mi</span>
+            <span class="motto" *ngIf="!state.isFound">EXPLORE AMERICA</span>
+          </div>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

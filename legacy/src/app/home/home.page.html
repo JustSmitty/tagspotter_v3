@@ -1,0 +1,69 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      <ion-icon name="search"></ion-icon> Tag Spotter
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onRefresh()">
+        <ion-icon name="refresh-circle" size="large"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="4">
+        <div><b>States {{points.state}}</b> </div>
+      </ion-col>
+      <ion-col size="4">
+        <div><b>Facts {{points.question}}</b></div>
+      </ion-col>
+      <ion-col size="4" ion-grid-column-padding>
+        <div><b>Total {{pTotal}}</b> </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-header>
+
+<ion-content size="12" size-sm="8" offset-sm="2">
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-sm="8" offset-sm="2">
+        <ion-card *ngFor="let state of states">
+          <ion-card-header>
+            <ion-grid>
+              <ion-row>
+                <ion-col size="10" *ngIf="!state.fnd.stateFound">
+                  <ion-card-title>
+                    <b>{{ state.Name }}</b>
+                  </ion-card-title>
+                </ion-col>
+                <ion-col size="10" *ngIf="state.fnd.stateFound">
+                  <ion-card-title>
+                    <b>{{ state.Name }}</b>
+                  </ion-card-title>
+                </ion-col>
+                <ion-col size="1" *ngIf="!state.fnd.stateFound">
+                  <ion-button size="small" (click)="onFound(state.ID)">
+                    <ion-icon name="pricetag"></ion-icon>
+                  </ion-button>
+                </ion-col>
+                <ion-col size="1" *ngIf="state.fnd.stateFound">
+                  <ion-icon name="star" size="large" color="primary"></ion-icon>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item>
+              <ion-avatar slot=start>
+                <img src="{{ state.flagURL }}" />
+              </ion-avatar>
+              <p>Fun Facts: {{ state.fnd.questionsCorrect }}/3<br />
+                {{ state.fnd.distance }} MIles</p>
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

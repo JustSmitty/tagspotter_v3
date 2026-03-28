@@ -1,0 +1,7 @@
+{
+  "name": "tagspotter",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

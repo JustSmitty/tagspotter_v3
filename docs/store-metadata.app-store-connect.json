@@ -1,0 +1,20 @@
+{
+  "bundleId": "com.tagspotter.app",
+  "name": "Tag Spotter",
+  "subtitle": "Road-trip plate collector",
+  "primaryCategory": "Games",
+  "secondaryCategory": "Trivia",
+  "ageRatingDraft": "4+",
+  "promotionalText": "Spot plates, answer trivia, and earn distance bonuses across all 50 states and D.C.",
+  "description": "Tag Spotter turns every road trip into a collection challenge. Mark plates as you find them, unlock state trivia, and earn bonus points for how far each sighting is from your current location.\n\nBuilt with a retro travel look and fast one-tap gameplay, Tag Spotter keeps score across your full collection and lets you chase all 50 states plus Washington, D.C.",
+  "keywords": [
+    "road trip",
+    "license plate",
+    "travel game",
+    "trivia",
+    "states"
+  ],
+  "supportUrl": "https://example.com/tagspotter/support",
+  "marketingUrl": "https://example.com/tagspotter",
+  "privacyPolicyUrl": "https://example.com/tagspotter/privacy-policy"
+}

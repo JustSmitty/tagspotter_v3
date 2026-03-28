@@ -1,0 +1,970 @@
+[{
+		"ID": 1,
+		"Abbrv": "AL",
+		"Lat": 32.6010112,
+		"Lng": -86.6807365,
+		"Name": "Alabama",
+		"Capital": "Montgomery",
+		"Bird": "Yellowhammer",
+		"Flower": "Camellia",
+		"Nickname": "Yellowhammer State",
+		"flagURL": "/assets/stateflags/Alabama.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 2,
+		"Abbrv": "AK",
+		"Lat": 61.3025006,
+		"Lng": -158.7750198,
+		"Name": "Alaska",
+		"Capital": "Juneau",
+		"Bird": "Willow Ptarmigan",
+		"Flower": "Forget Me Not",
+		"Nickname": "The Last Frontier",
+		"flagURL": "/assets/stateflags/Alaska.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 3,
+		"Abbrv": "AZ",
+		"Lat": 34.1682185,
+		"Lng": -111.930907,
+		"Name": "Arizona",
+		"Capital": "Phoenix",
+		"Bird": "Cactus Wren",
+		"Flower": "Saguaro Cactus Blossom",
+		"Nickname": "The Grand Canyon State",
+		"flagURL": "/assets/stateflags/Arizona.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 4,
+		"Abbrv": "AR",
+		"Lat": 34.7519275,
+		"Lng": -92.1313784,
+		"Name": "Arkansas",
+		"Capital": "Little Rock",
+		"Bird": "Mockingbird",
+		"Flower": "Apple Blossom",
+		"Nickname": "The Natural State",
+		"flagURL": "/assets/stateflags/Arkansas.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 5,
+		"Abbrv": "CA",
+		"Lat": 37.2718745,
+		"Lng": -119.2704153,
+		"Name": "California",
+		"Capital": "Sacramento",
+		"Bird": "California Valley Quail",
+		"Flower": "Golden Poppy",
+		"Nickname": "Golden State",
+		"flagURL": "/assets/stateflags/California.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 6,
+		"Abbrv": "CO",
+		"Lat": 38.9979339,
+		"Lng": -105.550567,
+		"Name": "Colorado",
+		"Capital": "Denver",
+		"Bird": "Lark Bunting",
+		"Flower": "Rocky Mountain Columbine",
+		"Nickname": "Centennial State",
+		"flagURL": "/assets/stateflags/Colorado.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 7,
+		"Abbrv": "CT",
+		"Lat": 41.5187835,
+		"Lng": -72.757507,
+		"Name": "Connecticut",
+		"Capital": "Hartford",
+		"Bird": "Robin",
+		"Flower": "Mountain Laurel",
+		"Nickname": "Constitution State",
+		"flagURL": "/assets/stateflags/Connecticut.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 8,
+		"Abbrv": "DE",
+		"Lat": 39.145251,
+		"Lng": -75.4189206,
+		"Name": "Delaware",
+		"Capital": "Dover",
+		"Bird": "Blue Hen Chicken",
+		"Flower": "Peach Blossom",
+		"Nickname": "Diamond State; First State",
+		"flagURL": "/assets/stateflags/Delaware.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 9,
+		"Abbrv": "DC",
+		"Lat": 38.8993487,
+		"Lng": -77.0145666,
+		"Name": "District of Columbia",
+		"Capital": "",
+		"Bird": "",
+		"Flower": "",
+		"Nickname": "",
+		"flagURL": "/assets/stateflags/District of Columbia.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 10,
+		"Abbrv": "FL",
+		"Lat": 27.9757279,
+		"Lng": -83.8330166,
+		"Name": "Florida",
+		"Capital": "Tallahassee",
+		"Bird": "Mockingbird",
+		"Flower": "Orange Blossom",
+		"Nickname": "Sunshine State",
+		"flagURL": "/assets/stateflags/Florida.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 11,
+		"Abbrv": "GA",
+		"Lat": 32.6781248,
+		"Lng": -83.2229757,
+		"Name": "Georgia",
+		"Capital": "Atlanta",
+		"Bird": "Brown Thrasher",
+		"Flower": "Cherokee Rose",
+		"Nickname": "Peach State; Empire State of the South",
+		"flagURL": "/assets/stateflags/Georgia.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 12,
+		"Abbrv": "HI",
+		"Lat": 20.46,
+		"Lng": -157.505,
+		"Name": "Hawaii",
+		"Capital": "Honolulu",
+		"Bird": "Nene",
+		"Flower": "Hibiscus",
+		"Nickname": "Aloha State",
+		"flagURL": "/assets/stateflags/Hawaii.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 13,
+		"Abbrv": "ID",
+		"Lat": 45.4945756,
+		"Lng": -114.1424303,
+		"Name": "Idaho",
+		"Capital": "Boise",
+		"Bird": "Mountain Bluebird",
+		"Flower": "Syringa",
+		"Nickname": "Gem State",
+		"flagURL": "/assets/stateflags/Idaho.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 14,
+		"Abbrv": "IL",
+		"Lat": 39.739318,
+		"Lng": -89.504139,
+		"Name": "Illinois",
+		"Capital": "Springfield",
+		"Bird": "Cardinal",
+		"Flower": "Violet",
+		"Nickname": "Prairie State",
+		"flagURL": "/assets/stateflags/Illinois.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 15,
+		"Abbrv": "IN",
+		"Lat": 39.7662195,
+		"Lng": -86.441277,
+		"Name": "Indiana",
+		"Capital": "Indianapolis",
+		"Bird": "Cardinal",
+		"Flower": "Peony",
+		"Nickname": "Hoosier State",
+		"flagURL": "/assets/stateflags/Indiana.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 16,
+		"Abbrv": "IA",
+		"Lat": 41.9383166,
+		"Lng": -93.389798,
+		"Name": "Iowa",
+		"Capital": "Des Moines",
+		"Bird": "Eastern Goldfinch",
+		"Flower": "Wild Rose",
+		"Nickname": "Hawkeye State",
+		"flagURL": "/assets/stateflags/Iowa.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 17,
+		"Abbrv": "KS",
+		"Lat": 38.4987789,
+		"Lng": -98.3200779,
+		"Name": "Kansas",
+		"Capital": "Topeka",
+		"Bird": "Western Meadowlark",
+		"Flower": "Sunflower",
+		"Nickname": "Sunflower State; Jayhawk State",
+		"flagURL": "/assets/stateflags/Kansas.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 18,
+		"Abbrv": "KY",
+		"Lat": 37.8222935,
+		"Lng": -85.7682399,
+		"Name": "Kentucky",
+		"Capital": "Frankfort",
+		"Bird": "Cardinal",
+		"Flower": "Goldenrod",
+		"Nickname": "Bluegrass State",
+		"flagURL": "/assets/stateflags/Kentucky.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 19,
+		"Abbrv": "LA",
+		"Lat": 30.9733766,
+		"Lng": -91.4299097,
+		"Name": "Louisiana",
+		"Capital": "Baton Rouge",
+		"Bird": "Eastern Brown Pelican",
+		"Flower": "Magnolia",
+		"Nickname": "Pelican State",
+		"flagURL": "/assets/stateflags/Louisiana.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 20,
+		"Abbrv": "ME",
+		"Lat": 45.2185133,
+		"Lng": -69.0148656,
+		"Name": "Maine",
+		"Capital": "Augusta",
+		"Bird": "Chickadee",
+		"Flower": "White Pine Cone and Tassel",
+		"Nickname": "Pine Tree State",
+		"flagURL": "/assets/stateflags/Maine.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 21,
+		"Abbrv": "MD",
+		"Lat": 38.8063524,
+		"Lng": -77.2684162,
+		"Name": "Maryland",
+		"Capital": "Annaplolis",
+		"Bird": "Baltimore Oriole",
+		"Flower": "Black-eyed Susan",
+		"Nickname": "Free State; Old Line State",
+		"flagURL": "/assets/stateflags/Maryland.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 22,
+		"Abbrv": "MA",
+		"Lat": 42.0629398,
+		"Lng": -71.718067,
+		"Name": "Massachusetts",
+		"Capital": "Boston",
+		"Bird": "Chickadee",
+		"Flower": "Mayflower",
+		"Nickname": "Bay State; Old Colony State",
+		"flagURL": "/assets/stateflags/Massachusetts.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 23,
+		"Abbrv": "MI",
+		"Lat": 44.9435598,
+		"Lng": -86.4158049,
+		"Name": "Michigan",
+		"Capital": "Lansing",
+		"Bird": "American Robin",
+		"Flower": "Apple Blossom",
+		"Nickname": "Wolverine State",
+		"flagURL": "/assets/stateflags/Michigan.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 24,
+		"Abbrv": "MN",
+		"Lat": 46.4418595,
+		"Lng": -93.3655146,
+		"Name": "Minnesota",
+		"Capital": "St. Paul",
+		"Bird": "Common Loon",
+		"Flower": "Lady Slipper",
+		"Nickname": "North Star State; Gopher State;  Land of 10,000 Lakes",
+		"flagURL": "/assets/stateflags/Minnesota.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 25,
+		"Abbrv": "MS",
+		"Lat": 32.5851062,
+		"Lng": -89.8772196,
+		"Name": "Mississippi",
+		"Capital": "Jackson",
+		"Bird": "Mockingbird",
+		"Flower": "Bloom of the Magnolia; Evergreen Magnolia ",
+		"Nickname": "Magnolia State",
+		"flagURL": "/assets/stateflags/Mississippi.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 26,
+		"Abbrv": "MO",
+		"Lat": 38.3046615,
+		"Lng": -92.437099,
+		"Name": "Missouri",
+		"Capital": "Jefferson City",
+		"Bird": "Bluebird",
+		"Flower": "Hawthorn",
+		"Nickname": "Show-me State",
+		"flagURL": "/assets/stateflags/Missouri.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 27,
+		"Abbrv": "MT",
+		"Lat": 46.6797995,
+		"Lng": -110.044783,
+		"Name": "Montana",
+		"Capital": "Helena",
+		"Bird": "Western Meadowlark",
+		"Flower": "Bitterroot",
+		"Nickname": "Treasure State",
+		"flagURL": "/assets/stateflags/Montana.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 28,
+		"Abbrv": "NE",
+		"Lat": 41.5008195,
+		"Lng": -99.680902,
+		"Name": "Nebraska",
+		"Capital": "Lincoln",
+		"Bird": "Western Meadowlark",
+		"Flower": "Goldenrod",
+		"Nickname": "Cornhusker State; Beef State",
+		"flagURL": "/assets/stateflags/Nebraska.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 29,
+		"Abbrv": "NV",
+		"Lat": 38.502032,
+		"Lng": -117.0230604,
+		"Name": "Nevada",
+		"Capital": "Carson City",
+		"Bird": "Mountain Bluebird",
+		"Flower": "Sagebrush",
+		"Nickname": "Sagebrush State; Silver State; Battle Born State",
+		"flagURL": "/assets/stateflags/Nevada.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 30,
+		"Abbrv": "NH",
+		"Lat": 44.0012306,
+		"Lng": -71.5799231,
+		"Name": "New Hampshire",
+		"Capital": "Concord",
+		"Bird": "Purple Finch",
+		"Flower": "Purple Lilac",
+		"Nickname": "Granite State",
+		"flagURL": "/assets/stateflags/New Hampshire.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 31,
+		"Abbrv": "NJ",
+		"Lat": 40.1430058,
+		"Lng": -74.7311156,
+		"Name": "New Jersey",
+		"Capital": "Trenton",
+		"Bird": "Eastern Goldfinch",
+		"Flower": "Purple Violet",
+		"Nickname": "Garden State",
+		"flagURL": "/assets/stateflags/New Jersey.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 32,
+		"Abbrv": "NM",
+		"Lat": 34.1662325,
+		"Lng": -106.0260685,
+		"Name": "New Mexico",
+		"Capital": "Santa Fe",
+		"Bird": "Roadrunner",
+		"Flower": "Yucca",
+		"Nickname": "Land of Enchantment",
+		"flagURL": "/assets/stateflags/New Mexico.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 33,
+		"Abbrv": "NY",
+		"Lat": 40.7056258,
+		"Lng": -73.97968,
+		"Name": "New York",
+		"Capital": "Albany",
+		"Bird": "Bluebird",
+		"Flower": "Rose",
+		"Nickname": "Empire State",
+		"flagURL": "/assets/stateflags/New York.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 34,
+		"Abbrv": "NC",
+		"Lat": 35.2145629,
+		"Lng": -79.8912675,
+		"Name": "North Carolina",
+		"Capital": "Raleigh",
+		"Bird": "Cardinal",
+		"Flower": "Dogwood",
+		"Nickname": "Tar Heel State",
+		"flagURL": "/assets/stateflags/North Carolina.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 35,
+		"Abbrv": "ND",
+		"Lat": 47.4678819,
+		"Lng": -100.3022655,
+		"Name": "North Dakota",
+		"Capital": "Bismark",
+		"Bird": "Western Meadowlark",
+		"Flower": "Wild Prairie Rose",
+		"Nickname": "Sioux State; Flickertail State; Peace Garden State; Rough Rider State",
+		"flagURL": "/assets/stateflags/North Dakota.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 36,
+		"Abbrv": "OH",
+		"Lat": 40.1903624,
+		"Lng": -82.6692525,
+		"Name": "Ohio",
+		"Capital": "Columbus",
+		"Bird": "Cardinal",
+		"Flower": "Scarlet Carnation",
+		"Nickname": "Buckeye State",
+		"flagURL": "/assets/stateflags/Ohio.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 37,
+		"Abbrv": "OK",
+		"Lat": 35.3097654,
+		"Lng": -98.7165585,
+		"Name": "Oklahoma",
+		"Capital": "Oklahoma City",
+		"Bird": "Scissor-tailed Flycatcher",
+		"Flower": "Mistletoe",
+		"Nickname": "Sooner State",
+		"flagURL": "/assets/stateflags/Oklahoma.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 38,
+		"Abbrv": "OR",
+		"Lat": 44.1419049,
+		"Lng": -120.5380993,
+		"Name": "Oregon",
+		"Capital": "Salem",
+		"Bird": "Western Meadowlark",
+		"Flower": "Oregon Grape",
+		"Nickname": "Beaver State",
+		"flagURL": "/assets/stateflags/Oregon.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 39,
+		"Abbrv": "PA",
+		"Lat": 40.9945928,
+		"Lng": -77.6046984,
+		"Name": "Pennsylvania",
+		"Capital": "Harrisburg",
+		"Bird": "Ruffed Grouse",
+		"Flower": "Mountain Laurel",
+		"Nickname": "Keystone State",
+		"flagURL": "/assets/stateflags/Pennsylvania.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 40,
+		"Abbrv": "RI",
+		"Lat": 41.5827282,
+		"Lng": -71.5064508,
+		"Name": "Rhode Island",
+		"Capital": "Providence",
+		"Bird": "Rhode Island Red",
+		"Flower": "Violet",
+		"Nickname": "The Ocean State",
+		"flagURL": "/assets/stateflags/Rhode Island.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 41,
+		"Abbrv": "SC",
+		"Lat": 33.62505,
+		"Lng": -80.9470381,
+		"Name": "South Carolina",
+		"Capital": "Columbia",
+		"Bird": "Great Carolina Wren",
+		"Flower": "Carolina Yellow Jasmine",
+		"Nickname": "Palmetto State",
+		"flagURL": "/assets/stateflags/South Carolina.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 42,
+		"Abbrv": "SD",
+		"Lat": 44.2126995,
+		"Lng": -100.2471641,
+		"Name": "South Dakota",
+		"Capital": "Pierre",
+		"Bird": "Ring-Necked Pheasant",
+		"Flower": "American Pasqueflower",
+		"Nickname": "Mount Rushmore State; Coyote State",
+		"flagURL": "/assets/stateflags/South Dakota.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 43,
+		"Abbrv": "TN",
+		"Lat": 35.830521,
+		"Lng": -85.9785989,
+		"Name": "Tennessee",
+		"Capital": "Nashville",
+		"Bird": "Mockingbird",
+		"Flower": "Iris",
+		"Nickname": "Volunteer State",
+		"flagURL": "/assets/stateflags/Tennessee.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 44,
+		"Abbrv": "TX",
+		"Lat": 31.1693363,
+		"Lng": -100.0768425,
+		"Name": "Texas",
+		"Capital": "Austin",
+		"Bird": "Mockingbird",
+		"Flower": "Bluebonnet",
+		"Nickname": "Lone Star State",
+		"flagURL": "/assets/stateflags/Texas.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 45,
+		"Abbrv": "UT",
+		"Lat": 39.4997605,
+		"Lng": -111.547028,
+		"Name": "Utah",
+		"Capital": "Salt Lake City",
+		"Bird": "Common American Gull",
+		"Flower": "Sego Lily",
+		"Nickname": "Beehive State",
+		"flagURL": "/assets/stateflags/Utah.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 46,
+		"Abbrv": "VT",
+		"Lat": 43.8717545,
+		"Lng": -72.4477828,
+		"Name": "Vermont",
+		"Capital": "Montpelier",
+		"Bird": "Hermit Thrush",
+		"Flower": "Red Clover",
+		"Nickname": "Green Mountain State",
+		"flagURL": "/assets/stateflags/Vermont.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 47,
+		"Abbrv": "VA",
+		"Lat": 38.0033855,
+		"Lng": -79.4587861,
+		"Name": "Virginia",
+		"Capital": "Richmond",
+		"Bird": "Cardinal",
+		"Flower": "American Dogwood",
+		"Nickname": "The Old Dominion; Mother of Presidents",
+		"flagURL": "/assets/stateflags/Virginia.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 48,
+		"Abbrv": "WA",
+		"Lat": 38.8993487,
+		"Lng": -77.0145665,
+		"Name": "Washington",
+		"Capital": "Olympia",
+		"Bird": "Willow Goldfinch",
+		"Flower": "Coast Rhododendron",
+		"Nickname": "Evergreen State",
+		"flagURL": "/assets/stateflags/Washington.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 49,
+		"Abbrv": "WV",
+		"Lat": 38.9201705,
+		"Lng": -80.1816905,
+		"Name": "West Virginia",
+		"Capital": "Charleston",
+		"Bird": "Cardinal",
+		"Flower": "Rhododendron",
+		"Nickname": "Mountain State",
+		"flagURL": "/assets/stateflags/West Virginia.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 50,
+		"Abbrv": "WI",
+		"Lat": 44.7862968,
+		"Lng": -89.8267049,
+		"Name": "Wisconsin",
+		"Capital": "Madison",
+		"Bird": "Robin",
+		"Flower": "Wood Violet",
+		"Nickname": "Badger State",
+		"flagURL": "/assets/stateflags/Wisconsin.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	},
+	{
+		"ID": 51,
+		"Abbrv": "WY",
+		"Lat": 43.000325,
+		"Lng": -107.5545669,
+		"Name": "Wyoming",
+		"Capital": "Cheyenne",
+		"Bird": "Western Meadowlark",
+		"Flower": "Indian Paintbrush",
+		"Nickname": "Equality State",
+		"flagURL": "/assets/stateflags/Wyoming.svg",
+		"fnd": {
+			"lat": 0,
+			"lng": 0,
+			"distance": 0,
+			"stateFound": false,
+			"questionsCorrect": 0
+		}
+	}
+]

@@ -1,0 +1,50 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="premium-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" color="dark"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <span class="retro-title">Travel Log</span>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="paper-texture">
+  <div class="dashboard-container">
+    <!-- State Visual Map (Grid Version) -->
+    <ion-card class="map-card">
+      <ion-card-header>
+        <ion-card-title>UNITED STATES PROGRESS</ion-card-title>
+      </ion-card-header>
+      <div class="state-grid-small">
+        <div 
+          *ngFor="let state of viewModel().states" 
+          class="state-stamp" 
+          [class.filled]="state.isFound"
+          [title]="state.name">
+          {{ state.code }}
+        </div>
+      </div>
+    </ion-card>
+
+    <!-- Achievement Badges -->
+    <div class="achievement-section">
+      <h2>SOUVENIRS & BADGES</h2>
+      <div class="achievement-log">
+        <div 
+          *ngFor="let ach of viewModel().achievements" 
+          class="postcard-badge" 
+          [class.locked]="!ach.unlocked">
+          <div class="badge-icon">
+            <ion-icon [name]="ach.icon"></ion-icon>
+          </div>
+          <div class="badge-info">
+            <span class="badge-name">{{ ach.title | uppercase }}</span>
+            <p class="badge-desc">{{ ach.description }}</p>
+          </div>
+          <div class="earned-status" *ngIf="ach.unlocked">COLLECTED</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>
