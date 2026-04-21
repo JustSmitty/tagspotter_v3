@@ -1,6 +1,36 @@
 {
   "version": 1,
   "skills": {
+    "accessibility-audit": {
+      "source": "webflow/webflow-skills",
+      "sourceType": "github",
+      "computedHash": "9e99c2539f73395276bfe99f0dcd89d6ee02d02977cb5e44697c559673fbbe5a"
+    },
+    "angular-http": {
+      "source": "analogjs/angular-skills",
+      "sourceType": "github",
+      "computedHash": "251aab8c4417ee6fc22187eaf9a88ae1a08613d201b65d1d0ec48ba4807f53eb"
+    },
+    "angular-routing": {
+      "source": "analogjs/angular-skills",
+      "sourceType": "github",
+      "computedHash": "cd02400200c70c1c8544ac6deb589269275fd33a7d6b93728bf8127cc2f0c71e"
+    },
+    "angular-signals": {
+      "source": "analogjs/angular-skills",
+      "sourceType": "github",
+      "computedHash": "3c81e0d5622c38ba42699895c50b3363130f2c2c6f74faf3402302e40f6ccbb9"
+    },
+    "angular-testing": {
+      "source": "analogjs/angular-skills",
+      "sourceType": "github",
+      "computedHash": "f0afa362dccf84f959eaec0572324a1a212765c0e90c1c2bf9c05b6f87a0d165"
+    },
+    "fixing-accessibility": {
+      "source": "ibelick/ui-skills",
+      "sourceType": "github",
+      "computedHash": "f8ddcb0a8c7b8728105eab18e17223e41d74fb8649becba58a6deb90c6a5ce8d"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
@@ -10,6 +40,26 @@
       "source": "mattpocock/skills",
       "sourceType": "github",
       "computedHash": "d85881e7b2f6e9c718d45ac9954c1d8e05e21f9b6f3ca58062ae80f89474750b"
+    },
+    "mapbox-cartography": {
+      "source": "mapbox/mapbox-agent-skills",
+      "sourceType": "github",
+      "computedHash": "e0de5323eaa8054e4773ed077e3cda384e645d445eafeb1e6334ab1267558dbb"
+    },
+    "mapbox-geospatial-operations": {
+      "source": "mapbox/mapbox-agent-skills",
+      "sourceType": "github",
+      "computedHash": "533b45ccdb8539678bb6d523f2324f1aed284d20089d1defe5885294f3eb1b0f"
+    },
+    "mapbox-style-patterns": {
+      "source": "mapbox/mapbox-agent-skills",
+      "sourceType": "github",
+      "computedHash": "f9c363a4fb1d02c501c3aa700e03283eab43a1704d28f6ce4b59c5ddcadf2dd1"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "d8e7d3afe37dcc8a97b99ffb5afdb4d0919ae0092ea8b68f44eb201f035e33ac"
     }
   }
 }

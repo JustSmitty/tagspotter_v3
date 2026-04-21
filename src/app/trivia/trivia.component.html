@@ -1,0 +1,99 @@
+<ion-header class="ion-no-border digital-ephemera-header">
+  <div class="trivia-marquee cardstock-layer">
+    <div class="marquee-copy">
+      <span class="marquee-kicker">Roadside Trivia</span>
+      <h1 class="marquee-title">State Fact Ledger</h1>
+      <p class="marquee-note">Every spotted plate opens a fresh three-question punch card.</p>
+
+      <div class="marquee-stamps" *ngIf="viewModel().featuredStates.length">
+        <div *ngFor="let state of viewModel().featuredStates" class="travel-stamp marquee-stamp">
+          <img
+            class="travel-stamp__image"
+            [src]="state.flagUrl"
+            [alt]="state.name + ' state flag'"
+            loading="lazy" />
+          <span class="travel-stamp__label">{{ state.code }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="accuracy-stamp stamped-effect">
+      <span class="stamp-value">{{ viewModel().accuracy }}%</span>
+      <span class="stamp-label">accuracy</span>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="paper-texture trivia-content">
+  <div class="trivia-container">
+    <div class="stats-strip cardstock-layer">
+      <div class="stat-card">
+        <span class="stat-value">{{ viewModel().correctAnswers }}</span>
+        <span class="stat-label">Correct Answers</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ viewModel().foundStates }}</span>
+        <span class="stat-label">Trivia Passes</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ viewModel().perfectPasses }}</span>
+        <span class="stat-label">Perfect Passes</span>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-rule"></div>
+      <span class="section-label">Trivia Topics</span>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="topics-grid">
+      <article *ngFor="let topic of viewModel().topics" class="topic-card cardstock-layer">
+        <span class="topic-chip">Punch Card</span>
+        <span class="topic-title">{{ topic.title }}</span>
+        <p class="topic-note">{{ topic.subtitle }}</p>
+      </article>
+    </div>
+
+    <ng-container *ngIf="viewModel().topStates.length; else emptyLedger">
+      <div class="section-header">
+        <div class="section-rule"></div>
+        <span class="section-label">Best Passes</span>
+        <div class="section-rule"></div>
+      </div>
+
+      <div class="leader-grid">
+        <article
+          *ngFor="let state of viewModel().topStates"
+          class="leader-card cardstock-layer"
+          [attr.data-region]="state.region">
+          <div class="leader-flag travel-stamp">
+            <img
+              class="travel-stamp__image"
+              [src]="state.flagUrl"
+              [alt]="state.name + ' state flag'"
+              loading="lazy" />
+            <span class="travel-stamp__label">{{ state.code }}</span>
+          </div>
+
+          <div class="leader-copy">
+            <span class="leader-name">{{ state.name }}</span>
+            <span class="leader-score">{{ state.questionsCorrect }}/3 answers right</span>
+          </div>
+
+          <span class="leader-mileage">{{ state.distanceFound }} mi</span>
+        </article>
+      </div>
+    </ng-container>
+
+    <ng-template #emptyLedger>
+      <div class="empty-card cardstock-layer">
+        <span class="empty-title">No trivia passes yet.</span>
+        <p class="empty-note">Spot your first license plate from the Explore screen to open the roadside quiz.</p>
+      </div>
+    </ng-template>
+
+    <div class="footer-note">Best route to more trivia: keep collecting plates and clear every punch card.</div>
+    <div class="footer-spacer"></div>
+  </div>
+</ion-content>

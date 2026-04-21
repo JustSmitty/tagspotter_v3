@@ -2,6 +2,8 @@ export interface FoundProgress {
   distance: number;
   stateFound: boolean;
   questionsCorrect: number;
+  mode?: 'classic' | 'trivia';
+  difficulty?: QuizDifficulty;
 }
 
 interface LegacyFoundProgress extends Partial<FoundProgress> {
@@ -24,6 +26,13 @@ export interface StoredStateRecord {
   Flower: string;
   Nickname: string;
   flagURL: string;
+  Region?: string;
+  LargestCity?: string;
+  AdmissionYear?: number;
+  Tree?: string;
+  FamousLandmark?: string;
+  MovieSetting?: string;
+  SportsTeam?: string;
   fnd: FoundProgress;
 }
 
@@ -62,6 +71,14 @@ export interface AchievementViewModel {
   unlocked: boolean;
 }
 
+export interface GoalProgressViewModel extends AchievementViewModel {
+  currentValue: number;
+  targetValue: number;
+  progressPercent: number;
+  progressLabel: string;
+  statusText: string;
+}
+
 export interface GameSnapshot {
   states: StoredStateRecord[];
   points: StoredPoints;
@@ -70,7 +87,17 @@ export interface GameSnapshot {
   totalDistanceMiles: number;
 }
 
-export type QuizTopic = 'Bird' | 'Capital' | 'Flower' | 'Nickname';
+export interface PersistedGameSnapshot {
+  states: StoredStateRecord[];
+  points: StoredPoints;
+  hasSeenOnboarding: boolean;
+  gameMode: 'classic' | 'trivia';
+  difficulty: QuizDifficulty;
+}
+
+export type QuizDifficulty = 'easy' | 'medium' | 'hard';
+
+export type QuizTopic = 'Bird' | 'Capital' | 'Flower' | 'Nickname' | 'Abbreviation' | 'Region' | 'AdmissionYear' | 'LargestCity' | 'Tree' | 'Flag' | 'Landmark' | 'Movie' | 'Sports';
 
 export interface QuizQuestion {
   topic: QuizTopic;
@@ -78,6 +105,8 @@ export interface QuizQuestion {
   correctAnswer: string;
   options: string[];
   correctIndex: number;
+  optionType?: 'text' | 'image';
+  points?: number;
 }
 
 export interface QuizSession {
@@ -91,7 +120,7 @@ export interface QuizSession {
 export type QuizDismissResult =
   | {
       kind: 'answered';
-      score: 0 | 1;
+      score: number;
     }
   | {
       kind: 'cancelled';
@@ -114,9 +143,53 @@ export interface DashboardViewModel {
   achievements: AchievementViewModel[];
 }
 
+export interface SouvenirFlagViewModel {
+  code: string;
+  name: string;
+  flagUrl: string;
+}
+
+export interface GoalsSummaryViewModel {
+  total: number;
+  unlocked: number;
+  inProgress: number;
+  nextGoal: GoalProgressViewModel | null;
+}
+
+export interface SummaryDistribution {
+  classicStates: number;
+  easyStates: number;
+  medStates: number;
+  hardStates: number;
+  total: number;
+}
+
+export interface SummaryViewModel {
+  foundCount: number;
+  totalStates: number;
+  finalScore: number;
+  miles: number;
+  distribution: SummaryDistribution;
+}
+
+export interface TriviaTopicCard {
+  title: QuizTopic;
+  subtitle: string;
+}
+
+export interface TriviaViewModel {
+  accuracy: number;
+  correctAnswers: number;
+  foundStates: number;
+  perfectPasses: number;
+  totalPossibleAnswers: number;
+  topStates: StateCardViewModel[];
+  featuredStates: StateCardViewModel[];
+  topics: TriviaTopicCard[];
+}
+
 export const DISTRICT_OF_COLUMBIA_ID = 9;
 export const QUIZ_QUESTION_COUNT = 3;
-export const QUIZ_TOPICS: QuizTopic[] = ['Bird', 'Capital', 'Flower', 'Nickname'];
 
 export function createEmptyPoints(): StoredPoints {
   return {
@@ -135,6 +208,9 @@ export function cloneStoredPoints(points: StoredPoints): StoredPoints {
 }
 
 export function cloneStoredStates(states: StoredStateRecord[]): StoredStateRecord[] {
+  if (!states || !Array.isArray(states)) {
+    return [];
+  }
   return states.map((state) => normalizeStoredState(state));
 }
 
@@ -145,6 +221,10 @@ function normalizeStoredState(state: StoredStateRecord | LegacyStoredStateRecord
       distance: Number(state.fnd?.distance ?? 0),
       stateFound: Boolean(state.fnd?.stateFound),
       questionsCorrect: Number(state.fnd?.questionsCorrect ?? 0),
+      mode: state.fnd?.mode === 'trivia' ? 'trivia' : state.fnd?.mode === 'classic' ? 'classic' : undefined,
+      difficulty: state.fnd?.difficulty === 'medium' || state.fnd?.difficulty === 'hard' || state.fnd?.difficulty === 'easy'
+        ? state.fnd.difficulty
+        : undefined,
     },
   };
 }

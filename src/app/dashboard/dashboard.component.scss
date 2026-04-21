@@ -81,8 +81,18 @@
 }
 
 .dashboard-container {
-  padding: 16px 16px calc(var(--app-bottom-nav-total-height) + 24px);
+  padding: 16px 16px calc(var(--app-bottom-nav-total-height) + 42px);
   min-height: 100%;
+}
+
+.dashboard-content {
+  --background: transparent;
+  --padding-bottom: calc(var(--app-bottom-nav-total-height) + 88px);
+  scroll-padding-bottom: calc(var(--app-bottom-nav-total-height) + 88px);
+
+  &::part(scroll) {
+    padding-bottom: calc(var(--app-bottom-nav-total-height) + 88px);
+  }
 }
 
 .atlas-card {
@@ -227,6 +237,28 @@
   ion-icon {
     font-size: 2rem;
     color: var(--ion-color-primary);
+    z-index: 2;
+  }
+}
+
+.souvenir-flag-cluster {
+  position: absolute;
+  inset: 10px 10px auto;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.94;
+}
+
+.souvenir-flag {
+  width: 44px;
+}
+
+.souvenir-card.locked {
+  .souvenir-flag-cluster {
+    opacity: 0.34;
   }
 }
 

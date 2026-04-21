@@ -2,8 +2,8 @@
 :root {
   --app-safe-top: env(safe-area-inset-top, 0px);
   --app-safe-bottom: env(safe-area-inset-bottom, 0px);
-  --app-bottom-nav-height: 74px;
-  --app-bottom-nav-total-height: calc(var(--app-bottom-nav-height) + var(--app-safe-bottom) + 22px);
+  --app-bottom-nav-height: 80px;
+  --app-bottom-nav-total-height: calc(var(--app-bottom-nav-height) + var(--app-safe-bottom) + 40px);
 
   /** background palette **/
   --app-bg-cream: #fdfae9;
@@ -88,6 +88,9 @@
   --card-bg: #fff7ec;
   --card-border: #DBCDB7;
   --card-shadow: rgba(0, 0, 0, 0.08);
+  --app-shadow-soft: 0 10px 28px rgba(76, 59, 38, 0.12);
+  --app-shadow-paper: 0 3px 4px rgba(86, 63, 35, 0.12), 0 10px 22px rgba(86, 63, 35, 0.08);
+  --app-border-soft: rgba(115, 88, 54, 0.12);
 
   /** Tag Typography **/
   --tag-font: 'Special Elite', 'Courier New', monospace;
@@ -105,10 +108,11 @@
   --region-midwest-bg: #fffde7;        /* Harvest Sun */
   --region-midwest-accent: #DAA520;    /* Harvest Gold */
 
-  --region-west-primary: #7D5BA6;      /* Sunset Purple */
-  --region-west-bg: #f5f5dc;           /* Desert Sand */
-  --region-west-accent: #bf360c;       /* Burnt Orange */
+  --region-west-primary: #2f6f7c;      /* Sun-Faded Teal */
+  --region-west-bg: #f8efd7;           /* Desert Sand */
+  --region-west-accent: #c75a28;       /* Canyon Orange */
 }
+
 
 body {
   --ion-font-family: 'Work Sans', sans-serif;

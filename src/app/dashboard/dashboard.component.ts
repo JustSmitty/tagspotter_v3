@@ -35,6 +35,7 @@ export class DashboardComponent implements OnInit {
   private readonly gameStateStore = inject(GameStateStore);
 
   readonly viewModel = this.gameStateStore.dashboardViewModel;
+  readonly souvenirFlags = this.gameStateStore.dashboardSouvenirFlags;
 
   constructor() {
     addIcons({

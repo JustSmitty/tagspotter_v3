@@ -2,14 +2,17 @@ import { signal, WritableSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { DashboardViewModel } from '../models/game-state.model';
+import { DashboardViewModel, StateCardViewModel } from '../models/game-state.model';
 import { GameStateStore } from '../services/game-state.store';
 import { DashboardComponent } from './dashboard.component';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
   let fixture: ComponentFixture<DashboardComponent>;
-  let gameStateStore: jasmine.SpyObj<GameStateStore> & { dashboardViewModel: WritableSignal<DashboardViewModel> };
+  let gameStateStore: jasmine.SpyObj<GameStateStore> & {
+    dashboardViewModel: WritableSignal<DashboardViewModel>;
+    dashboardSouvenirFlags: WritableSignal<StateCardViewModel[]>;
+  };
 
   beforeEach(async () => {
     gameStateStore = Object.assign(
@@ -62,6 +65,18 @@ describe('DashboardComponent', () => {
             },
           ],
         }),
+        dashboardSouvenirFlags: signal<StateCardViewModel[]>([
+          {
+            id: 1,
+            code: 'AL',
+            name: 'Alabama',
+            isFound: true,
+            distanceFound: 210,
+            questionsCorrect: 2,
+            flagUrl: '/assets/stateflags/Alabama.svg',
+            region: 'south',
+          },
+        ]),
       },
     );
     gameStateStore.hydrate.and.resolveTo();

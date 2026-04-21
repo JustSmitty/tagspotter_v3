@@ -1,393 +1,481 @@
-// ── DIGITAL EPHEMERA ARTIFACTS (POSTCARD & MATCHBOOK) ──
 :host {
   --page-header-gradient: linear-gradient(180deg, rgba(253, 250, 233, 0.98) 0%, rgba(253, 250, 233, 0.92) 75%, rgba(253, 250, 233, 0) 100%);
-  --section-header-padding: 16px 20px 8px;
+  --section-header-padding: 16px 20px 10px;
   --section-label-font: 'Newsreader', serif;
   --section-label-style: italic;
-  --section-label-weight: 600;
+  --section-label-weight: 700;
   --section-label-size: 0.8rem;
-  --section-label-spacing: 2px;
+  --section-label-spacing: 0.2em;
+  --content-inner-padding: 280px;
+}
+
+ion-content.road-content {
+  --padding-bottom: var(--content-inner-padding);
 }
 
 .digital-ephemera-header {
-  overflow: visible; // Allow artifacts to shadow onto content
+  overflow: visible;
   z-index: 1000;
 }
 
 .artifacts-row {
   display: flex;
+  justify-content: center;
   align-items: flex-start;
   gap: 12px;
+  margin: 10px auto 0;
+  max-width: 1000px;
   perspective: 1000px;
-  margin-top: 10px;
 }
 
-// 📮 THE POSTCARD
 .postcard-container {
-  flex: 3;
-  transform: rotate(-1.5deg);
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
-  transition: transform 0.3s ease;
+  width: 100%;
+  max-width: 900px;
+  transform: rotate(-0.8deg);
+  filter: drop-shadow(0 14px 28px rgba(71, 51, 28, 0.16));
+  transition: transform 0.24s ease;
 
-  &:active { transform: rotate(-1deg) scale(0.98); }
-
-  .postcard-front {
-    background: var(--app-surface-card);
-    padding: 12px;
-    border: 1px solid rgba(88, 73, 49, 0.14);
-    position: relative;
-    min-height: 140px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    // Classic Postcard "Stamp" area
-    &::after {
-      content: 'PLACE STAMP HERE';
-      position: absolute;
-      top: 10px; right: 10px;
-      width: 40px; height: 50px;
-      border: 2px dashed rgba(127, 140, 141, 0.45);
-      font-size: 5px;
-      color: rgba(127, 140, 141, 0.58);
-      display: flex;
-      align-items: center;
-      text-align: center;
-      padding: 4px;
-    }
-  }
-
-  .postcard-marks {
-    position: absolute;
-    top: 8px; left: 8px;
-    opacity: 0.6;
-
-    .postmark {
-      font-family: 'Special Elite', cursive;
-      font-size: 0.6rem;
-      border: 1px solid #4834d4;
-      color: #4834d4;
-      padding: 2px 6px;
-      border-radius: 50%;
-      transform: rotate(-15deg);
-    }
-  }
-
-  .postcard-content {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-
-    .brand-logotype {
-      font-family: 'Newsreader', serif;
-      font-weight: 900;
-      font-size: 1.6rem;
-      color: var(--ion-color-primary); // Burnt Orange
-      margin: 0;
-      line-height: 0.9;
-      letter-spacing: -1px;
-    }
-
-    .points-badge {
-      display: flex;
-      flex-direction: column;
-      
-      .points-value {
-        font-family: 'Special Elite', cursive;
-        font-size: 2rem;
-        color: var(--app-ink-deep);
-        line-height: 1;
-      }
-      .points-label {
-        font-family: 'Work Sans', sans-serif;
-        font-size: 0.5rem;
-        font-weight: 700;
-        color: #7f8c8d;
-        letter-spacing: 1px;
-      }
-    }
-  }
-
-  // Neon Vacancy Sign on Postcard
-  .vacancy-sign {
-    align-self: flex-start;
-    padding: 4px 10px;
-    background: #263238;
-    border-radius: 2px;
-    position: relative;
-    border: 1px solid rgba(38, 50, 56, 0.88);
-
-    .neon-tube {
-      font-family: 'Work Sans', sans-serif;
-      font-weight: 900;
-      font-size: 0.65rem;
-      color: rgba(253, 250, 233, 0.32);
-      letter-spacing: 1px;
-      transition: color 0.3s ease;
-    }
-
-    &.on {
-      .neon-tube { color: #fff5d6; text-shadow: 0 0 5px #f1c40f, 0 0 10px #f1c40f; }
-      .neon-glow {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);
-        animation: vacancyGlow 2s infinite alternate;
-      }
-    }
+  &:active {
+    transform: rotate(-0.4deg) scale(0.99);
   }
 }
 
-// 🎆 TOP ACTION PINS
-.top-actions {
-  position: absolute;
-  top: 10px; // MOVED INSIDE THE CARD to prevent status bar overlap
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 20px;
-
-  .action-pin {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    border: none;
-    background: #eb4d4b;
-    color: var(--app-bg-cream);
-    font-size: 0.8rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 2px 2px rgba(255,255,255,0.4);
-    cursor: pointer;
-    z-index: 10;
-
-    &:active {
-      transform: translateY(1px) scale(0.96);
-      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.22), inset 0 1px 2px rgba(255, 248, 239, 0.35);
-    }
-    
-    &::before { // Pin head detail
-       content: '';
-       position: absolute;
-       top: 4px; left: 4px;
-       width: 4px; height: 4px;
-       background: rgba(255,255,255,0.6);
-       border-radius: 50%;
-    }
-
-    &.reset-pin { background: #f0932b; }
-  }
-}
-
-// 📗 THE MATCHBOOK
-.matchbook-fold {
-  flex: 2;
-  transform: rotate(2deg) translateY(10px);
-  filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
-
-  .matchbook-cover {
-    background: var(--ion-color-secondary); // Pine Green
-    padding: 10px;
-    border-radius: 2px 2px 12px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-height: 150px;
-
-    .matchbook-label {
-      font-family: 'Work Sans', sans-serif;
-      font-weight: 800;
-      font-size: 0.5rem;
-      color: rgba(255,255,255,0.5);
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      padding-bottom: 4px;
-    }
-  }
-
-  .matchbook-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-
-    .m-stat {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-
-      .m-val {
-        font-family: 'Newsreader', serif;
-        font-weight: 800;
-        font-size: 1.1rem;
-        color: var(--app-bg-cream);
-      }
-      .m-key {
-        font-family: 'Work Sans', sans-serif;
-        font-size: 0.5rem;
-        font-weight: 700;
-        color: rgba(255,255,255,0.4);
-        letter-spacing: 0.5px;
-      }
-    }
-  }
-
-  .striker-strip {
-    margin-top: auto;
-    height: 20px;
-    background: #31413f;
-    border-radius: 0 0 8px 8px;
-    position: relative;
-    
-    &::after { // "Matches" visual
-      content: 'CLOSE COVER BEFORE STRIKING';
-      position: absolute;
-      bottom: 2px; left: 0; right: 0;
-      font-size: 4px;
-      color: rgba(253, 250, 233, 0.24);
-      text-align: center;
-    }
-  }
-}
-
-
-// ── SECTION HEADER ─────────────────────────────
-
-// ── LICENSE PLATE COLLECTION ──────────────────
-.plate-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  padding: 0 16px 24px;
-}
-
-.plate-wrapper {
-  perspective: 1000px;
-  
-  &.plate-found {
-    .plate-body {
-      opacity: 0.95;
-      transform: rotateY(0deg);
-    }
-  }
-}
-
-.plate-body {
-  height: 100px;
-  border-radius: 6px;
-  padding: 8px;
+.postcard-front {
+  position: relative;
+  min-height: 160px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--app-surface-paper);
-  transition: all 0.3s ease;
-  position: relative;
+  background: linear-gradient(145deg, rgba(255, 247, 236, 0.98) 0%, rgba(247, 239, 219, 0.94) 100%);
   overflow: hidden;
 
   &::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%, rgba(0,0,0,0.05) 100%);
+    left: 20px;
+    right: 20px;
+    bottom: 48px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(217, 84, 28, 0), rgba(217, 84, 28, 0.18), rgba(217, 84, 28, 0));
+  }
+}
+
+.postcard-marks {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  opacity: 0.72;
+}
+
+.air-mail-stripe {
+  width: 44px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(217, 84, 28, 0.85),
+    rgba(217, 84, 28, 0.85) 8px,
+    rgba(255, 255, 255, 0) 8px,
+    rgba(255, 255, 255, 0) 12px,
+    rgba(57, 103, 84, 0.8) 12px,
+    rgba(57, 103, 84, 0.8) 20px,
+    rgba(255, 255, 255, 0) 20px,
+    rgba(255, 255, 255, 0) 24px
+  );
+}
+
+.postmark {
+  padding: 3px 7px;
+  border: 1px solid rgba(57, 103, 84, 0.56);
+  border-radius: 999px;
+  color: rgba(57, 103, 84, 0.82);
+  font-family: 'Special Elite', cursive;
+  font-size: 0.58rem;
+  transform: rotate(-14deg);
+}
+
+.postcard-main-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  margin-top: 24px;
+  gap: 32px;
+}
+
+.postcard-content {
+  flex: 1 1 58%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.postcard-divider {
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(79, 93, 90, 0), rgba(79, 93, 90, 0.15) 20%, rgba(79, 93, 90, 0.15) 80%, rgba(79, 93, 90, 0));
+  margin: 4px 0;
+}
+
+.postcard-stats-ledger {
+  flex: 0 1 34%;
+  min-width: 11rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding-left: 8px;
+}
+
+.ledger-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 2px 0;
+  border-bottom: 1px dotted rgba(79, 93, 90, 0.1);
+}
+
+.l-key {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: rgba(79, 93, 90, 0.5);
+}
+
+.l-val {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.2rem;
+  color: rgba(57, 103, 84, 0.9);
+}
+
+.ledger-footer {
+  margin-top: 6px;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.42rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: rgba(79, 93, 90, 0.32);
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.brand-marquee {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: min(100%, 18rem);
+  min-width: 0;
+}
+
+.brand-kicker {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: rgba(57, 103, 84, 0.74);
+  text-transform: uppercase;
+}
+
+.brand-logotype {
+  margin: 0;
+  font-family: 'Newsreader', serif;
+  width: 100%;
+  font-size: clamp(1.1rem, 6.8vw, 1.76rem);
+  font-style: italic;
+  font-weight: 900;
+  line-height: 0.96;
+  letter-spacing: clamp(-0.06em, -0.2vw, -0.02em);
+  white-space: nowrap;
+  color: var(--ion-color-primary);
+}
+
+.points-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.points-value {
+  font-family: 'Special Elite', cursive;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--app-ink-deep);
+}
+
+.points-label {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: rgba(79, 93, 90, 0.64);
+}
+
+.vacancy-sign {
+  position: relative;
+  align-self: flex-start;
+  padding: 5px 11px;
+  border-radius: 4px;
+  border: 1px solid rgba(27, 35, 39, 0.92);
+  background: #263238;
+
+  .neon-tube {
+    color: rgba(253, 250, 233, 0.32);
+    font-family: 'Work Sans', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    transition: color 0.24s ease;
+  }
+
+  &.on {
+    .neon-tube {
+      color: #fff5d6;
+      text-shadow: 0 0 5px rgba(241, 196, 15, 0.85), 0 0 12px rgba(241, 196, 15, 0.55);
+    }
+
+    .neon-glow {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: 0 0 14px rgba(241, 196, 15, 0.34);
+      animation: vacancyGlow 2s infinite alternate;
+    }
+  }
+}
+
+.top-actions {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  display: flex;
+  gap: 8px;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+.action-pin {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  background: #eb4d4b;
+  box-shadow: 
+    0 4px 8px rgba(55, 39, 20, 0.22), 
+    inset 0 -2px 3px rgba(0, 0, 0, 0.1),
+    inset 0 2px 3px rgba(255, 255, 255, 0.4);
+  color: var(--app-bg-cream);
+  font-size: 0.9rem;
+  cursor: pointer;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    width: 22px;
+    height: 12px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent);
+    pointer-events: none;
+  }
+
+  &:active {
+    transform: translateY(1px) scale(0.96);
+    box-shadow: 0 2px 4px rgba(55, 39, 20, 0.2);
+  }
+
+  &.reset-pin { background: #f0932b; }
+  &.star-pin { background: #eb4d4b; }
+  &.help-pin { background: #396754; }
+
+  ion-icon {
+    font-size: 1.1rem;
     pointer-events: none;
   }
 }
 
-.plate-state-name {
-  font-family: 'Work Sans', sans-serif;
-  font-weight: 700;
-  font-size: 0.6rem;
-  letter-spacing: 1px;
-  color: rgba(0,0,0,0.6);
-}
-
-.plate-tag-center {
-  flex: 1;
+/* Brass Toggle Switch */
+.brass-switch-wrapper {
   display: flex;
   align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  padding: 8px 16px;
+  background: rgba(79, 93, 90, 0.05);
+  border-radius: 50px;
+  border: 1px solid rgba(79, 93, 90, 0.1);
+  margin-bottom: 24px;
+}
+
+.switch-label {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: rgba(79, 93, 90, 0.4);
+  transition: color 0.3s ease;
+
+  &.left { color: var(--app-ink-deep); }
+}
+
+
+.brass-knob {
+  width: 48px;
+  height: 24px;
+  background: #2c3e50;
+  border-radius: 20px;
+  position: relative;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+  border: 2px solid #1a252f;
+
+  .knob-face {
+    position: absolute;
+    top: 1px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    border: 1px solid #8e6d13;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .knob-dot {
+      width: 4px;
+      height: 4px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 50%;
+    }
+  }
+
+  &.on {
+    .knob-face {
+      transform: translateX(22px);
+      background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
+    }
+  }
+}
+
+.brass-knob.on + .switch-label.right {
+  color: #d35400;
+}
+
+.brass-knob:not(.on) ~ .switch-label.left {
+  color: #2980b9;
+}
+
+/* Ticket Stub Segments */
+.ticket-stub-segments {
+  display: flex;
+  gap: 4px;
+  background: rgba(79, 93, 90, 0.08);
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.stub-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #fdfae9;
+  border: 1px solid #d2cbba;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+
+  .stub-label {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.75rem;
+    color: #4f5d5a;
+    z-index: 1;
+  }
+
+  .stub-edge {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: rgba(79, 93, 90, 0.08);
+    border-radius: 50%;
+    border: 1px solid #d2cbba;
+    
+    &:first-child { left: -5px; }
+    &:last-child { right: -5px; }
+  }
+
+  &:hover { background: #f7f1e3; }
+
+  &.active {
+    background: #396754;
+    border-color: #2d5243;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(57, 103, 84, 0.24);
+
+    .stub-label { color: #ffffff; }
+    .stub-edge { background: #fdfae9; border-color: #2d5243; }
+  }
+}
+
+// Matchbook styles removed - combined into postcard
+
+.plate-flag-stamp {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 44px;
+  z-index: 3;
+}
+
+.plate-top-row {
+  width: 100%;
+  display: flex;
   justify-content: center;
+  padding: 0 44px 0 8px;
+  text-align: center;
+}
+
+.plate-bottom-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  min-height: 14px;
+  padding: 0 8px;
+  text-align: center;
   z-index: 2;
 }
 
-.plate-tag-text {
-  font-family: var(--tag-font);
-  font-size: 2.8rem;
-  line-height: 1;
-  letter-spacing: -1px;
-  // Stamped look
-  text-shadow: 
-    1px 1px 0 rgba(255,255,255,0.6),
-    -1px -1px 0 rgba(0,0,0,0.2);
-}
+@media (max-width: 520px) {
+  .artifacts-row {
+    gap: 10px;
+  }
 
-.plate-motto, .plate-found-text {
-  font-family: 'Newsreader', serif;
-  font-style: italic;
-  font-size: 0.5rem;
-  font-weight: 500;
-  color: rgba(0,0,0,0.5);
-  letter-spacing: 0.5px;
-}
+  .postcard-main-layout {
+    gap: 20px;
+  }
 
-// Bolt/Hole Details
-.plate-bolt {
-  position: absolute;
-  width: 6px; height: 6px;
-  background: #444;
-  border-radius: 50%;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5), 0 1px 1px rgba(255,255,255,0.2);
-  opacity: 0.3;
+  .postcard-front {
+    min-height: 140px;
+  }
 
-  &.tl { top: 6px; left: 6px; }
-  &.tr { top: 6px; right: 6px; }
-  &.bl { bottom: 6px; left: 6px; }
-  &.br { bottom: 6px; right: 6px; }
-}
+  .postcard-stats-ledger {
+    min-width: 9.5rem;
+  }
 
-// ── REGIONAL STYLES ───────────────────────────
-[data-region="northeast"] .plate-body {
-  --plate-accent: var(--region-northeast-primary);
-  background-color: var(--region-northeast-bg);
-  .plate-tag-text { color: var(--plate-accent); font-family: 'Newsreader', serif; font-weight: 800; }
-  .plate-state-name { color: var(--region-northeast-accent); font-weight: 700; transform: skewX(-5deg); }
-}
+  .brand-marquee {
+    max-width: min(100%, 14rem);
+  }
 
-[data-region="south"] .plate-body {
-  --plate-accent: var(--region-south-primary);
-  background-color: var(--region-south-bg);
-  .plate-tag-text { color: #5d4037; font-family: 'Special Elite', cursive; }
-  .plate-state-name { font-family: 'Newsreader', serif; color: var(--region-south-accent); font-style: italic; transform: scaleY(1.1); font-weight: 700; }
-}
-
-[data-region="west"] .plate-body {
-  --plate-accent: var(--region-west-primary);
-  background-color: var(--region-west-bg);
-  .plate-tag-text { color: var(--region-west-accent); font-family: 'Work Sans', sans-serif; font-weight: 900; }
-  .plate-bolt { opacity: 0.5; }
-}
-
-[data-region="midwest"] .plate-body {
-  --plate-accent: var(--region-midwest-primary);
-  background-color: var(--region-midwest-bg);
-  .plate-tag-text { color: #333; font-family: 'Work Sans', sans-serif; font-weight: 600; letter-spacing: 2px; }
-  .plate-state-name { letter-spacing: 3px; color: var(--region-midwest-accent); font-weight: 800; }
-}
-
-// Found Stamp
-.found-stamp {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%) rotate(-12deg);
-  border: 4px double #D9541C;
-  color: #D9541C;
-  padding: 4px 12px;
-  font-family: 'Special Elite', cursive;
-  font-size: 1.2rem;
-  font-weight: 900;
-  background: rgba(253, 250, 233, 0.92);
-  border-radius: 4px;
-  pointer-events: none;
-  z-index: 5;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  .brand-logotype {
+    font-size: clamp(0.95rem, 5.2vw, 1.32rem);
+  }
 }

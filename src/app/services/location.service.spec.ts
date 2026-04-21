@@ -55,6 +55,7 @@ describe('LocationService', () => {
     expect(result).toEqual({
       status: 'denied',
       message: 'Location permission was denied.',
+      errorCode: 'PERMISSION_DENIED'
     });
     expect((service as unknown as { readCurrentPosition: jasmine.Spy }).readCurrentPosition).not.toHaveBeenCalled();
   });
@@ -69,6 +70,7 @@ describe('LocationService', () => {
     expect(result).toEqual({
       status: 'unavailable',
       message: 'Location services are unavailable.',
+      errorCode: 'UNAVAILABLE'
     });
   });
 

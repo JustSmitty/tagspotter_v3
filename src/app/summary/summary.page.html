@@ -1,0 +1,68 @@
+<ion-content class="summary-content paper-texture">
+  <div class="content-inner">
+    <div class="postcard-container paper-flip-enter">
+      <div class="postcard-front stamped-effect">
+        <div class="postcard-marks">
+          <div class="postmark">END OF THE ROAD</div>
+          <div class="air-mail-stripe"></div>
+        </div>
+
+        <div class="postcard-content">
+          <div class="brand-marquee">
+            <span class="brand-kicker">Trip Completed</span>
+            <h1 class="brand-logotype">{{ summary().foundCount }} OF {{ summary().totalStates }} FOUND</h1>
+          </div>
+          
+          <div class="completion-seal" *ngIf="summary().foundCount >= summary().totalStates">
+            <div class="seal-inner">
+              <span class="seal-text">CERTIFIED</span>
+              <span class="seal-year">1950</span>
+              <span class="seal-auth">ROAD TRIPPER</span>
+            </div>
+          </div>
+
+          <div class="points-badge">
+            <span class="points-value">{{ summary().finalScore }}</span>
+            <span class="points-label">FINAL SCORE</span>
+          </div>
+
+          <div class="summary-stats">
+            <div class="stat-row">
+              <span class="stat-label">Miles Logged:</span>
+              <span class="stat-value">{{ summary().miles | number:'1.0-0' }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Classic Mode Finds:</span>
+              <span class="stat-value">{{ summary().distribution.classicStates }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Easy Trivia Solves:</span>
+              <span class="stat-value">{{ summary().distribution.easyStates }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Medium Trivia Solves:</span>
+              <span class="stat-value">{{ summary().distribution.medStates }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Hard Trivia Solves:</span>
+              <span class="stat-value">{{ summary().distribution.hardStates }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <ion-button expand="block" class="americana-btn americana-btn--primary" (click)="viewMap()">
+        <ion-icon slot="start" name="map-outline"></ion-icon>
+        View Final Road Log
+      </ion-button>
+      
+      <ion-button expand="block" class="americana-btn americana-btn--outline" (click)="playAgain()">
+        <ion-icon slot="start" name="refresh-outline"></ion-icon>
+        Start New Trip
+      </ion-button>
+    </div>
+    <div class="footer-spacer"></div>
+  </div>
+</ion-content>

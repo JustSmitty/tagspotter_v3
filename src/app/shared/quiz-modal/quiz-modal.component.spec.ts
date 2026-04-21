@@ -43,6 +43,14 @@ describe('QuizModalComponent', () => {
     expect(component.progressDots.length).toBe(3);
   });
 
+  it('derives the visual region from the state code', () => {
+    fixture.componentRef.setInput('stateCode', 'CA');
+    fixture.detectChanges();
+
+    expect(component.stateRegion).toBe('west');
+    expect((fixture.nativeElement as HTMLElement).querySelector('.quiz-pass')?.getAttribute('data-region')).toBe('west');
+  });
+
   it('dismisses with a score when the correct option is selected', () => {
     component.onSelect('Montgomery');
 

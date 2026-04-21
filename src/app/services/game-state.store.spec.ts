@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { createEmptyPoints, QuizSession, StoredStateRecord } from '../models/game-state.model';
+import { PersistedGameSnapshot, createEmptyPoints, QuizSession, StoredStateRecord } from '../models/game-state.model';
 import { AchievementService } from './achievement.service';
 import { GameStateStore } from './game-state.store';
 import { LocationService } from './location.service';
@@ -16,11 +16,9 @@ describe('GameStateStore', () => {
 
   beforeEach(() => {
     stateService = jasmine.createSpyObj<StateService>('StateService', [
-      'loadStates',
-      'loadPoints',
-      'saveStates',
-      'savePoints',
-      'resetProgress',
+      'loadSnapshot',
+      'saveSnapshot',
+      'resetSnapshot',
     ]);
     locationService = jasmine.createSpyObj<LocationService>('LocationService', [
       'getCurrentLocationAccess',
@@ -28,8 +26,7 @@ describe('GameStateStore', () => {
     ]);
     quizService = jasmine.createSpyObj<QuizService>('QuizService', ['createQuizSession']);
 
-    stateService.saveStates.and.resolveTo();
-    stateService.savePoints.and.resolveTo();
+    stateService.saveSnapshot.and.resolveTo();
     locationService.getCurrentLocationAccess.and.resolveTo({
       status: 'granted',
       coordinates: { lat: 33, lng: -86 },
@@ -47,18 +44,21 @@ describe('GameStateStore', () => {
     });
 
     store = testBed.inject(GameStateStore);
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({ gameMode: 'trivia' }));
   });
 
   it('hydrates once and exposes derived view models', async () => {
-    stateService.loadStates.and.resolveTo([
-      buildState(1, 'AL', { fnd: { distance: 120, stateFound: true, questionsCorrect: 2 } }),
-    ]);
-    stateService.loadPoints.and.resolveTo({ state: 1, question: 2, distance: 1 });
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states: [
+        buildState(1, 'AL', { fnd: { distance: 120, stateFound: true, questionsCorrect: 2 } }),
+      ],
+      points: { state: 1, question: 2, distance: 1 }
+    }));
 
     await store.hydrate();
     await store.hydrate();
 
-    expect(stateService.loadStates).toHaveBeenCalledTimes(1);
+    expect(stateService.loadSnapshot).toHaveBeenCalledTimes(1);
     expect(store.homeViewModel().points.total).toBe(4);
     expect(store.dashboardViewModel().foundCount).toBe(1);
     expect(store.dashboardViewModel().totalDistanceMiles).toBe(120);
@@ -80,8 +80,11 @@ describe('GameStateStore', () => {
       questions: [],
     };
 
-    stateService.loadStates.and.resolveTo(states);
-    stateService.loadPoints.and.resolveTo(createEmptyPoints());
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states,
+      points: createEmptyPoints(),
+      gameMode: 'trivia',
+    }));
     quizService.createQuizSession.and.returnValue(session);
 
     await store.hydrate();
@@ -92,27 +95,27 @@ describe('GameStateStore', () => {
     expect(store.homeViewModel().states[0].isFound).toBeTrue();
     expect(store.homeViewModel().states[0].distanceFound).toBe(1500);
     expect(store.homeViewModel().points.total).toBe(4);
-    expect(stateService.saveStates).toHaveBeenCalledTimes(1);
-    expect(stateService.savePoints).toHaveBeenCalledTimes(1);
+    expect(stateService.saveSnapshot).toHaveBeenCalledTimes(1);
 
     await store.recordFoundState(1);
 
     expect(store.homeViewModel().points.total).toBe(4);
-    expect(stateService.saveStates).toHaveBeenCalledTimes(1);
-    expect(stateService.savePoints).toHaveBeenCalledTimes(1);
+    expect(stateService.saveSnapshot).toHaveBeenCalledTimes(1);
   });
 
   it('completes quiz scoring without double counting the same result', async () => {
-    stateService.loadStates.and.resolveTo([
-      buildState(1, 'AL', {
-        fnd: {
-          distance: 250,
-          stateFound: true,
-          questionsCorrect: 0,
-        },
-      }),
-    ]);
-    stateService.loadPoints.and.resolveTo({ state: 1, question: 0, distance: 1 });
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states: [
+        buildState(1, 'AL', {
+          fnd: {
+            distance: 250,
+            stateFound: true,
+            questionsCorrect: 0,
+          },
+        }),
+      ],
+      points: { state: 1, question: 0, distance: 1 }
+    }));
 
     await store.hydrate();
     await store.completeQuiz(1, 2);
@@ -123,20 +126,22 @@ describe('GameStateStore', () => {
   });
 
   it('resets progress back to a clean snapshot', async () => {
-    stateService.loadStates.and.resolveTo([
-      buildState(1, 'AL', {
-        fnd: {
-          distance: 250,
-          stateFound: true,
-          questionsCorrect: 2,
-        },
-      }),
-    ]);
-    stateService.loadPoints.and.resolveTo({ state: 1, question: 2, distance: 1 });
-    stateService.resetProgress.and.resolveTo({
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states: [
+        buildState(1, 'AL', {
+          fnd: {
+            distance: 250,
+            stateFound: true,
+            questionsCorrect: 2,
+          },
+        }),
+      ],
+      points: { state: 1, question: 2, distance: 1 }
+    }));
+    stateService.resetSnapshot.and.resolveTo(buildSnapshot({
       states: [buildState(1, 'AL')],
       points: createEmptyPoints(),
-    });
+    }));
 
     await store.hydrate();
     await store.resetProgress();
@@ -146,16 +151,19 @@ describe('GameStateStore', () => {
   });
 
   it('records a state without a distance bonus when location permission is denied', async () => {
-    stateService.loadStates.and.resolveTo([
-      buildState(1, 'AL'),
-      buildState(2, 'AK'),
-      buildState(3, 'AZ'),
-      buildState(4, 'AR'),
-    ]);
-    stateService.loadPoints.and.resolveTo(createEmptyPoints());
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states: [
+        buildState(1, 'AL'),
+        buildState(2, 'AK'),
+        buildState(3, 'AZ'),
+        buildState(4, 'AR'),
+      ],
+      points: createEmptyPoints(),
+    }));
     locationService.getCurrentLocationAccess.and.resolveTo({
       status: 'denied',
       message: 'Location permission was denied.',
+      errorCode: 'PERMISSION_DENIED'
     });
 
     await store.hydrate();
@@ -167,16 +175,19 @@ describe('GameStateStore', () => {
   });
 
   it('stores a sanitized error message when distance calculation fails unexpectedly', async () => {
-    stateService.loadStates.and.resolveTo([
-      buildState(1, 'AL'),
-      buildState(2, 'AK'),
-      buildState(3, 'AZ'),
-      buildState(4, 'AR'),
-    ]);
-    stateService.loadPoints.and.resolveTo(createEmptyPoints());
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states: [
+        buildState(1, 'AL'),
+        buildState(2, 'AK'),
+        buildState(3, 'AZ'),
+        buildState(4, 'AR'),
+      ],
+      points: createEmptyPoints(),
+    }));
     locationService.getCurrentLocationAccess.and.resolveTo({
       status: 'error',
       message: 'Distance bonus is unavailable right now.',
+      errorCode: 'UNKNOWN'
     });
 
     await store.hydrate();
@@ -198,9 +209,11 @@ describe('GameStateStore', () => {
       buildState(4, 'AR'),
     ];
 
-    stateService.loadStates.and.resolveTo(states);
-    stateService.loadPoints.and.resolveTo(createEmptyPoints());
-    stateService.saveStates.and.callFake(async () => firstSave);
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states,
+      points: createEmptyPoints()
+    }));
+    stateService.saveSnapshot.and.callFake(async () => firstSave);
 
     await store.hydrate();
 
@@ -209,13 +222,60 @@ describe('GameStateStore', () => {
 
     releaseFirstSave();
     await firstRecord;
-    await secondRecord;
-
-    expect(stateService.saveStates).toHaveBeenCalledTimes(1);
-    expect(stateService.savePoints).toHaveBeenCalledTimes(1);
+    expect(stateService.saveSnapshot).toHaveBeenCalledTimes(1);
     expect(store.homeViewModel().points.total).toBe(4);
   });
+
+  it('persists settings changes through the canonical snapshot path', async () => {
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot());
+
+    await store.hydrate();
+    await store.setGameMode('trivia');
+    await store.setDifficulty('hard');
+
+    expect(stateService.saveSnapshot).toHaveBeenCalledWith(jasmine.objectContaining({
+      gameMode: 'trivia',
+      difficulty: 'easy',
+    }));
+    expect(stateService.saveSnapshot).toHaveBeenCalledWith(jasmine.objectContaining({
+      gameMode: 'trivia',
+      difficulty: 'hard',
+    }));
+  });
+
+  it('keeps summary distribution after hydrating stored per-state mode and difficulty', async () => {
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states: [
+        buildState(1, 'AL', { fnd: { distance: 100, stateFound: true, questionsCorrect: 0, mode: 'classic' } }),
+        buildState(2, 'AK', { fnd: { distance: 200, stateFound: true, questionsCorrect: 1, mode: 'trivia', difficulty: 'easy' } }),
+        buildState(3, 'AZ', { fnd: { distance: 300, stateFound: true, questionsCorrect: 2, mode: 'trivia', difficulty: 'medium' } }),
+        buildState(4, 'AR', { fnd: { distance: 400, stateFound: true, questionsCorrect: 3, mode: 'trivia', difficulty: 'hard' } }),
+      ],
+      points: { state: 4, question: 6, distance: 4 },
+    }));
+
+    await store.hydrate();
+
+    expect(store.summaryDistribution()).toEqual({
+      classicStates: 1,
+      easyStates: 1,
+      medStates: 1,
+      hardStates: 1,
+      total: 4,
+    });
+  });
 });
+
+function buildSnapshot(overrides: Partial<PersistedGameSnapshot> = {}): PersistedGameSnapshot {
+  return {
+    states: [],
+    points: createEmptyPoints(),
+    hasSeenOnboarding: false,
+    gameMode: 'classic',
+    difficulty: 'easy',
+    ...overrides,
+  };
+}
 
 function buildState(
   id: number,

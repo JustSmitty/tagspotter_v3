@@ -1,0 +1,60 @@
+.atlas-container {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--app-shadow-paper);
+  border: 1px solid rgba(74, 56, 40, 0.2);
+  margin-bottom: 24px;
+}
+
+#road-atlas-map {
+  width: 100%;
+  height: 100%;
+  background: #f4e8d0; // Parchment base
+}
+
+.map-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 248, 239, 0.9);
+  border: 1px solid rgba(74, 56, 40, 0.3);
+  border-radius: 4px;
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 0.75rem;
+  color: #4a3828;
+  pointer-events: none;
+  z-index: 10;
+}
+
+
+.custom-marker {
+  width: 24px;
+  height: 24px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  
+  &.map-marker-stamp {
+    background-image: url('../../../assets/icon/stamp-circle.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 38px;
+    height: 38px;
+    // Remove the CSS drawn circle in favor of the SVG
+    border: none;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // Keep font for accessibility if innerText is present, though SVG has text
+    font-family: 'Special Elite', cursive;
+    font-size: 0; // Hide the text node in favor of SVG text
+    color: transparent;
+    transform: rotate(var(--stamp-rotation, -15deg));
+  }
+}

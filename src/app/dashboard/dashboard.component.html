@@ -20,7 +20,7 @@
   </div>
 </ion-header>
 
-<ion-content class="paper-texture">
+<ion-content class="paper-texture dashboard-content">
   <div class="dashboard-container">
 
     <!-- UNITED STATES PROGRESS (The "Atlas" View) -->
@@ -59,6 +59,19 @@
         class="souvenir-card cardstock-layer"
         [class.locked]="!ach.unlocked">
         <div class="souvenir-visual">
+          <div class="souvenir-flag-cluster" *ngIf="souvenirFlags().length">
+            <div
+              *ngFor="let state of souvenirFlags(); let index = index"
+              class="travel-stamp souvenir-flag"
+              [style.--stamp-rotation]="index === 1 ? '4deg' : (index === 2 ? '-2deg' : '-6deg')">
+              <img
+                class="travel-stamp__image"
+                [src]="state.flagUrl"
+                [alt]="state.name + ' state flag'"
+                loading="lazy" />
+              <span class="travel-stamp__label">{{ state.code }}</span>
+            </div>
+          </div>
           <ion-icon [name]="ach.icon"></ion-icon>
           <div class="souvenir-stamp" *ngIf="ach.unlocked">PASSED</div>
         </div>
@@ -75,6 +88,6 @@
     <div class="footer-note">
       Keep your eyes on the road and your hands on the wheel.
     </div>
-
+    <div class="footer-spacer"></div>
   </div>
 </ion-content>

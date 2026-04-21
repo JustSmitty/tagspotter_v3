@@ -1,114 +1,162 @@
-<!-- Digital Ephemera Dashboard (Physical Artifacts) -->
 <ion-header class="ion-no-border digital-ephemera-header">
-  
   <div class="artifacts-row">
-    <!-- Postcard Artifact (Branding + Main Score) -->
     <div class="postcard-container paper-flip-enter">
       <div class="postcard-front stamped-effect">
         <div class="postcard-marks">
           <div class="postmark">ROAD TRIP USA</div>
           <div class="air-mail-stripe"></div>
         </div>
-        
-        <div class="postcard-content">
-          <h1 class="brand-logotype">TAG SPOTTER</h1>
-          <div class="points-badge">
-            <span class="points-value">{{ viewModel().points.total }}</span>
-            <span class="points-label">TOTAL PTS</span>
+
+        <div class="postcard-main-layout">
+          <div class="postcard-content">
+            <div class="brand-marquee">
+              <span class="brand-kicker">Collector's Club</span>
+              <h1 class="brand-logotype">TAG SPOTTER</h1>
+            </div>
+
+            <div class="points-badge">
+              <span class="points-value">{{ viewModel().points.total }}</span>
+              <span class="points-label">TOTAL PTS</span>
+            </div>
+
+            <div class="vacancy-sign" [class.on]="viewModel().points.total > 0">
+              <div class="neon-tube">VACANCY</div>
+              <div class="neon-glow"></div>
+            </div>
           </div>
-          
-          <div class="vacancy-sign" [class.on]="viewModel().points.total > 0">
-            <div class="neon-tube">VACANCY</div>
-            <div class="neon-glow"></div>
+
+          <div class="postcard-divider"></div>
+
+          <div class="postcard-stats-ledger">
+            <div class="ledger-row">
+              <span class="l-key">STATES</span>
+              <span class="l-val">{{ viewModel().points.states }}</span>
+            </div>
+            <div class="ledger-row">
+              <span class="l-key">MILES</span>
+              <span class="l-val">{{ viewModel().points.miles | number:'1.0-0' }}</span>
+            </div>
+            <div class="ledger-row">
+              <span class="l-key">TRIVIA</span>
+              <span class="l-val">{{ viewModel().points.quiz }}</span>
+            </div>
+
+            <div class="ledger-footer">ROAD LOG &middot; 1950</div>
           </div>
         </div>
 
         <div class="top-actions">
-          <button class="action-pin star-pin" (click)="openDashboard()" aria-label="Favorites">⭐</button>
-          <button class="action-pin reset-pin" (click)="onRefresh()" aria-label="Reset">🔄</button>
+          <button class="action-pin help-pin" (click)='openOnboarding()' aria-label='Open traveler handbook' title='Traveler Handbook'>
+            <ion-icon name="help-circle-outline"></ion-icon>
+          </button>
+          <button class="action-pin star-pin" (click)='openDashboard()' aria-label='Open road log' title='Road Log'>
+            <ion-icon name="ribbon-outline"></ion-icon>
+          </button>
+          <button class="action-pin reset-pin" (click)='onRefresh()' aria-label='Reset trip' title='Reset Game'>
+            <ion-icon name="refresh-outline"></ion-icon>
+          </button>
         </div>
-      </div>
-    </div>
-
-    <!-- Matchbook Artifact (Detailed Stats) -->
-    <div class="matchbook-fold paper-flip-enter">
-      <div class="matchbook-cover cardstock-layer">
-        <div class="matchbook-label">ROAD LOG · 1950</div>
-        
-        <div class="matchbook-stats">
-          <div class="m-stat">
-            <span class="m-val">{{ viewModel().points.states }}</span>
-            <span class="m-key">STATES</span>
-          </div>
-          <div class="m-stat">
-            <span class="m-val">{{ viewModel().points.miles | number:'1.0-0' }}</span>
-            <span class="m-key">MILES</span>
-          </div>
-          <div class="m-stat">
-            <span class="m-val">{{ viewModel().points.quiz }}</span>
-            <span class="m-key">TRIVIA</span>
-          </div>
-        </div>
-        
-        <div class="striker-strip"></div>
       </div>
     </div>
   </div>
-
 </ion-header>
 
 <ion-content class="road-content paper-texture">
   <div class="content-inner">
-
-    <!-- Section Header -->
     <div class="section-header">
       <div class="section-rule"></div>
-      <span class="section-label">THE COLLECTION</span>
+      <span class="section-label">The Collection</span>
       <div class="section-rule"></div>
     </div>
 
-    <!-- License Plate Grid -->
+    <div class="toggle-container" style="display: flex; justify-content: center; align-items: center; flex-direction: column; margin-bottom: 32px;">
+      <div class="brass-switch-wrapper" (click)="onToggleGameMode($event)">
+        <span class="switch-label left">COLLECT</span>
+        <div class="brass-knob" [class.on]="gameMode() === 'trivia'">
+          <div class="knob-face">
+            <div class="knob-dot"></div>
+          </div>
+        </div>
+        <span class="switch-label right">TRIVIA</span>
+      </div>
+
+      <div class="ticket-stub-segments" *ngIf="gameMode() === 'trivia'">
+        <button 
+          class="stub-btn" 
+          [class.active]="difficulty() === 'easy'"
+          (click)="onDifficultyChange({ detail: { value: 'easy' } })">
+          <span class="stub-edge"></span>
+          <span class="stub-label">EASY</span>
+          <span class="stub-edge"></span>
+        </button>
+        <button 
+          class="stub-btn" 
+          [class.active]="difficulty() === 'medium'"
+          (click)="onDifficultyChange({ detail: { value: 'medium' } })">
+          <span class="stub-edge"></span>
+          <span class="stub-label">MED</span>
+          <span class="stub-edge"></span>
+        </button>
+        <button 
+          class="stub-btn" 
+          [class.active]="difficulty() === 'hard'"
+          (click)="onDifficultyChange({ detail: { value: 'hard' } })">
+          <span class="stub-edge"></span>
+          <span class="stub-label">HARD</span>
+          <span class="stub-edge"></span>
+        </button>
+      </div>
+    </div>
+    
+    <app-road-atlas></app-road-atlas>
+
     <div class="plate-grid">
-      <div
+      <button
         *ngFor="let state of viewModel().states; trackBy: trackByStateId"
         class="plate-wrapper"
         [class.plate-found]="state.isFound"
         [attr.data-region]="state.region"
+        [attr.aria-label]="state.name + (state.isFound ? ', spotted' : ', not spotted')"
+        [attr.aria-pressed]="state.isFound"
         (click)="onRecord(state)">
-
-        <!-- Plate Body (Stamped Metal Effect) -->
         <div class="plate-body stamped-effect">
-          <!-- State Name (Top, Small) -->
+          <div class="plate-flag-stamp travel-stamp" *ngIf="state.isFound">
+            <img
+              class="travel-stamp__image"
+              [src]="state.flagUrl"
+              [alt]="state.name + ' state flag'"
+              loading="lazy" />
+            <span class="travel-stamp__label">{{ state.code }}</span>
+          </div>
+
           <div class="plate-top-row">
             <span class="plate-state-name">{{ state.name | uppercase }}</span>
           </div>
 
-          <!-- The Tag (ABC-123 Style) -->
           <div class="plate-tag-center">
             <span class="plate-tag-text">{{ state.code }}</span>
           </div>
 
-          <!-- Motto (Bottom, Tiny) -->
           <div class="plate-bottom-row">
-            <span class="plate-motto" *ngIf="!state.isFound">1960 HISTORICAL</span>
-            <span class="plate-found-text" *ngIf="state.isFound">SPOTTED · {{ state.distanceFound }} MI</span>
+            <span class="plate-motto" *ngIf="!state.isFound">Historic issue &middot; road atlas</span>
+            <span class="plate-found-text" *ngIf="state.isFound">
+              {{ state.questionsCorrect }} pts trivia &middot; {{ state.distanceFound }} mi
+            </span>
           </div>
 
-          <!-- Mounting Holes -->
           <div class="plate-bolt bl"></div>
           <div class="plate-bolt br"></div>
           <div class="plate-bolt tl"></div>
           <div class="plate-bolt tr"></div>
-          
-          <!-- Found Stamp -->
-          <div class="found-stamp" *ngIf="state.isFound">FOUND</div>
+
+          <div class="found-stamp" *ngIf="state.isFound">Spotted</div>
         </div>
-      </div>
+      </button>
     </div>
 
     <div class="footer-note">
-      <span>📍 Location used only for distance calculation · Never stored</span>
+      <span>Location is used only for distance calculation and is never stored.</span>
     </div>
-
+    <div class="footer-spacer"></div>
   </div>
 </ion-content>

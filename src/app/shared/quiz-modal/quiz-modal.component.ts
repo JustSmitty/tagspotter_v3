@@ -2,10 +2,8 @@ import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core
 import {
   IonHeader,
   IonToolbar,
-  IonTitle,
   IonContent,
   IonButton,
-  IonButtons,
   IonIcon,
   ModalController
 } from '@ionic/angular/standalone';
@@ -24,15 +22,15 @@ import { QuizDismissResult, QuizQuestion } from '../../models/game-state.model';
     CommonModule,
     IonHeader,
     IonToolbar,
-    IonTitle,
     IonContent,
     IonButton,
-    IonButtons,
     IonIcon
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QuizModalComponent {
+  readonly answerMarkers = ['A', 'B', 'C', 'D', 'E', 'F'];
+
   private readonly modalCtrl = inject(ModalController);
 
   @Input() question!: QuizQuestion;
@@ -46,8 +44,30 @@ export class QuizModalComponent {
     addIcons({ closeCircle });
   }
 
+  get questionOrdinal(): number {
+    return this.questionIndex + 1;
+  }
+
   get progressDots(): number[] {
     return Array.from({ length: this.questionCount }, (_, index) => index);
+  }
+
+  get stateRegion(): 'northeast' | 'south' | 'midwest' | 'west' {
+    const stateCode = this.stateCode?.toUpperCase();
+
+    if (['CT', 'DC', 'DE', 'MA', 'MD', 'ME', 'NH', 'NJ', 'NY', 'PA', 'RI', 'VT'].includes(stateCode)) {
+      return 'northeast';
+    }
+
+    if (['AL', 'AR', 'FL', 'GA', 'KY', 'LA', 'MS', 'NC', 'OK', 'SC', 'TN', 'TX', 'VA', 'WV'].includes(stateCode)) {
+      return 'south';
+    }
+
+    if (['IA', 'IL', 'IN', 'KS', 'MI', 'MN', 'MO', 'ND', 'NE', 'OH', 'SD', 'WI'].includes(stateCode)) {
+      return 'midwest';
+    }
+
+    return 'west';
   }
 
   onClose(): void {
@@ -57,7 +77,7 @@ export class QuizModalComponent {
   onSelect(option: string): void {
     this.dismiss({
       kind: 'answered',
-      score: option === this.question.correctAnswer ? 1 : 0,
+      score: option === this.question.correctAnswer ? (this.question.points ?? 1) : 0,
     });
   }
 

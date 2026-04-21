@@ -9,6 +9,8 @@ interface CachedCoordinates {
   expiresAt: number;
 }
 
+export type LocationErrorCode = 'PERMISSION_DENIED' | 'UNAVAILABLE' | 'TIMEOUT' | 'UNKNOWN';
+
 export type LocationAccessResult =
   | {
       status: 'granted';
@@ -17,6 +19,8 @@ export type LocationAccessResult =
   | {
       status: 'denied' | 'unavailable' | 'error';
       message: string;
+      isPermanent?: boolean;
+      errorCode: LocationErrorCode;
     };
 
 @Injectable({
@@ -42,6 +46,7 @@ export class LocationService {
       return {
         status: 'denied',
         message: 'Location permission was denied.',
+        errorCode: 'PERMISSION_DENIED'
       };
     }
 
@@ -129,6 +134,8 @@ export class LocationService {
       return {
         status: 'denied',
         message: 'Location permission was denied.',
+        isPermanent: normalizedMessage.includes('permanent') || normalizedMessage.includes('settings'),
+        errorCode: 'PERMISSION_DENIED'
       };
     }
 
@@ -136,12 +143,22 @@ export class LocationService {
       return {
         status: 'unavailable',
         message: 'Location services are unavailable.',
+        errorCode: 'UNAVAILABLE'
+      };
+    }
+
+    if (normalizedMessage.includes('timeout')) {
+      return {
+        status: 'error',
+        message: 'Location request timed out.',
+        errorCode: 'TIMEOUT'
       };
     }
 
     return {
       status: 'error',
       message: 'Distance bonus is unavailable right now.',
+      errorCode: 'UNKNOWN'
     };
   }
 

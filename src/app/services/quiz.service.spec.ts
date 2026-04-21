@@ -54,7 +54,7 @@ describe('QuizService', () => {
       alaska,
       arizona,
       arkansas,
-    ]);
+    ], 'easy');
 
     expect(session.questions.length).toBe(3);
 
@@ -63,9 +63,9 @@ describe('QuizService', () => {
       expect(question.options).toContain(question.correctAnswer);
     }
 
-    expect(session.questions[0].options).not.toContain(districtOfColumbia.Bird);
-    expect(session.questions[1].options).not.toContain(districtOfColumbia.Capital);
-    expect(session.questions[2].options).not.toContain(districtOfColumbia.Flower);
+    expect(session.questions[0].options).not.toContain(districtOfColumbia.Capital);
+    expect(session.questions[1].options).not.toContain(districtOfColumbia.Abbrv);
+    expect(session.questions[2].options).not.toContain(districtOfColumbia.Region!);
 
     randomSpy.and.callThrough();
   });
@@ -86,6 +86,13 @@ function buildState(
     Bird: `${abbrv} Bird`,
     Flower: `${abbrv} Flower`,
     Nickname: `${abbrv} Nickname`,
+    Region: `${abbrv} Region`,
+    LargestCity: `${abbrv} Largest City`,
+    Tree: `${abbrv} Tree`,
+    AdmissionYear: 1800 + id,
+    FamousLandmark: `${abbrv} Landmark`,
+    MovieSetting: `${abbrv} Movie`,
+    SportsTeam: `${abbrv} Sports Team`,
     flagURL: `/assets/stateflags/${abbrv}.svg`,
     fnd: {
       distance: 0,

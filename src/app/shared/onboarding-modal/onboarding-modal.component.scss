@@ -1,0 +1,327 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.handbook-header {
+  --background: #f7efdb;
+  padding-top: 0;
+  border-bottom: 2px solid #d9541c;
+
+  ion-toolbar {
+    --background: transparent;
+    --color: #396754;
+    padding: 8px 4px; /* Reduced side padding to allow more space for content */
+    --min-height: 48px;
+  }
+
+  ion-title {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 0.8rem; /* Slightly smaller for floating modal */
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-align: center;
+    padding-inline: 48px; /* Ensure space for skip button and seal */
+  }
+
+  .header-seal {
+    position: absolute;
+    top: -4px;
+    right: 16px;
+    background: #d9541c;
+    color: #fdfae9;
+    width: 32px;
+    height: 44px;
+    border-radius: 0 0 4px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    
+    ion-icon {
+      font-size: 1.2rem;
+    }
+  }
+
+  .skip-btn {
+    --color: #396754;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+    --padding-start: 16px;
+    --padding-end: 8px;
+    margin-top: -2px;
+    
+    &:active {
+      opacity: 1;
+    }
+  }
+}
+
+.handbook-content {
+  --background: #fdfae9;
+  flex: 1;
+  min-height: 0;
+  
+  .handbook-page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 24px 20px;
+  }
+
+  .page-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .illustration-box {
+    width: 120px;
+    height: 120px;
+    background: rgba(57, 103, 84, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    border: 1px dashed #396754;
+  }
+
+  .hero-icon {
+    font-size: 4rem;
+    color: #d9541c;
+
+    &.points-icon {
+      color: #396754;
+    }
+  }
+
+  .mode-demo {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    
+    .demo-tag {
+      padding: 6px 12px;
+      font-family: 'Work Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 800;
+      border-radius: 4px;
+      letter-spacing: 0.1em;
+
+      &.classic {
+        background: #396754;
+        color: #fdfae9;
+      }
+      
+      &.trivia {
+        background: #d9541c;
+        color: #fdfae9;
+      }
+    }
+  }
+
+  .handbook-h2 {
+    font-family: 'Rye', cursive;
+    font-size: 1.8rem;
+    margin: 0;
+    color: #2b2724;
+    line-height: 1.1;
+  }
+
+  .handbook-p {
+    font-family: 'Newsreader', serif;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    color: #4f5d5a;
+    margin: 0;
+
+    strong {
+      color: #d9541c;
+      font-weight: 800;
+    }
+
+    &.secondary {
+      font-size: 0.95rem;
+      font-style: italic;
+      color: rgba(79, 93, 90, 0.7);
+    }
+  }
+
+  .rule-line {
+    width: 60px;
+    height: 2px;
+    background: #d9541c;
+    margin: 8px 0;
+  }
+
+  .handbook-list {
+    text-align: left;
+    padding-left: 16px;
+    margin: 0;
+    list-style: none;
+
+    li {
+      font-family: 'Newsreader', serif;
+      font-size: 1rem;
+      color: #4f5d5a;
+      margin-bottom: 8px;
+      position: relative;
+      padding-left: 20px;
+
+      &::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        color: #d9541c;
+        font-weight: bold;
+      }
+    }
+
+    &.mileage-list {
+      display: inline-block;
+      margin: 0 auto;
+      text-align: left;
+      
+      li {
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+      }
+    }
+  }
+
+  .points-table {
+    width: 100%;
+    max-width: 200px;
+    background: #f7efdb;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(57, 103, 84, 0.2);
+
+    .p-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(57, 103, 84, 0.1);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .p-lvl {
+        font-family: 'Work Sans', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #396754;
+      }
+
+      .p-pts {
+        font-family: 'Newsreader', serif;
+        font-weight: 700;
+        color: #d9541c;
+      }
+    }
+  }
+}
+
+.handbook-footer {
+  --background: #f7efdb;
+  padding: 16px 16px 20px;
+  border-top: 2px solid #d9541c;
+
+  .footer-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .page-dots {
+    display: flex;
+    gap: 8px;
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(57, 103, 84, 0.2);
+      transition: all 0.2s ease;
+
+      &.active {
+        background: #396754;
+        transform: scale(1.2);
+      }
+    }
+  }
+
+  .nav-buttons {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .guide-btn {
+    --color: #396754;
+    --padding-start: 8px;
+    --padding-end: 8px;
+  }
+
+  .guide-action-btn {
+    --background: #396754;
+    --color: #fdfae9;
+    --border-radius: 2px;
+    flex: 1;
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 0.14em;
+    height: 48px;
+    position: relative;
+    overflow: visible;
+
+    /* Ticket Stub Perforations */
+    &::before, &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      background: #f7efdb; /* Matches footer background */
+      border-radius: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+    }
+
+    &::before { left: -7px; }
+    &::after { right: -7px; }
+
+    ion-icon {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.paper-texture {
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+}

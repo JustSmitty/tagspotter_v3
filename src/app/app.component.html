@@ -8,7 +8,9 @@
       [ngClass]="{ active: isRouteActive('/home') }"
       [attr.aria-current]="isRouteActive('/home') ? 'page' : null"
       (click)="navigateTo('/home')">
-      <div class="nav-icon map-icon" aria-hidden="true"></div>
+      <span class="nav-emblem">
+        <div class="nav-icon map-icon" aria-hidden="true"></div>
+      </span>
       <span class="nav-label">EXPLORE</span>
     </button>
 
@@ -18,17 +20,33 @@
       [ngClass]="{ active: isRouteActive('/dashboard') }"
       [attr.aria-current]="isRouteActive('/dashboard') ? 'page' : null"
       (click)="navigateTo('/dashboard')">
-      <div class="nav-icon car-icon" aria-hidden="true"></div>
+      <span class="nav-emblem">
+        <div class="nav-icon car-icon" aria-hidden="true"></div>
+      </span>
       <span class="nav-label">LOG</span>
     </button>
 
-    <button type="button" class="nav-item" disabled aria-disabled="true">
-      <div class="nav-icon diner-icon" aria-hidden="true"></div>
+    <button
+      type="button"
+      class="nav-item"
+      [ngClass]="{ active: isRouteActive('/trivia') }"
+      [attr.aria-current]="isRouteActive('/trivia') ? 'page' : null"
+      (click)="navigateTo('/trivia')">
+      <span class="nav-emblem">
+        <div class="nav-icon diner-icon" aria-hidden="true"></div>
+      </span>
       <span class="nav-label">TRIVIA</span>
     </button>
 
-    <button type="button" class="nav-item" disabled aria-disabled="true">
-      <div class="nav-icon bulb-icon" aria-hidden="true"></div>
+    <button
+      type="button"
+      class="nav-item"
+      [ngClass]="{ active: isRouteActive('/goals') }"
+      [attr.aria-current]="isRouteActive('/goals') ? 'page' : null"
+      (click)="navigateTo('/goals')">
+      <span class="nav-emblem">
+        <div class="nav-icon bulb-icon" aria-hidden="true"></div>
+      </span>
       <span class="nav-label">GOALS</span>
     </button>
   </nav>
