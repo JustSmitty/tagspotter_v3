@@ -9,6 +9,9 @@
  * https://ionicframework.com/docs/layout/global-stylesheets
  */
 
+/* Self-hosted typefaces (offline-safe) */
+@import './theme/fonts';
+
 /* Global Mapbox Layout Styles */
 @import 'maplibre-gl/dist/maplibre-gl.css';
 
