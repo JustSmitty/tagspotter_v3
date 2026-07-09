@@ -1,7 +1,0 @@
-{
-  "appId": "com.tagspotter.app",
-  "appName": "tagspotter",
-  "bundledWebRuntime": false,
-  "npmClient": "npm",
-  "webDir": "www"
-}
