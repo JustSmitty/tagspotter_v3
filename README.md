@@ -117,7 +117,13 @@ npm.cmd run build:mobile
 # Open in Native IDEs
 npm.cmd run android:open
 npm.cmd run ios:open
+
+# Build + install the debug APK to a connected Android device
+cd android && ./gradlew installDebug
 ```
+
+> [!NOTE]
+> **Android JDK toolchain:** some bundled Capacitor plugins (e.g. `@capacitor/geolocation`) require **JDK 21**. The Gradle build auto-provisions it via the [`foojay-resolver`](https://github.com/gradle/foojay-toolchains) plugin (configured in `android/settings.gradle` + `android/build.gradle`), so `./gradlew` works even when your default `JAVA_HOME` is an older JDK — no manual JDK 21 install required.
 
 ---
 
