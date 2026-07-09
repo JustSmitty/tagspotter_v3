@@ -102,7 +102,6 @@ describe('StateService', () => {
       states: jasmine.arrayContaining([
         jasmine.objectContaining({
           ID: (statesFile as StoredStateRecord[])[0].ID,
-          FamousLandmark: (statesFile as StoredStateRecord[])[0].FamousLandmark,
           fnd: {
             distance: 120,
             stateFound: true,
@@ -116,6 +115,38 @@ describe('StateService', () => {
       gameMode: 'trivia',
       difficulty: 'hard',
     }));
+
+    // Seed metadata must not be persisted; it is re-merged from states.json on load.
+    const savedSnapshot = (service as any).setStorageItem.calls.mostRecent().args[1];
+    expect(Object.keys(savedSnapshot.states[0]).sort()).toEqual(['ID', 'fnd']);
+  });
+
+  it('round-trips progress through a slim persisted snapshot', async () => {
+    // Simulate loading the slim shape that saveSnapshot now writes.
+    (service as unknown as { getStorageItem: jasmine.Spy }).getStorageItem.and.callFake((key: string) => {
+      if (key === 'tagspotter_v1_save_data') {
+        return Promise.resolve({
+          states: [
+            { ID: 1, fnd: { distance: 210, stateFound: true, questionsCorrect: 2, mode: 'trivia', difficulty: 'medium' } },
+          ],
+          points: { state: 1, question: 2, distance: 1 },
+          hasSeenOnboarding: true,
+          gameMode: 'trivia',
+          difficulty: 'medium',
+          tripHistory: [],
+        });
+      }
+      return Promise.resolve(null);
+    });
+
+    const snapshot = await service.loadSnapshot();
+    const alabama = snapshot.states.find((state) => state.ID === 1);
+
+    expect(alabama?.fnd).toEqual(jasmine.objectContaining({ distance: 210, stateFound: true, questionsCorrect: 2 }));
+    // Seed metadata is restored from states.json even though it was not persisted.
+    expect(alabama?.Name).toBe((statesFile as StoredStateRecord[])[0].Name);
+    expect(alabama?.FamousLandmark).toBe((statesFile as StoredStateRecord[])[0].FamousLandmark);
+    expect(snapshot.states.length).toBe((statesFile as StoredStateRecord[]).length);
   });
 
   it('round-trips a canonical snapshot without dropping metadata', async () => {

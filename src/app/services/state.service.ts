@@ -95,7 +95,18 @@ export class StateService {
     }
   }
 
-  private async getEncryptionKey(): Promise<CryptoKey> {
+  // The derived AES key is deterministic, so derive it once and reuse it for
+  // every encrypt/decrypt instead of re-running PBKDF2 on each storage call.
+  private encryptionKeyPromise: Promise<CryptoKey> | null = null;
+
+  private getEncryptionKey(): Promise<CryptoKey> {
+    if (!this.encryptionKeyPromise) {
+      this.encryptionKeyPromise = this.deriveEncryptionKey();
+    }
+    return this.encryptionKeyPromise;
+  }
+
+  private async deriveEncryptionKey(): Promise<CryptoKey> {
     const password = 'TagSpotter_1950_Americana_Secret_Encryption_Key';
     const salt = new TextEncoder().encode('TagSpotter_Salt_1950');
     const passwordBuffer = new TextEncoder().encode(password);
@@ -239,8 +250,16 @@ export class StateService {
 
   async saveSnapshot(snapshot: PersistedGameSnapshot): Promise<void> {
     const normalized = this.normalizeSnapshot(snapshot);
+    // Seed data (names, coordinates, trivia facts) ships in states.json and is
+    // re-merged on load, so only per-state progress needs to be persisted.
+    // This keeps the encrypted payload roughly 10x smaller per save. Loading
+    // remains backward compatible: full legacy blobs also carry ID + fnd.
+    const slimSnapshot = {
+      ...normalized,
+      states: normalized.states.map((state) => ({ ID: state.ID, fnd: state.fnd })),
+    };
     await Promise.all([
-      this.setStorageItem(this.unifiedStorageKey, normalized),
+      this.setStorageItem(this.unifiedStorageKey, slimSnapshot),
       this.setOnboardingSeen(normalized.hasSeenOnboarding),
     ]);
   }

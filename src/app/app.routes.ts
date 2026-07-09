@@ -26,4 +26,9 @@ export const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full',
   },
+  {
+    // Unknown deep links land on Explore instead of a blank shell.
+    path: '**',
+    redirectTo: 'home',
+  },
 ];
