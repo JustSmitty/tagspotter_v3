@@ -30,31 +30,55 @@
       </div>
     </div>
 
-    <div class="souvenir-rack cardstock-layer" *ngIf="souvenirFlags().length; else openRoad">
-      <div class="souvenir-copy">
-        <span class="souvenir-kicker">Collected Colors</span>
-        <span class="souvenir-title">State Flag Strip</span>
-      </div>
+    @if (souvenirFlags().length) {
+      <div class="souvenir-rack cardstock-layer">
+        <div class="souvenir-copy">
+          <span class="souvenir-kicker">Collected Colors</span>
+          <span class="souvenir-title">State Flag Strip</span>
+        </div>
 
-      <div class="souvenir-stamps">
-        <div *ngFor="let stamp of souvenirFlags()" class="travel-stamp souvenir-stamp">
-          <img
-            class="travel-stamp__image"
-            [src]="stamp.flagUrl"
-            [alt]="stamp.name + ' state flag'"
-            loading="lazy" />
-          <span class="travel-stamp__label">{{ stamp.code }}</span>
+        <div class="souvenir-stamps">
+          @for (stamp of souvenirFlags(); track stamp.code) {
+            <div class="travel-stamp souvenir-stamp">
+              <img
+                class="travel-stamp__image"
+                [src]="stamp.flagUrl"
+                [alt]="stamp.name + ' state flag'"
+                loading="lazy" />
+              <span class="travel-stamp__label">{{ stamp.code }}</span>
+            </div>
+          }
         </div>
       </div>
-    </div>
-
-    <ng-template #openRoad>
+    } @else {
       <div class="souvenir-rack cardstock-layer souvenir-empty">
         <span class="souvenir-kicker">Collected Colors</span>
         <span class="souvenir-title">Flag Strip Opens After Your First Find</span>
         <p class="souvenir-note">Spot a plate on Explore to start filling this row with real state flags.</p>
       </div>
-    </ng-template>
+    }
+
+    <div class="section-header">
+      <div class="section-rule"></div>
+      <span class="section-label">Today&apos;s Routes</span>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="challenge-list">
+      @for (challenge of challenges(); track challenge.id) {
+        <article class="challenge-card cardstock-layer" [class.unlocked]="challenge.unlocked">
+          <div class="challenge-copy">
+            <span class="challenge-ticket">{{ challenge.unlocked ? 'Stamped route' : 'Open route' }}</span>
+            <h2 class="challenge-title">{{ challenge.title }}</h2>
+            <p class="challenge-description">{{ challenge.description }}</p>
+          </div>
+          <div class="challenge-meter">
+            <div class="challenge-fill" [style.width.%]="challenge.progressPercent"></div>
+          </div>
+          <span class="challenge-progress">{{ challenge.progressLabel }}</span>
+        </article>
+      }
+    </div>
 
     <div class="section-header">
       <div class="section-rule"></div>
@@ -63,33 +87,35 @@
     </div>
 
     <div class="goals-list">
-      <article *ngFor="let goal of goals(); let index = index" class="goal-card cardstock-layer" [class.unlocked]="goal.unlocked">
-        <div class="goal-topline">
-          <span class="goal-ticket">{{ goal.unlocked ? 'Stamped badge' : 'Open route' }}</span>
-          <span class="goal-ticket-number">Badge {{ index + 1 }}</span>
-        </div>
-
-        <div class="goal-body">
-          <div class="goal-icon">
-            <ion-icon [name]="goal.icon"></ion-icon>
+      @for (goal of goals(); track goal.id; let index = $index) {
+        <article class="goal-card cardstock-layer" [class.unlocked]="goal.unlocked">
+          <div class="goal-topline">
+            <span class="goal-ticket">{{ goal.unlocked ? 'Stamped badge' : 'Open route' }}</span>
+            <span class="goal-ticket-number">Badge {{ index + 1 }}</span>
           </div>
 
-          <div class="goal-copy">
-            <div class="goal-heading">
-              <h2 class="goal-title">{{ goal.title }}</h2>
-              <span class="goal-state">{{ goal.unlocked ? 'Stamped' : 'Open' }}</span>
+          <div class="goal-body">
+            <div class="goal-icon">
+              <ion-icon [name]="goal.icon"></ion-icon>
             </div>
-            <p class="goal-description">{{ goal.description }}</p>
-            <div class="goal-meter">
-              <div class="goal-fill" [style.width.%]="goal.progressPercent"></div>
-            </div>
-            <div class="goal-meta">
-              <span class="goal-progress">{{ goal.progressLabel }}</span>
-              <span class="goal-status">{{ goal.statusText }}</span>
+
+            <div class="goal-copy">
+              <div class="goal-heading">
+                <h2 class="goal-title">{{ goal.title }}</h2>
+                <span class="goal-state">{{ goal.unlocked ? 'Stamped' : 'Open' }}</span>
+              </div>
+              <p class="goal-description">{{ goal.description }}</p>
+              <div class="goal-meter">
+                <div class="goal-fill" [style.width.%]="goal.progressPercent"></div>
+              </div>
+              <div class="goal-meta">
+                <span class="goal-progress">{{ goal.progressLabel }}</span>
+                <span class="goal-status">{{ goal.statusText }}</span>
+              </div>
             </div>
           </div>
-        </div>
-      </article>
+        </article>
+      }
     </div>
 
     <div class="footer-note">Every badge fills in as your road trip log grows, so the Goals tab should always move with your progress.</div>

@@ -4,54 +4,37 @@ import {
   cloneStoredPoints,
   cloneStoredStates,
   createEmptyPoints,
-  DashboardViewModel,
   DISTRICT_OF_COLUMBIA_ID,
   GameSnapshot,
-  GoalsSummaryViewModel,
-  GoalProgressViewModel,
-  HomeViewModel,
-  PointsSummary,
+  getCorrectAnswersCount,
+  PersistedGameSnapshot,
   QuizSession,
   QuizDifficulty,
-  SouvenirFlagViewModel,
   StateCardViewModel,
   StoredPoints,
   StoredStateRecord,
-  SummaryDistribution,
-  SummaryViewModel,
-  TriviaTopicCard,
-  TriviaViewModel,
-  QUIZ_QUESTION_COUNT,
+  TripHistoryEntry,
 } from '../models/game-state.model';
 import { AchievementService } from './achievement.service';
 import { LocationService } from './location.service';
 import { QuizService } from './quiz.service';
 import { StateService } from './state.service';
 import { RewardService } from './reward.service';
-import { getStateRegion } from '../constants/us-states';
+import { GameViewModelService } from './game-view-model.service';
+import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { DEFAULT_LOCATION_PRECISION, LocationPrecision } from '../models/location.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameStateStore {
-  private readonly quizTopics: TriviaTopicCard[] = [
-    { title: 'Bird', subtitle: 'Identify each state bird from the road atlas.' },
-    { title: 'Capital', subtitle: 'Match the plate to its capital city.' },
-    { title: 'Flower', subtitle: 'Remember the bloom on each state seal.' },
-    { title: 'Nickname', subtitle: 'Decode the nickname painted on the roadside sign.' },
-    { title: 'Abbreviation', subtitle: 'Recognize the two-letter postal code.' },
-    { title: 'Region', subtitle: 'Pinpoint the geographical region of the state.' },
-    { title: 'AdmissionYear', subtitle: 'Know when the state joined the union.' },
-    { title: 'LargestCity', subtitle: 'Find the most populous city in the state.' },
-    { title: 'Tree', subtitle: 'Identify the official state tree.' },
-    { title: 'Flag', subtitle: 'Pick the correct state flag.' },
-  ];
   private readonly stateService = inject(StateService);
   private readonly achievementService = inject(AchievementService);
   private readonly locationService = inject(LocationService);
   private readonly quizService = inject(QuizService);
   private readonly rewardService = inject(RewardService);
+  private readonly viewModelService = inject(GameViewModelService);
 
   private readonly states = signal<StoredStateRecord[]>([]);
   private readonly points = signal<StoredPoints>(createEmptyPoints());
@@ -62,6 +45,8 @@ export class GameStateStore {
   readonly difficulty = signal<QuizDifficulty>('easy');
   readonly gameMode = signal<'classic' | 'trivia'>('classic');
   readonly hasSeenOnboarding = signal(false);
+  readonly tripHistory = signal<TripHistoryEntry[]>([]);
+  readonly locationPrecision = signal<LocationPrecision>(DEFAULT_LOCATION_PRECISION);
 
 
   /**
@@ -81,14 +66,19 @@ export class GameStateStore {
    */
   readonly foundCount = computed(() => this.snapshot().foundCount);
 
+  private hapticsInitialized = false;
   private lastFoundCount = 0;
   private readonly hapticTrigger = effect(() => {
     const foundCount = this.foundCount();
-    // Only buzz if the count actually increased after initial load
-    if (this.isLoaded() && foundCount > this.lastFoundCount) {
-      void Haptics.impact({ style: ImpactStyle.Heavy });
+    const isLoaded = this.isLoaded();
+    
+    if (isLoaded) {
+      if (this.hapticsInitialized && foundCount > this.lastFoundCount) {
+        void this.triggerFoundHaptic();
+      }
+      this.lastFoundCount = foundCount;
+      this.hapticsInitialized = true;
     }
-    this.lastFoundCount = foundCount;
   });
 
   private hydratePromise: Promise<void> | null = null;
@@ -99,7 +89,11 @@ export class GameStateStore {
     const states = this.states();
     const points = this.points();
     const foundStates = states.filter((state) => state.fnd.stateFound);
-    const totalCorrect = foundStates.reduce((total, state) => total + state.fnd.questionsCorrect, 0);
+    const totalCorrect = foundStates.reduce((total, state) => {
+      const isTrivia = state.fnd.mode === 'trivia' || (state.fnd.mode !== 'classic' && state.fnd.questionsCorrect > 0);
+      const count = isTrivia ? getCorrectAnswersCount(state.fnd.questionsCorrect, state.fnd.difficulty) : 0;
+      return total + count;
+    }, 0);
     const totalDistanceMiles = foundStates.reduce((total, state) => total + state.fnd.distance, 0);
 
     return {
@@ -111,96 +105,45 @@ export class GameStateStore {
     };
   });
 
-  readonly homeViewModel = computed<HomeViewModel>(() => ({
-    points: this.toPointsSummary(this.snapshot()),
-    states: this.stateCards(),
-    isLoaded: this.isLoaded(),
-    isBusy: this.isBusy(),
-  }));
+  readonly homeViewModel = computed(() => this.viewModelService.buildHomeViewModel(
+    this.snapshot(),
+    this.stateCards(),
+    this.isLoaded(),
+    this.isBusy(),
+  ));
 
-  readonly dashboardViewModel = computed<DashboardViewModel>(() => {
+  readonly dashboardViewModel = computed(() => {
     const snapshot = this.snapshot();
 
-    return {
-      points: this.toPointsSummary(snapshot),
-      foundCount: snapshot.foundCount,
-      totalStates: snapshot.states.length,
-      totalCorrect: snapshot.totalCorrect,
-      totalDistanceMiles: snapshot.totalDistanceMiles,
-      states: this.stateCards(),
-      achievements: this.achievements(),
-    };
+    return this.viewModelService.buildDashboardViewModel(
+      snapshot,
+      this.stateCards(),
+      this.achievements(),
+      this.tripHistory(),
+    );
   });
 
   readonly rankedFoundStates = computed<StateCardViewModel[]>(() => {
-    return this.stateCards()
-      .filter((state) => state.isFound)
-      .sort((left, right) => right.questionsCorrect - left.questionsCorrect
-        || right.distanceFound - left.distanceFound
-        || left.name.localeCompare(right.name));
+    return this.viewModelService.rankFoundStates(this.stateCards());
   });
 
   readonly dashboardSouvenirFlags = computed(() => this.rankedFoundStates().slice(0, 3));
-  readonly goalsSouvenirFlags = computed<SouvenirFlagViewModel[]>(() => this.rankedFoundStates()
-    .slice(0, 5)
-    .map((state) => ({
-      code: state.code,
-      name: state.name,
-      flagUrl: state.flagUrl,
-    })));
-  readonly goalProgress = computed<GoalProgressViewModel[]>(() => this.achievementService.getGoalProgress(this.snapshot()));
-  readonly goalsSummary = computed<GoalsSummaryViewModel>(() => {
-    const goals = this.goalProgress();
-
-    return {
-      total: goals.length,
-      unlocked: goals.filter((goal) => goal.unlocked).length,
-      inProgress: goals.filter((goal) => !goal.unlocked && goal.currentValue > 0).length,
-      nextGoal: goals.find((goal) => !goal.unlocked) ?? null,
-    };
-  });
-  readonly summaryViewModel = computed<SummaryViewModel>(() => {
+  readonly goalsSouvenirFlags = computed(() => this.viewModelService.toSouvenirFlags(this.rankedFoundStates(), 5));
+  readonly goalProgress = computed(() => this.achievementService.getGoalProgress(this.snapshot()));
+  readonly rotatingChallenges = computed(() => this.achievementService.getRotatingChallenges(this.snapshot()));
+  readonly goalsSummary = computed(() => this.viewModelService.buildGoalsSummary(this.goalProgress()));
+  readonly summaryViewModel = computed(() => {
     const snapshot = this.snapshot();
     const distribution = this.summaryDistribution();
 
-    return {
-      foundCount: snapshot.foundCount,
-      totalStates: snapshot.states.length,
-      finalScore: this.toPointsSummary(snapshot).total,
-      miles: snapshot.totalDistanceMiles,
-      distribution,
-    };
+    return this.viewModelService.buildSummaryViewModel(snapshot, distribution);
   });
-  readonly triviaViewModel = computed<TriviaViewModel>(() => {
-    const rankedFoundStates = this.rankedFoundStates();
-    const snapshot = this.snapshot();
-    const totalPossibleAnswers = rankedFoundStates.length * QUIZ_QUESTION_COUNT;
-    const accuracy = totalPossibleAnswers === 0
-      ? 0
-      : Math.round((snapshot.totalCorrect / totalPossibleAnswers) * 100);
-
-    return {
-      accuracy,
-      correctAnswers: snapshot.totalCorrect,
-      foundStates: snapshot.foundCount,
-      perfectPasses: rankedFoundStates.filter((state) => state.questionsCorrect >= QUIZ_QUESTION_COUNT).length,
-      totalPossibleAnswers,
-      topStates: rankedFoundStates.slice(0, 6),
-      featuredStates: rankedFoundStates.slice(0, 3),
-      topics: this.quizTopics,
-    };
-  });
-  readonly summaryDistribution = computed<SummaryDistribution>(() => {
-    const foundStates = this.snapshot().states.filter((state) => state.fnd.stateFound);
-
-    return {
-      classicStates: foundStates.filter((state) => state.fnd.mode === 'classic').length,
-      easyStates: foundStates.filter((state) => state.fnd.mode === 'trivia' && state.fnd.difficulty === 'easy').length,
-      medStates: foundStates.filter((state) => state.fnd.mode === 'trivia' && state.fnd.difficulty === 'medium').length,
-      hardStates: foundStates.filter((state) => state.fnd.mode === 'trivia' && state.fnd.difficulty === 'hard').length,
-      total: foundStates.length,
-    };
-  });
+  readonly triviaViewModel = computed(() => this.viewModelService.buildTriviaViewModel(
+    this.snapshot(),
+    this.rankedFoundStates(),
+    this.quizService.getTriviaTopics(),
+  ));
+  readonly summaryDistribution = computed(() => this.viewModelService.buildSummaryDistribution(this.snapshot()));
 
   async hydrate(force = false): Promise<void> {
     if (!force && this.isLoaded()) {
@@ -212,12 +155,17 @@ export class GameStateStore {
     }
 
     this.hydratePromise = this.runBusy(async () => {
-      const snapshot = await this.stateService.loadSnapshot();
+      const [snapshot, locationPrecision] = await Promise.all([
+        this.stateService.loadSnapshot(),
+        this.stateService.getLocationPrecision(),
+      ]);
 
       this.setSnapshot(snapshot.states, snapshot.points);
       this.hasSeenOnboarding.set(snapshot.hasSeenOnboarding);
       this.gameMode.set(snapshot.gameMode);
       this.difficulty.set(snapshot.difficulty);
+      this.tripHistory.set(snapshot.tripHistory);
+      this.locationPrecision.set(locationPrecision);
 
       this.isLoaded.set(true);
       this.error.set(null);
@@ -232,8 +180,8 @@ export class GameStateStore {
 
   async markOnboardingComplete(): Promise<void> {
     await this.enqueueMutation(async () => {
+      await this.persistCurrentSnapshot({ hasSeenOnboarding: true });
       this.hasSeenOnboarding.set(true);
-      await this.persistCurrentSnapshot();
     });
   }
 
@@ -241,8 +189,8 @@ export class GameStateStore {
     await this.hydrate();
 
     await this.enqueueMutation(async () => {
+      await this.persistCurrentSnapshot({ difficulty: level });
       this.difficulty.set(level);
-      await this.persistCurrentSnapshot();
     });
   }
 
@@ -250,8 +198,17 @@ export class GameStateStore {
     await this.hydrate();
 
     await this.enqueueMutation(async () => {
+      await this.persistCurrentSnapshot({ gameMode: mode });
       this.gameMode.set(mode);
-      await this.persistCurrentSnapshot();
+    });
+  }
+
+  async setLocationPrecision(precision: LocationPrecision): Promise<void> {
+    await this.hydrate();
+
+    await this.enqueueMutation(async () => {
+      await this.stateService.setLocationPrecision(precision);
+      this.locationPrecision.set(precision);
     });
   }
 
@@ -260,11 +217,13 @@ export class GameStateStore {
     await this.hydrate();
 
     await this.enqueueMutation(async () => {
-      const resetSnapshot = await this.stateService.resetSnapshot();
+      const tripHistory = this.withArchivedCurrentTrip(this.tripHistory());
+      const resetSnapshot = await this.stateService.resetSnapshot(tripHistory, this.hasSeenOnboarding());
       this.setSnapshot(resetSnapshot.states, resetSnapshot.points);
       this.hasSeenOnboarding.set(resetSnapshot.hasSeenOnboarding);
       this.gameMode.set(resetSnapshot.gameMode);
       this.difficulty.set(resetSnapshot.difficulty);
+      this.tripHistory.set(resetSnapshot.tripHistory);
       this.error.set(null);
     });
   }
@@ -293,7 +252,7 @@ export class GameStateStore {
       foundState.fnd.questionsCorrect = 0;
       foundState.fnd.distance = 0;
 
-      const locationResult = await this.locationService.getCurrentLocationAccess();
+      const locationResult = await this.locationService.getCurrentLocationAccess(this.locationPrecision());
 
       if (locationResult.status === 'granted') {
         const distance = Math.round(
@@ -311,20 +270,20 @@ export class GameStateStore {
       }
 
       points.state += this.rewardService.getStateDiscoveryReward();
+
+      const quizSession = foundState.ID === DISTRICT_OF_COLUMBIA_ID || this.gameMode() === 'classic'
+        ? null
+        : this.quizService.createQuizSession(foundState, states, this.difficulty());
       
       await this.persistSnapshot(states, points);
       this.setSnapshot(states, points);
 
-      if (locationResult.status !== 'error') {
+      if (locationResult.status === 'granted') {
         this.error.set(null);
         this.locationError.set(null);
       }
 
-      if (foundState.ID === DISTRICT_OF_COLUMBIA_ID || this.gameMode() === 'classic') {
-        return null; // Bypass quiz modal for DC or Classic Mode
-      }
-
-      return this.quizService.createQuizSession(foundState, states, this.difficulty());
+      return quizSession;
     });
   }
 
@@ -354,23 +313,39 @@ export class GameStateStore {
     });
   }
 
-  private async persistSnapshot(states: StoredStateRecord[], points: StoredPoints): Promise<void> {
+  private async persistSnapshot(
+    states: StoredStateRecord[],
+    points: StoredPoints,
+    overrides: Partial<Pick<PersistedGameSnapshot, 'hasSeenOnboarding' | 'gameMode' | 'difficulty' | 'tripHistory'>> = {},
+  ): Promise<void> {
+    const snapshot: PersistedGameSnapshot = {
+      states,
+      points,
+      hasSeenOnboarding: this.hasSeenOnboarding(),
+      gameMode: this.gameMode(),
+      difficulty: this.difficulty(),
+      tripHistory: this.tripHistory(),
+      ...overrides,
+    };
+
+    await this.persistGameSnapshot(snapshot);
+  }
+
+  private async persistGameSnapshot(snapshot: PersistedGameSnapshot): Promise<void> {
     try {
-      await this.stateService.saveSnapshot({
-        states,
-        points,
-        hasSeenOnboarding: this.hasSeenOnboarding(),
-        gameMode: this.gameMode(),
-        difficulty: this.difficulty(),
-      });
+      await this.stateService.saveSnapshot(snapshot);
     } catch (err) {
       console.error('Failed to persist game state:', err);
-      this.error.set('Failed to save progress. Storage may be full.');
+      const message = 'Failed to save progress. Storage may be full.';
+      this.error.set(message);
+      throw new Error(message);
     }
   }
 
-  private async persistCurrentSnapshot(): Promise<void> {
-    await this.persistSnapshot(this.states(), this.points());
+  private async persistCurrentSnapshot(
+    overrides: Partial<Pick<PersistedGameSnapshot, 'hasSeenOnboarding' | 'gameMode' | 'difficulty' | 'tripHistory'>> = {},
+  ): Promise<void> {
+    await this.persistSnapshot(this.states(), this.points(), overrides);
   }
 
   private setSnapshot(states: StoredStateRecord[], points: StoredPoints): void {
@@ -380,30 +355,39 @@ export class GameStateStore {
     this.points.set(points);
   }
 
-  private toPointsSummary(snapshot: GameSnapshot): PointsSummary {
-    return {
-      ...snapshot.points,
-      states: snapshot.points.state,
-      quiz: snapshot.points.question,
-      total: snapshot.points.state + snapshot.points.question + snapshot.points.distance,
+  private async triggerFoundHaptic(): Promise<void> {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
+    try {
+      await Haptics.impact({ style: ImpactStyle.Heavy });
+    } catch {
+      // Haptics are a best-effort flourish; unsupported devices should keep playing.
+    }
+  }
+
+  private withArchivedCurrentTrip(history: TripHistoryEntry[]): TripHistoryEntry[] {
+    const snapshot = this.snapshot();
+
+    if (snapshot.foundCount === 0) {
+      return history;
+    }
+
+    const entry: TripHistoryEntry = {
+      id: `${Date.now()}`,
+      completedAt: new Date().toISOString(),
+      foundCount: snapshot.foundCount,
+      totalStates: snapshot.states.length,
+      finalScore: snapshot.points.state + snapshot.points.question + snapshot.points.distance,
       miles: snapshot.totalDistanceMiles,
+      triviaCorrect: snapshot.totalCorrect,
     };
+
+    return [entry, ...history].slice(0, 10);
   }
 
-  private toStateCard(state: StoredStateRecord): StateCardViewModel {
-    return {
-      id: state.ID,
-      code: state.Abbrv,
-      name: state.Name,
-      isFound: state.fnd.stateFound,
-      distanceFound: state.fnd.distance,
-      questionsCorrect: state.fnd.questionsCorrect,
-      flagUrl: state.flagURL,
-      region: getStateRegion(state.Abbrv),
-    };
-  }
-
-  private readonly stateCards = computed<StateCardViewModel[]>(() => this.snapshot().states.map((state) => this.toStateCard(state)));
+  private readonly stateCards = computed<StateCardViewModel[]>(() => this.viewModelService.toStateCards(this.snapshot().states));
 
 
   private async runBusy<T>(operation: () => Promise<T>): Promise<T> {

@@ -1,28 +1,25 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
-import { DecimalPipe, NgIf, NgFor, UpperCasePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
+import { DecimalPipe, UpperCasePipe } from '@angular/common';
 import {
   IonHeader,
   IonContent,
-  IonToolbar,
-  IonButtons,
-  IonButton,
   IonIcon,
   ModalController,
-  IonToggle,
-  IonSegment,
-  IonSegmentButton,
   AlertController,
   ToastController
 } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { helpCircleOutline, refreshOutline, ribbonOutline, logOutOutline } from 'ionicons/icons';
+import { closeCircle, helpCircleOutline, refreshOutline, ribbonOutline, searchOutline } from 'ionicons/icons';
 
-import { QuizDismissResult, QuizSession, StateCardViewModel, QuizDifficulty } from '../models/game-state.model';
+import { QuizDismissResult, QuizSession, StateCardViewModel, QuizDifficulty, StateRegion } from '../models/game-state.model';
+import { LocationPrecision } from '../models/location.model';
 import { GameStateStore } from '../services/game-state.store';
+import type { LocationErrorCode } from '../services/location.service';
 import { QuizModalComponent } from '../shared/quiz-modal/quiz-modal.component';
 import { OnboardingModalComponent } from '../shared/onboarding-modal/onboarding-modal.component';
 import { RoadAtlasComponent } from '../shared/road-atlas/road-atlas.component';
+import { Preferences } from '@capacitor/preferences';
 
 @Component({
   selector: 'app-home',
@@ -30,8 +27,6 @@ import { RoadAtlasComponent } from '../shared/road-atlas/road-atlas.component';
   styleUrls: ['home.page.scss'],
   standalone: true,
   imports: [
-    NgIf,
-    NgFor,
     IonHeader,
     IonContent,
     IonIcon,
@@ -52,18 +47,34 @@ export class HomePage implements OnInit {
   readonly difficulty = this.gameStateStore.difficulty;
   readonly gameMode = this.gameStateStore.gameMode;
   readonly hasSeenOnboarding = this.gameStateStore.hasSeenOnboarding;
+  readonly locationPrecision = this.gameStateStore.locationPrecision;
+
+  readonly searchQuery = signal('');
+  readonly selectedRegion = signal<StateRegion | 'all'>('all');
+
+  readonly filteredStates = computed(() => {
+    const states = this.viewModel().states;
+    const query = this.searchQuery().toLowerCase().trim();
+    const region = this.selectedRegion();
+
+    return states.filter((state) => {
+      const matchesQuery = !query || state.name.toLowerCase().includes(query) || state.code.toLowerCase().includes(query);
+      const matchesRegion = region === 'all' || state.region === region;
+      return matchesQuery && matchesRegion;
+    });
+  });
 
   constructor() {
-    addIcons({ helpCircleOutline, refreshOutline, ribbonOutline, logOutOutline });
+    addIcons({ closeCircle, helpCircleOutline, refreshOutline, ribbonOutline, searchOutline });
   }
 
-  async onToggleGameMode(event?: any): Promise<void> {
+  async onToggleGameMode(): Promise<void> {
     const nextMode = this.gameMode() === 'trivia' ? 'classic' : 'trivia';
     await this.gameStateStore.setGameMode(nextMode);
   }
 
-  async onDifficultyChange(event: any): Promise<void> {
-    await this.gameStateStore.setDifficulty(event.detail.value as QuizDifficulty);
+  async onDifficultyChange(difficulty: QuizDifficulty): Promise<void> {
+    await this.gameStateStore.setDifficulty(difficulty);
   }
 
   async ngOnInit(): Promise<void> {
@@ -72,6 +83,111 @@ export class HomePage implements OnInit {
     if (!this.hasSeenOnboarding()) {
       await this.openOnboarding();
     }
+
+    this.preloadFlags();
+    await this.checkAndResumeQuiz();
+  }
+
+  private preloadFlags(): void {
+    const states = this.viewModel().states;
+    if (!states || !states.length) {
+      return;
+    }
+
+    states.forEach((state) => {
+      if (state.flagUrl) {
+        const img = new Image();
+        img.src = state.flagUrl;
+      }
+    });
+  }
+
+  private async checkAndResumeQuiz(): Promise<void> {
+    const { value } = await Preferences.get({ key: 'temp_quiz_session' });
+    if (!value) {
+      return;
+    }
+
+    try {
+      const saved = JSON.parse(value);
+      const alert = await this.alertController.create({
+        header: 'Resume Quiz?',
+        message: `We found an unfinished trivia quiz for ${saved.stateName} from your last session. Would you like to resume it?`,
+        buttons: [
+          {
+            text: 'Discard',
+            role: 'cancel',
+            handler: () => {
+              void this.clearTempQuizSession();
+            }
+          },
+          {
+            text: 'Resume',
+            role: 'confirm',
+            handler: () => {
+              const quizSession: QuizSession = {
+                stateId: saved.stateId,
+                stateCode: saved.stateCode,
+                stateName: saved.stateName,
+                imageSrc: saved.imageSrc,
+                questions: saved.questions
+              };
+              void this.runQuizSession(quizSession, saved.currentIndex, saved.totalCorrect);
+            }
+          }
+        ],
+        cssClass: 'ephemera-alert'
+      });
+      await alert.present();
+    } catch {
+      void this.clearTempQuizSession();
+    }
+  }
+
+  private async saveTempQuizSession(session: QuizSession, currentIndex: number, totalCorrect: number): Promise<void> {
+    const data = {
+      stateId: session.stateId,
+      stateCode: session.stateCode,
+      stateName: session.stateName,
+      imageSrc: session.imageSrc,
+      questions: session.questions,
+      currentIndex,
+      totalCorrect
+    };
+    await Preferences.set({
+      key: 'temp_quiz_session',
+      value: JSON.stringify(data)
+    });
+  }
+
+  private async clearTempQuizSession(): Promise<void> {
+    await Preferences.remove({ key: 'temp_quiz_session' });
+  }
+
+  onSearchInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchQuery.set(input.value);
+  }
+
+  onSelectRegion(region: StateRegion | 'all'): void {
+    this.selectedRegion.set(region);
+  }
+
+  clearSearch(): void {
+    this.searchQuery.set('');
+  }
+
+  clearFilters(): void {
+    this.searchQuery.set('');
+    this.selectedRegion.set('all');
+  }
+
+  async onSetLocationPrecision(precision: LocationPrecision): Promise<void> {
+    if (this.locationPrecision() === precision) {
+      return;
+    }
+
+    await this.gameStateStore.setLocationPrecision(precision);
   }
 
   async onRefresh(): Promise<void> {
@@ -84,13 +200,21 @@ export class HomePage implements OnInit {
       message: 'This will clear all your progress. This action cannot be undone.',
       buttons: [
         { text: 'Cancel', role: 'cancel' },
-        { text: 'Reset Everything', role: 'confirm', handler: () => this.gameStateStore.resetProgress() }
+        { text: 'Reset Everything', role: 'confirm', handler: () => this.resetProgressWithFeedback() }
       ],
       cssClass: 'ephemera-alert'
     });
     await alert.present();
   }
 
+
+  async onMapSpot(stateId: number): Promise<void> {
+    const state = this.viewModel().states.find((candidate) => candidate.id === stateId);
+
+    if (state) {
+      await this.onRecord(state);
+    }
+  }
 
   async onRecord(state: StateCardViewModel): Promise<void> {
     if (this.viewModel().isBusy) {
@@ -126,20 +250,20 @@ export class HomePage implements OnInit {
     }
 
     if (!shouldProceed) {
+      document.getElementById('state-btn-' + state.id)?.focus();
       return;
     }
 
     const quizSession = await this.gameStateStore.recordFoundState(state.id);
 
-    // Check for location errors via the new structured signal
-    const locationError = this.gameStateStore.locationError();
-    if (locationError === 'PERMISSION_DENIED') {
-      await this.showLocationSettingsAlert();
-    }
+    await this.showLocationFeedback(this.gameStateStore.locationError());
 
     if (quizSession && this.gameMode() === 'trivia') {
       await this.runQuizSession(quizSession);
     }
+
+    // Restore focus to the state card button
+    document.getElementById('state-btn-' + state.id)?.focus();
 
     // Check for end of game after state is recorded
     if (this.gameStateStore.snapshot().foundCount >= this.gameStateStore.snapshot().states.length) {
@@ -155,9 +279,6 @@ export class HomePage implements OnInit {
     void this.router.navigate(['/summary']);
   }
 
-  trackByStateId(_: number, state: StateCardViewModel): number {
-    return state.id;
-  }
 
   async openOnboarding(): Promise<void> {
     const modal = await this.modalController.create({
@@ -180,6 +301,18 @@ export class HomePage implements OnInit {
     await toast.present();
   }
 
+  private async resetProgressWithFeedback(): Promise<void> {
+    await this.gameStateStore.resetProgress();
+
+    const toast = await this.toastController.create({
+      message: 'Trip reset. Your road log is ready for a fresh start.',
+      duration: 3000,
+      position: 'bottom',
+      cssClass: 'teletype-toast'
+    });
+    await toast.present();
+  }
+
   private async showLocationSettingsAlert(): Promise<void> {
     const alert = await this.alertController.create({
       header: 'Location Bonus',
@@ -195,10 +328,37 @@ export class HomePage implements OnInit {
     await alert.present();
   }
 
-  private async runQuizSession(quizSession: QuizSession): Promise<void> {
-    let totalCorrect = 0;
+  private async showLocationFeedback(locationError: LocationErrorCode | null): Promise<void> {
+    if (!locationError) {
+      return;
+    }
 
-    for (let index = 0; index < quizSession.questions.length; index += 1) {
+    if (locationError === 'PERMISSION_DENIED') {
+      await this.showLocationSettingsAlert();
+      return;
+    }
+
+    const messages: Record<Exclude<LocationErrorCode, 'PERMISSION_DENIED'>, string> = {
+      UNAVAILABLE: 'Location services are unavailable, so this plate was collected without a distance bonus.',
+      TIMEOUT: 'Location lookup timed out, so this plate was collected without a distance bonus.',
+      UNKNOWN: 'Distance bonus is unavailable right now, but your plate was still collected.',
+    };
+
+    const toast = await this.toastController.create({
+      message: messages[locationError],
+      duration: 3500,
+      position: 'bottom',
+      cssClass: 'teletype-toast'
+    });
+    await toast.present();
+  }
+
+  private async runQuizSession(quizSession: QuizSession, startFromIndex = 0, initialCorrect = 0): Promise<void> {
+    let totalCorrect = initialCorrect;
+
+    for (let index = startFromIndex; index < quizSession.questions.length; index += 1) {
+      await this.saveTempQuizSession(quizSession, index, totalCorrect);
+
       const question = quizSession.questions[index];
       const modal = await this.modalController.create({
         component: QuizModalComponent,
@@ -249,6 +409,7 @@ export class HomePage implements OnInit {
       totalCorrect += result.data.score;
     }
 
+    await this.clearTempQuizSession();
     await this.gameStateStore.completeQuiz(quizSession.stateId, totalCorrect);
   }
 

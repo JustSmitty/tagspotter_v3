@@ -7,6 +7,7 @@ import {
   QuizSession,
   QuizTopic,
   QuizDifficulty,
+  TriviaTopicCard,
   StoredStateRecord,
 } from '../models/game-state.model';
 
@@ -20,11 +21,37 @@ export class QuizService {
     hard: ['Flower', 'Tree', 'LargestCity', 'Flag', 'Movie', 'Sports'],
   };
 
+  private readonly TOPIC_SUBTITLES: Record<QuizTopic, string> = {
+    Bird: 'Identify each state bird from the road atlas.',
+    Capital: 'Match the plate to its capital city.',
+    Flower: 'Remember the bloom on each state seal.',
+    Nickname: 'Decode the nickname painted on the roadside sign.',
+    Abbreviation: 'Recognize the two-letter postal code.',
+    Region: 'Pinpoint the geographical region of the state.',
+    AdmissionYear: 'Know when the state joined the union.',
+    LargestCity: 'Find the most populous city in the state.',
+    Tree: 'Identify the official state tree.',
+    Flag: 'Pick the correct state flag.',
+    Landmark: 'Recall the landmark travelers seek out.',
+    Movie: 'Match the state to a memorable movie setting.',
+    Sports: 'Connect the state to its familiar sports team.',
+  };
+
   private readonly POINTS_MAP: Record<QuizDifficulty, number> = {
     easy: 1,
     medium: 2,
     hard: 3,
   };
+
+  getTriviaTopics(): TriviaTopicCard[] {
+    const tierTopics: QuizTopic[] = ([] as QuizTopic[]).concat(...Object.values(this.TOPIC_TIERS));
+
+    return tierTopics.map((title) => ({
+        title,
+        subtitle: this.TOPIC_SUBTITLES[title],
+      }));
+  }
+
   createQuizSession(foundState: StoredStateRecord, allStates: StoredStateRecord[], difficulty: QuizDifficulty): QuizSession {
     const candidateStates = allStates.filter(
       (state) => state.ID !== foundState.ID && state.ID !== DISTRICT_OF_COLUMBIA_ID,
@@ -59,10 +86,6 @@ export class QuizService {
         ),
       ),
     ).slice(0, 3);
-
-    if (distractors.length < 3) {
-      throw new Error(`Unable to build quiz question for topic ${topic}.`);
-    }
 
     const correctIndex = this.randomInt(0, 3);
     const options = [...distractors];

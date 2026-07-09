@@ -2,5 +2,18 @@
   <div class="map-overlay">
     <span>{{ foundCount() }} States Explored &middot; 1950 Atlas</span>
   </div>
-  <div id="road-atlas-map"></div>
+  <div #roadAtlasMap id="road-atlas-map"></div>
+
+  <div class="atlas-detail" *ngIf="selectedState() as state">
+    <button type="button" class="atlas-detail__close" aria-label="Close state details" (click)="closeStateDetail()">×</button>
+    <span class="atlas-detail__kicker">{{ state.Abbrv }} Plate</span>
+    <strong class="atlas-detail__name">{{ state.Name }}</strong>
+    <span class="atlas-detail__status">{{ state.fnd.stateFound ? 'Stamped in your road log' : 'Still open for spotting' }}</span>
+    <span class="atlas-detail__meta">{{ state.fnd.distance | number:'1.0-0' }} mi &middot; {{ getCorrectAnswersCount(state) }} trivia</span>
+    @if (!state.fnd.stateFound) {
+      <button type="button" class="atlas-detail__action" (click)="requestSpot(state.ID)">
+        Spot this plate
+      </button>
+    }
+  </div>
 </div>

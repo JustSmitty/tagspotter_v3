@@ -60,6 +60,9 @@ export interface StateCardViewModel {
   questionsCorrect: number;
   flagUrl: string;
   region: StateRegion;
+  triviaPoints?: number;
+  mode?: 'classic' | 'trivia';
+  difficulty?: QuizDifficulty;
 }
 
 export interface AchievementViewModel {
@@ -79,6 +82,27 @@ export interface GoalProgressViewModel extends AchievementViewModel {
   statusText: string;
 }
 
+export interface RotatingChallengeViewModel {
+  id: string;
+  title: string;
+  description: string;
+  currentValue: number;
+  targetValue: number;
+  progressPercent: number;
+  progressLabel: string;
+  unlocked: boolean;
+}
+
+export interface TripHistoryEntry {
+  id: string;
+  completedAt: string;
+  foundCount: number;
+  totalStates: number;
+  finalScore: number;
+  miles: number;
+  triviaCorrect: number;
+}
+
 export interface GameSnapshot {
   states: StoredStateRecord[];
   points: StoredPoints;
@@ -93,6 +117,7 @@ export interface PersistedGameSnapshot {
   hasSeenOnboarding: boolean;
   gameMode: 'classic' | 'trivia';
   difficulty: QuizDifficulty;
+  tripHistory: TripHistoryEntry[];
 }
 
 export type QuizDifficulty = 'easy' | 'medium' | 'hard';
@@ -141,6 +166,8 @@ export interface DashboardViewModel {
   totalDistanceMiles: number;
   states: StateCardViewModel[];
   achievements: AchievementViewModel[];
+  tripHistory: TripHistoryEntry[];
+  travelLog: StateCardViewModel[];
 }
 
 export interface SouvenirFlagViewModel {
@@ -227,4 +254,15 @@ function normalizeStoredState(state: StoredStateRecord | LegacyStoredStateRecord
         : undefined,
     },
   };
+}
+
+export function getDifficultyMultiplier(difficulty?: QuizDifficulty): number {
+  if (difficulty === 'hard') return 3;
+  if (difficulty === 'medium') return 2;
+  return 1;
+}
+
+export function getCorrectAnswersCount(questionsCorrectPoints: number, difficulty?: QuizDifficulty): number {
+  const multiplier = getDifficultyMultiplier(difficulty);
+  return Math.round(questionsCorrectPoints / multiplier);
 }

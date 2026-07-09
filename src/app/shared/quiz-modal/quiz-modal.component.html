@@ -50,7 +50,7 @@
           (click)="onSelect(option)">
           <span class="option-marker" *ngIf="question.optionType !== 'image'">{{ answerMarkers[index] }}</span>
           <span class="option-label" *ngIf="question.optionType !== 'image'">{{ option }}</span>
-          <img class="option-image" *ngIf="question.optionType === 'image'" [src]="option" alt="Flag option" loading="lazy" />
+          <img class="option-image" *ngIf="question.optionType === 'image'" [src]="option" [alt]="stateNameFromUrl(option)" loading="lazy" />
           <span class="indicator" aria-hidden="true" *ngIf="question.optionType !== 'image'"></span>
         </button>
       </div>

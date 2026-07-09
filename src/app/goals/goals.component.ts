@@ -24,6 +24,7 @@ export class GoalsComponent implements OnInit {
   private readonly gameStateStore = inject(GameStateStore);
 
   readonly goals = this.gameStateStore.goalProgress;
+  readonly challenges = this.gameStateStore.rotatingChallenges;
   readonly souvenirFlags = this.gameStateStore.goalsSouvenirFlags;
   readonly summary = this.gameStateStore.goalsSummary;
 

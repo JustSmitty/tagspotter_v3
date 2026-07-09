@@ -36,17 +36,33 @@ describe('AchievementService', () => {
     expect(californiaOnly.find((achievement) => achievement.id === 'coast-to-coast')?.unlocked).toBeFalse();
     expect(inlandOnly.find((achievement) => achievement.id === 'coast-to-coast')?.unlocked).toBeFalse();
   });
+
+  it('builds rotating challenges from the current snapshot and date', () => {
+    const challenges = service.getRotatingChallenges(buildSnapshot([
+      buildState(14, 'IL', true),
+      buildState(15, 'KS', true),
+      buildState(5, 'CA', true),
+    ], 6, 1200), new Date('2026-01-01T12:00:00.000Z'));
+
+    expect(challenges.length).toBe(3);
+    expect(challenges.map((challenge) => challenge.id)).toEqual([
+      'trivia-tune-up',
+      'long-haul',
+      'coastal-color',
+    ]);
+    expect(challenges.every((challenge) => challenge.unlocked)).toBeTrue();
+  });
 });
 
-function buildSnapshot(states: StoredStateRecord[]): GameSnapshot {
+function buildSnapshot(states: StoredStateRecord[], totalCorrect = 0, totalDistanceMiles = 0): GameSnapshot {
   const foundStates = states.filter((state) => state.fnd.stateFound);
 
   return {
     states,
     points: createEmptyPoints(),
     foundCount: foundStates.length,
-    totalCorrect: foundStates.reduce((total, state) => total + state.fnd.questionsCorrect, 0),
-    totalDistanceMiles: foundStates.reduce((total, state) => total + state.fnd.distance, 0),
+    totalCorrect,
+    totalDistanceMiles,
   };
 }
 

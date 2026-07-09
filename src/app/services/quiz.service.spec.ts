@@ -69,6 +69,27 @@ describe('QuizService', () => {
 
     randomSpy.and.callThrough();
   });
+
+  it('builds display topics from the quiz tier topics', () => {
+    const topics = service.getTriviaTopics().map((topic) => topic.title);
+
+    expect(topics).toEqual([
+      'Capital',
+      'Abbreviation',
+      'Region',
+      'Landmark',
+      'Nickname',
+      'Bird',
+      'AdmissionYear',
+      'Flower',
+      'Tree',
+      'LargestCity',
+      'Flag',
+      'Movie',
+      'Sports',
+    ]);
+    expect(service.getTriviaTopics().every((topic) => topic.subtitle.length > 0)).toBeTrue();
+  });
 });
 
 function buildState(

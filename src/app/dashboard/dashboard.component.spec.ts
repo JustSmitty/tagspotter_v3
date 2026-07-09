@@ -64,6 +64,29 @@ describe('DashboardComponent', () => {
               unlocked: true,
             },
           ],
+          tripHistory: [
+            {
+              id: 'trip-1',
+              completedAt: '2026-07-05T12:00:00.000Z',
+              foundCount: 2,
+              totalStates: 50,
+              finalScore: 6,
+              miles: 432,
+              triviaCorrect: 3,
+            },
+          ],
+          travelLog: [
+            {
+              id: 1,
+              code: 'AL',
+              name: 'Alabama',
+              isFound: true,
+              distanceFound: 210,
+              questionsCorrect: 2,
+              flagUrl: '/assets/stateflags/Alabama.svg',
+              region: 'south' as const,
+            },
+          ],
         }),
         dashboardSouvenirFlags: signal<StateCardViewModel[]>([
           {
@@ -105,5 +128,6 @@ describe('DashboardComponent', () => {
     expect(compiled.querySelectorAll('.stamp-slot').length).toBe(2);
     expect(compiled.querySelector('.stamp-slot.stamped')?.textContent?.trim()).toBe('AL');
     expect(compiled.querySelector('.souvenir-title')?.textContent).toContain('The Pioneer');
+    expect(compiled.querySelector('.trip-history-card')?.textContent).toContain('6 pts');
   });
 });

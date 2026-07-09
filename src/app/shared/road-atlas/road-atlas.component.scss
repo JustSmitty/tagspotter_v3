@@ -13,6 +13,15 @@
   width: 100%;
   height: 100%;
   background: #f4e8d0; // Parchment base
+
+  // Allow vertical page scrolling to pass through the (static) map canvas so the
+  // plate grid below remains reachable. MapLibre otherwise sets touch-action to
+  // none to own all gestures; we've disabled those gestures in the component.
+  &,
+  .maplibregl-canvas-container,
+  .maplibregl-canvas {
+    touch-action: pan-y;
+  }
 }
 
 .map-overlay {
@@ -31,6 +40,91 @@
   z-index: 10;
 }
 
+.atlas-detail {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: grid;
+  gap: 3px;
+  min-width: 180px;
+  max-width: min(260px, calc(100% - 24px));
+  padding: 10px 38px 10px 12px;
+  background: rgba(255, 248, 239, 0.94);
+  border: 1px solid rgba(74, 56, 40, 0.3);
+  border-radius: 4px;
+  box-shadow: 0 8px 18px rgba(71, 51, 28, 0.16);
+  color: #4a3828;
+  z-index: 11;
+}
+
+.atlas-detail__close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(74, 56, 40, 0.24);
+  border-radius: 50%;
+  background: transparent;
+  color: #4a3828;
+  cursor: pointer;
+  line-height: 1;
+
+  &:focus-visible {
+    outline: 2px solid rgba(57, 103, 84, 0.55);
+    outline-offset: 2px;
+  }
+}
+
+.atlas-detail__kicker,
+.atlas-detail__status,
+.atlas-detail__meta {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.atlas-detail__name {
+  font-family: 'Newsreader', serif;
+  font-size: 1rem;
+  font-style: italic;
+}
+
+.atlas-detail__status,
+.atlas-detail__meta {
+  color: rgba(74, 56, 40, 0.64);
+}
+
+.atlas-detail__action {
+  margin-top: 8px;
+  padding: 7px 12px;
+  border: 1px solid #b8431a;
+  border-radius: 4px;
+  background: var(--ion-color-primary, #d9541c);
+  color: #fff;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    background: var(--ion-color-primary-shade, #ba4818);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(57, 103, 84, 0.55);
+    outline-offset: 2px;
+  }
+}
 
 .custom-marker {
   width: 24px;

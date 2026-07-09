@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { Capacitor } from '@capacitor/core';
+import { Haptics } from '@capacitor/haptics';
 
 import { PersistedGameSnapshot, createEmptyPoints, QuizSession, StoredStateRecord } from '../models/game-state.model';
 import { AchievementService } from './achievement.service';
@@ -19,6 +21,8 @@ describe('GameStateStore', () => {
       'loadSnapshot',
       'saveSnapshot',
       'resetSnapshot',
+      'getLocationPrecision',
+      'setLocationPrecision',
     ]);
     locationService = jasmine.createSpyObj<LocationService>('LocationService', [
       'getCurrentLocationAccess',
@@ -27,6 +31,8 @@ describe('GameStateStore', () => {
     quizService = jasmine.createSpyObj<QuizService>('QuizService', ['createQuizSession']);
 
     stateService.saveSnapshot.and.resolveTo();
+    stateService.getLocationPrecision.and.resolveTo('coarse');
+    stateService.setLocationPrecision.and.resolveTo();
     locationService.getCurrentLocationAccess.and.resolveTo({
       status: 'granted',
       coordinates: { lat: 33, lng: -86 },
@@ -103,6 +109,76 @@ describe('GameStateStore', () => {
     expect(stateService.saveSnapshot).toHaveBeenCalledTimes(1);
   });
 
+  it('persists and exposes the selected location precision', async () => {
+    await store.hydrate();
+
+    expect(store.locationPrecision()).toBe('coarse');
+
+    await store.setLocationPrecision('fine');
+
+    expect(store.locationPrecision()).toBe('fine');
+    expect(stateService.setLocationPrecision).toHaveBeenCalledWith('fine');
+  });
+
+  it('requests location at the selected precision when recording a find', async () => {
+    stateService.getLocationPrecision.and.resolveTo('fine');
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states: [buildState(1, 'AL')],
+      points: createEmptyPoints(),
+      gameMode: 'classic',
+    }));
+
+    await store.hydrate();
+    await store.recordFoundState(1);
+
+    expect(locationService.getCurrentLocationAccess).toHaveBeenCalledWith('fine');
+  });
+
+  it('does not save or update a trivia find when quiz creation fails', async () => {
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states: [
+        buildState(1, 'AL'),
+        buildState(2, 'AK'),
+        buildState(3, 'AZ'),
+        buildState(4, 'AR'),
+      ],
+      points: createEmptyPoints(),
+      gameMode: 'trivia',
+    }));
+    quizService.createQuizSession.and.throwError('Unable to build quiz question for topic Bird.');
+
+    await store.hydrate();
+
+    await expectAsync(store.recordFoundState(1)).toBeRejectedWithError('Unable to build quiz question for topic Bird.');
+
+    expect(stateService.saveSnapshot).not.toHaveBeenCalled();
+    expect(store.homeViewModel().states[0].isFound).toBeFalse();
+    expect(store.homeViewModel().points.total).toBe(0);
+  });
+
+  it('does not update in-memory progress when saving a found state fails', async () => {
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states: [
+        buildState(1, 'AL'),
+        buildState(2, 'AK'),
+        buildState(3, 'AZ'),
+        buildState(4, 'AR'),
+      ],
+      points: createEmptyPoints(),
+      gameMode: 'classic',
+    }));
+    stateService.saveSnapshot.and.rejectWith(new Error('Quota exceeded'));
+    spyOn(console, 'error');
+
+    await store.hydrate();
+
+    await expectAsync(store.recordFoundState(1)).toBeRejectedWithError('Failed to save progress. Storage may be full.');
+
+    expect(store.homeViewModel().states[0].isFound).toBeFalse();
+    expect(store.homeViewModel().points.total).toBe(0);
+    expect(store.error()).toBe('Failed to save progress. Storage may be full.');
+  });
+
   it('completes quiz scoring without double counting the same result', async () => {
     stateService.loadSnapshot.and.resolveTo(buildSnapshot({
       states: [
@@ -150,6 +226,40 @@ describe('GameStateStore', () => {
     expect(store.homeViewModel().points.total).toBe(0);
   });
 
+  it('archives the current trip when resetting progress', async () => {
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states: [
+        buildState(1, 'AL', {
+          fnd: {
+            distance: 250,
+            stateFound: true,
+            questionsCorrect: 2,
+          },
+        }),
+      ],
+      points: { state: 1, question: 2, distance: 1 },
+    }));
+    stateService.resetSnapshot.and.callFake(async (tripHistory) => buildSnapshot({
+      states: [buildState(1, 'AL')],
+      points: createEmptyPoints(),
+      tripHistory,
+    }));
+
+    await store.hydrate();
+    await store.resetProgress();
+
+    expect(stateService.resetSnapshot).toHaveBeenCalledWith([
+      jasmine.objectContaining({
+        foundCount: 1,
+        totalStates: 1,
+        finalScore: 4,
+        miles: 250,
+        triviaCorrect: 2,
+      }),
+    ], false);
+    expect(store.dashboardViewModel().tripHistory.length).toBe(1);
+  });
+
   it('records a state without a distance bonus when location permission is denied', async () => {
     stateService.loadSnapshot.and.resolveTo(buildSnapshot({
       states: [
@@ -172,6 +282,7 @@ describe('GameStateStore', () => {
     expect(locationService.calculateDistanceMiles).not.toHaveBeenCalled();
     expect(store.homeViewModel().states[0].distanceFound).toBe(0);
     expect(store.homeViewModel().points.total).toBe(1);
+    expect(store.locationError()).toBe('PERMISSION_DENIED');
   });
 
   it('stores a sanitized error message when distance calculation fails unexpectedly', async () => {
@@ -243,6 +354,22 @@ describe('GameStateStore', () => {
     }));
   });
 
+  it('does not update in-memory settings when saving a setting fails', async () => {
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      gameMode: 'classic',
+      difficulty: 'easy',
+    }));
+    stateService.saveSnapshot.and.rejectWith(new Error('Quota exceeded'));
+    spyOn(console, 'error');
+
+    await store.hydrate();
+
+    await expectAsync(store.setDifficulty('hard')).toBeRejectedWithError('Failed to save progress. Storage may be full.');
+
+    expect(store.difficulty()).toBe('easy');
+    expect(store.error()).toBe('Failed to save progress. Storage may be full.');
+  });
+
   it('keeps summary distribution after hydrating stored per-state mode and difficulty', async () => {
     stateService.loadSnapshot.and.resolveTo(buildSnapshot({
       states: [
@@ -264,6 +391,22 @@ describe('GameStateStore', () => {
       total: 4,
     });
   });
+
+  it('skips haptics on web platforms', async () => {
+    spyOn(Capacitor, 'isNativePlatform').and.returnValue(false);
+    const impactSpy = spyOn(Haptics, 'impact').and.resolveTo();
+
+    await (store as any).triggerFoundHaptic();
+
+    expect(impactSpy).not.toHaveBeenCalled();
+  });
+
+  it('treats haptics as best effort on native platforms', async () => {
+    spyOn(Capacitor, 'isNativePlatform').and.returnValue(true);
+    spyOn(Haptics, 'impact').and.rejectWith(new Error('No haptic engine'));
+
+    await expectAsync((store as any).triggerFoundHaptic()).toBeResolved();
+  });
 });
 
 function buildSnapshot(overrides: Partial<PersistedGameSnapshot> = {}): PersistedGameSnapshot {
@@ -273,6 +416,7 @@ function buildSnapshot(overrides: Partial<PersistedGameSnapshot> = {}): Persiste
     hasSeenOnboarding: false,
     gameMode: 'classic',
     difficulty: 'easy',
+    tripHistory: [],
     ...overrides,
   };
 }

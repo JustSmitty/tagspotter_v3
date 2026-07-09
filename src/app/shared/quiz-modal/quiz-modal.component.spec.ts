@@ -67,4 +67,10 @@ describe('QuizModalComponent', () => {
       kind: 'cancelled',
     });
   });
+
+  it('correctly parses state name from flag URL', () => {
+    expect(component.stateNameFromUrl('/assets/stateflags/Alabama.svg')).toBe('Flag of Alabama');
+    expect(component.stateNameFromUrl('/assets/stateflags/New Hampshire.svg')).toBe('Flag of New Hampshire');
+    expect(component.stateNameFromUrl('')).toBe('State flag');
+  });
 });

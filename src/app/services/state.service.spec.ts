@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { Preferences } from '@capacitor/preferences';
 
 import { PersistedGameSnapshot, createEmptyPoints, StoredStateRecord } from '../models/game-state.model';
 import statesFile from '../../data/states.json';
@@ -17,6 +18,15 @@ describe('StateService', () => {
     spyOn<any>(service, 'getStorageItem').and.resolveTo(null);
     spyOn<any>(service, 'setStorageItem').and.resolveTo();
     spyOn<any>(service, 'removeStorageItem').and.resolveTo();
+
+    // The standalone onboarding flag is read/written via the raw preference
+    // helpers; back them with an isolated in-memory store so tests stay
+    // deterministic and independent of the browser's localStorage.
+    const preferenceStore = new Map<string, string>();
+    spyOn<any>(service, 'getPreference').and.callFake(async (key: string) => preferenceStore.get(key) ?? null);
+    spyOn<any>(service, 'setPreference').and.callFake(async (key: string, value: string) => {
+      preferenceStore.set(key, value);
+    });
   });
 
   it('loads cloned seed states on first hydrate', async () => {
@@ -60,6 +70,8 @@ describe('StateService', () => {
       stateFound: true,
       questionsCorrect: 2,
     }));
+    expect(states[0].FamousLandmark).toBe((statesFile as StoredStateRecord[])[0].FamousLandmark);
+    expect(states.length).toBe((statesFile as StoredStateRecord[]).length);
   });
 
   it('drops legacy coordinates but preserves mode and difficulty on save', async () => {
@@ -83,11 +95,14 @@ describe('StateService', () => {
       hasSeenOnboarding: true,
       gameMode: 'trivia',
       difficulty: 'hard',
+      tripHistory: [],
     });
 
     expect((service as any).setStorageItem).toHaveBeenCalledWith('tagspotter_v1_save_data', jasmine.objectContaining({
-      states: [
+      states: jasmine.arrayContaining([
         jasmine.objectContaining({
+          ID: (statesFile as StoredStateRecord[])[0].ID,
+          FamousLandmark: (statesFile as StoredStateRecord[])[0].FamousLandmark,
           fnd: {
             distance: 120,
             stateFound: true,
@@ -96,7 +111,7 @@ describe('StateService', () => {
             difficulty: 'hard',
           },
         }),
-      ],
+      ]),
       hasSeenOnboarding: true,
       gameMode: 'trivia',
       difficulty: 'hard',
@@ -121,6 +136,17 @@ describe('StateService', () => {
       hasSeenOnboarding: true,
       gameMode: 'trivia',
       difficulty: 'medium',
+      tripHistory: [
+        {
+          id: 'trip-1',
+          completedAt: '2026-07-05T12:00:00.000Z',
+          foundCount: 12,
+          totalStates: 51,
+          finalScore: 30,
+          miles: 1200,
+          triviaCorrect: 18,
+        },
+      ],
     };
     (service as unknown as { getStorageItem: jasmine.Spy }).getStorageItem.and.callFake((key: string) => {
       if (key === 'tagspotter_v1_save_data') {
@@ -137,6 +163,7 @@ describe('StateService', () => {
     expect(loaded.difficulty).toBe('medium');
     expect(loaded.states[0].fnd.mode).toBe('trivia');
     expect(loaded.states[0].fnd.difficulty).toBe('medium');
+    expect(loaded.tripHistory[0]).toEqual(storedSnapshot.tripHistory[0]);
   });
 
   it('resets progress back to a clean canonical snapshot with a single save', async () => {
@@ -148,6 +175,7 @@ describe('StateService', () => {
     expect(resetSnapshot.hasSeenOnboarding).toBeFalse();
     expect(resetSnapshot.gameMode).toBe('classic');
     expect(resetSnapshot.difficulty).toBe('easy');
+    expect(resetSnapshot.tripHistory).toEqual([]);
     expect((service as any).setStorageItem).toHaveBeenCalledTimes(1);
   });
 
@@ -170,6 +198,7 @@ describe('StateService', () => {
           hasSeenOnboarding: 'yes',
           gameMode: 'arcade',
           difficulty: 'legendary',
+          tripHistory: 'old trips',
         });
       }
       return Promise.resolve(null);
@@ -181,6 +210,7 @@ describe('StateService', () => {
     expect(snapshot.gameMode).toBe('classic');
     expect(snapshot.difficulty).toBe('easy');
     expect(snapshot.states[0].fnd.difficulty).toBeUndefined();
+    expect(snapshot.tripHistory).toEqual([]);
   });
 
   it('clears only app-owned keys', async () => {
@@ -188,12 +218,46 @@ describe('StateService', () => {
 
     await service.clearStorage();
 
-    expect((service as any).removeStorageItem).toHaveBeenCalledTimes(6);
+    expect((service as any).removeStorageItem).toHaveBeenCalledTimes(8);
     expect((service as any).removeStorageItem).toHaveBeenCalledWith('states');
     expect((service as any).removeStorageItem).toHaveBeenCalledWith('points');
     expect((service as any).removeStorageItem).toHaveBeenCalledWith('hasSeenOnboarding');
     expect((service as any).removeStorageItem).toHaveBeenCalledWith('gameMode');
     expect((service as any).removeStorageItem).toHaveBeenCalledWith('difficulty');
     expect((service as any).removeStorageItem).toHaveBeenCalledWith('tagspotter_v1_save_data');
+    expect((service as any).removeStorageItem).toHaveBeenCalledWith('tagspotter_v1_onboarding_seen');
+    expect((service as any).removeStorageItem).toHaveBeenCalledWith('tagspotter_v1_location_precision');
+  });
+
+  it('defaults location precision to coarse and round-trips a saved value', async () => {
+    expect(await service.getLocationPrecision()).toBe('coarse');
+
+    await service.setLocationPrecision('fine');
+    expect(await service.getLocationPrecision()).toBe('fine');
+
+    await service.setLocationPrecision('coarse');
+    expect(await service.getLocationPrecision()).toBe('coarse');
+  });
+
+  it('encrypts and decrypts storage values correctly preserving integrity', async () => {
+    const realService = TestBed.runInInjectionContext(() => new StateService());
+    
+    const mockStorage = new Map<string, string>();
+    spyOn<any>(realService, 'setPreference').and.callFake(async (key: string, value: string) => {
+      mockStorage.set(key, value);
+    });
+    spyOn<any>(realService, 'getPreference').and.callFake(async (key: string) => {
+      return mockStorage.get(key) || null;
+    });
+
+    const testData = { foo: 'bar', count: 42 };
+    await (realService as any).setStorageItem('test_key', testData);
+    
+    const rawStored = mockStorage.get('test_key');
+    expect(rawStored).toBeTruthy();
+    expect(rawStored?.startsWith('{')).toBeFalse();
+
+    const loadedData = await (realService as any).getStorageItem('test_key');
+    expect(loadedData).toEqual(testData);
   });
 });

@@ -35,15 +35,18 @@
         <p>STAMPED & VERIFIED</p>
       </div>
       <div class="state-stamp-grid">
-        <div
-          *ngFor="let state of viewModel().states"
-          class="stamp-slot"
-          [class.stamped]="state.isFound"
-          [attr.data-region]="state.region"
-          [title]="state.name">
-          <span class="stamp-code">{{ state.code }}</span>
-          <div class="stamp-overlay" *ngIf="state.isFound"></div>
-        </div>
+        @for (state of viewModel().states; track state.id) {
+          <div
+            class="stamp-slot"
+            [class.stamped]="state.isFound"
+            [attr.data-region]="state.region"
+            [title]="state.name">
+            <span class="stamp-code">{{ state.code }}</span>
+            @if (state.isFound) {
+              <div class="stamp-overlay"></div>
+            }
+          </div>
+        }
       </div>
     </div>
 
@@ -54,36 +57,108 @@
     </div>
 
     <div class="souvenir-grid">
-      <div
-        *ngFor="let ach of viewModel().achievements"
-        class="souvenir-card cardstock-layer"
-        [class.locked]="!ach.unlocked">
-        <div class="souvenir-visual">
-          <div class="souvenir-flag-cluster" *ngIf="souvenirFlags().length">
-            <div
-              *ngFor="let state of souvenirFlags(); let index = index"
-              class="travel-stamp souvenir-flag"
-              [style.--stamp-rotation]="index === 1 ? '4deg' : (index === 2 ? '-2deg' : '-6deg')">
-              <img
-                class="travel-stamp__image"
-                [src]="state.flagUrl"
-                [alt]="state.name + ' state flag'"
-                loading="lazy" />
-              <span class="travel-stamp__label">{{ state.code }}</span>
+      @for (ach of viewModel().achievements; track ach.id) {
+        <div
+          class="souvenir-card cardstock-layer"
+          [class.locked]="!ach.unlocked">
+          <div class="souvenir-visual">
+            @if (ach.unlocked && souvenirFlags().length) {
+              <div class="souvenir-flag-cluster">
+                @for (state of souvenirFlags(); track state.code; let index = $index) {
+                  <div
+                    class="travel-stamp souvenir-flag"
+                    [style.--stamp-rotation]="index === 1 ? '4deg' : (index === 2 ? '-2deg' : '-6deg')">
+                    <img
+                      class="travel-stamp__image"
+                      [src]="state.flagUrl"
+                      [alt]="state.name + ' state flag'"
+                      loading="lazy" />
+                    <span class="travel-stamp__label">{{ state.code }}</span>
+                  </div>
+                }
+              </div>
+            }
+            <ion-icon [name]="ach.icon"></ion-icon>
+            @if (ach.unlocked) {
+              <div class="souvenir-stamp">PASSED</div>
+            }
+          </div>
+          <div class="souvenir-content">
+            <h4 class="souvenir-title">{{ ach.title }}</h4>
+            <p class="souvenir-desc">{{ ach.description }}</p>
+          </div>
+          @if (ach.unlocked) {
+            <div class="souvenir-postmark">
+              COLLECTED
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- TRAVEL LOG TIMELINE -->
+    @if (viewModel().travelLog.length) {
+      <div class="section-header">
+        <div class="section-label">TRAVEL LOG TIMELINE</div>
+        <div class="section-rule"></div>
+      </div>
+
+      <div class="timeline">
+        @for (state of viewModel().travelLog; track state.id; let index = $index; let last = $last) {
+          <div class="timeline-entry" [class.timeline-last]="last">
+            <div class="timeline-marker">
+              <div class="timeline-dot"></div>
+              @if (!last) {
+                <div class="timeline-line"></div>
+              }
+            </div>
+            <div class="timeline-card cardstock-layer">
+              <div class="timeline-flag travel-stamp">
+                <img
+                  class="travel-stamp__image"
+                  [src]="state.flagUrl"
+                  [alt]="state.name + ' state flag'"
+                  loading="lazy" />
+                <span class="travel-stamp__label">{{ state.code }}</span>
+              </div>
+              <div class="timeline-info">
+                <span class="timeline-name">{{ state.name }}</span>
+                <span class="timeline-meta">
+                  @if (state.mode === 'trivia') {
+                    {{ state.questionsCorrect }}/3 trivia · 
+                  }
+                  {{ state.distanceFound }} mi
+                </span>
+              </div>
+              <span class="timeline-index">#{{ index + 1 }}</span>
             </div>
           </div>
-          <ion-icon [name]="ach.icon"></ion-icon>
-          <div class="souvenir-stamp" *ngIf="ach.unlocked">PASSED</div>
-        </div>
-        <div class="souvenir-content">
-          <h4 class="souvenir-title">{{ ach.title }}</h4>
-          <p class="souvenir-desc">{{ ach.description }}</p>
-        </div>
-        <div class="souvenir-postmark" *ngIf="ach.unlocked">
-          COLLECTED
-        </div>
+        }
       </div>
-    </div>
+    }
+
+    @if (viewModel().tripHistory.length) {
+      <div class="section-header">
+        <div class="section-label">PAST TRIPS</div>
+        <div class="section-rule"></div>
+      </div>
+
+      <div class="trip-history-list">
+        @for (trip of viewModel().tripHistory; track trip.id) {
+          <article class="trip-history-card cardstock-layer">
+            <div class="trip-history-main">
+              <span class="trip-history-score">{{ trip.finalScore }} pts</span>
+              <span class="trip-history-date">{{ trip.completedAt | date:'MMM d, y' }}</span>
+            </div>
+            <div class="trip-history-meta">
+              <span>{{ trip.foundCount }}/{{ trip.totalStates }} plates</span>
+              <span>{{ trip.miles | number:'1.0-0' }} mi</span>
+              <span>{{ trip.triviaCorrect }} trivia</span>
+            </div>
+          </article>
+        }
+      </div>
+    }
 
     <div class="footer-note">
       Keep your eyes on the road and your hands on the wheel.

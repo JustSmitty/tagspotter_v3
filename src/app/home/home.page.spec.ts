@@ -5,6 +5,8 @@ import { ModalController } from '@ionic/angular/standalone';
 
 import { HomeViewModel, QuizDismissResult, QuizQuestion, QuizSession, QuizDifficulty } from '../models/game-state.model';
 import { GameStateStore } from '../services/game-state.store';
+import { LocationErrorCode } from '../services/location.service';
+import { LocationPrecision } from '../models/location.model';
 import { HomePage } from './home.page';
 import { RoadAtlasComponent } from '../shared/road-atlas/road-atlas.component';
 import { OnboardingModalComponent } from '../shared/onboarding-modal/onboarding-modal.component';
@@ -23,10 +25,11 @@ describe('HomePage', () => {
   let fixture: ComponentFixture<HomePage>;
   let gameStateStore: jasmine.SpyObj<GameStateStore> & { 
     homeViewModel: WritableSignal<HomeViewModel>,
-    locationError: WritableSignal<string | null>,
+    locationError: WritableSignal<LocationErrorCode | null>,
     difficulty: WritableSignal<QuizDifficulty>,
     gameMode: WritableSignal<'classic' | 'trivia'>,
     hasSeenOnboarding: WritableSignal<boolean>,
+    locationPrecision: WritableSignal<LocationPrecision>,
     error: WritableSignal<string | null>
   };
   let modalController: jasmine.SpyObj<ModalController>;
@@ -43,6 +46,7 @@ describe('HomePage', () => {
         'completeQuiz',
         'setDifficulty',
         'setGameMode',
+        'setLocationPrecision',
         'markOnboardingComplete'
       ]),
       {
@@ -71,10 +75,11 @@ describe('HomePage', () => {
           isLoaded: true,
           isBusy: false,
         }),
-        locationError: signal<string | null>(null),
+        locationError: signal<LocationErrorCode | null>(null),
         difficulty: signal<QuizDifficulty>('easy'),
         gameMode: signal<'classic' | 'trivia'>('trivia'),
         hasSeenOnboarding: signal(true),
+        locationPrecision: signal<LocationPrecision>('coarse'),
         snapshot: signal({
           states: [
             {
@@ -106,6 +111,8 @@ describe('HomePage', () => {
     gameStateStore.hydrate.and.resolveTo();
     gameStateStore.resetProgress.and.resolveTo();
     gameStateStore.completeQuiz.and.resolveTo();
+    gameStateStore.setGameMode.and.resolveTo();
+    gameStateStore.setDifficulty.and.resolveTo();
     gameStateStore.markOnboardingComplete.and.resolveTo();
 
     modalController = jasmine.createSpyObj<ModalController>('ModalController', ['create']);
@@ -156,6 +163,20 @@ describe('HomePage', () => {
     expect(compiled.querySelector('.postcard-stats-ledger')?.textContent).toContain('732');
     expect(compiled.querySelectorAll('.plate-wrapper').length).toBe(1);
     expect(compiled.querySelector('.plate-tag-text')?.textContent?.trim()).toBe('AL');
+  });
+
+  it('renders the game mode control as an accessible switch', async () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const switchButton = compiled.querySelector<HTMLButtonElement>('.brass-switch-wrapper');
+
+    expect(switchButton?.tagName).toBe('BUTTON');
+    expect(switchButton?.getAttribute('role')).toBe('switch');
+    expect(switchButton?.getAttribute('aria-checked')).toBe('true');
+
+    switchButton?.click();
+    await fixture.whenStable();
+
+    expect(gameStateStore.setGameMode).toHaveBeenCalledWith('classic');
   });
 
   it('records a state and completes the quiz session through the store', async () => {
@@ -292,5 +313,32 @@ describe('HomePage', () => {
     await component.onRecord(gameStateStore.homeViewModel().states[0]);
 
     expect(gameStateStore.recordFoundState).not.toHaveBeenCalled();
+  });
+
+  it('shows confirmation feedback after resetting progress', async () => {
+    await component.onRefresh();
+
+    const alertConfig = alertController.create.calls.mostRecent().args[0] as any;
+    const confirmButton = alertConfig.buttons.find((button: any) => button.role === 'confirm');
+
+    await confirmButton.handler();
+
+    expect(gameStateStore.resetProgress).toHaveBeenCalled();
+    expect(toastController.create).toHaveBeenCalledWith(jasmine.objectContaining({
+      message: jasmine.stringMatching(/Trip reset/),
+      duration: 3000,
+    }));
+  });
+
+  it('shows a toast when distance bonus fails without a permission denial', async () => {
+    gameStateStore.locationError.set('UNAVAILABLE');
+    gameStateStore.recordFoundState.and.resolveTo(null);
+
+    await component.onRecord(gameStateStore.homeViewModel().states[0]);
+
+    expect(toastController.create).toHaveBeenCalledWith(jasmine.objectContaining({
+      message: jasmine.stringMatching(/Location services are unavailable/),
+      duration: 3500,
+    }));
   });
 });

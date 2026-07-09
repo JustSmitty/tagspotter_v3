@@ -13,3 +13,6 @@ export function getStateRegion(code: string): StateRegion {
   if (US_REGIONS.midwest.includes(code)) return 'midwest';
   return 'west';
 }
+
+export const EAST_COAST_STATE_CODES = new Set(['CT', 'DE', 'FL', 'GA', 'MA', 'MD', 'ME', 'NC', 'NH', 'NJ', 'NY', 'RI', 'SC', 'VA']);
+export const WEST_COAST_STATE_CODES = new Set(['AK', 'CA', 'HI', 'OR', 'WA']);

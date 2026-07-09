@@ -80,4 +80,30 @@ describe('LocationService', () => {
 
     expect((service as unknown as { readCurrentPosition: jasmine.Spy }).readCurrentPosition).toHaveBeenCalledTimes(1);
   });
+
+  it('passes the requested precision through to the position read', async () => {
+    const readSpy = service as unknown as { readCurrentPosition: jasmine.Spy };
+
+    await service.getCurrentLocationAccess('fine');
+
+    expect(readSpy.readCurrentPosition).toHaveBeenCalledWith('fine');
+  });
+
+  it('does not reuse a coarse cache for a precise request', async () => {
+    const readSpy = (service as unknown as { readCurrentPosition: jasmine.Spy }).readCurrentPosition;
+
+    await service.getCurrentLocationAccess('coarse');
+    await service.getCurrentLocationAccess('fine');
+
+    expect(readSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('reuses a precise cache to satisfy a coarse request', async () => {
+    const readSpy = (service as unknown as { readCurrentPosition: jasmine.Spy }).readCurrentPosition;
+
+    await service.getCurrentLocationAccess('fine');
+    await service.getCurrentLocationAccess('coarse');
+
+    expect(readSpy).toHaveBeenCalledTimes(1);
+  });
 });

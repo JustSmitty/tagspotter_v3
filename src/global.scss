@@ -41,7 +41,7 @@
  * For more info, please see:
  * https://ionicframework.com/docs/theming/dark-mode
  */
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Work+Sans:ital,wght@0,100..900;1,100..900&family=Special+Elite&display=swap');
+
 
 html,
 body,
@@ -119,6 +119,8 @@ ion-app {
   display: block;
   text-align: inherit;
   outline: none;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
 
   &:focus-visible {
     .plate-body {
@@ -300,21 +302,37 @@ ion-app {
 
 .found-stamp {
   position: absolute;
-  left: 10px;
-  bottom: 10px;
-  z-index: 3;
-  padding: 5px 8px 4px;
-  border: 2px solid rgba(217, 84, 28, 0.72);
-  border-radius: 999px;
-  background: rgba(255, 248, 239, 0.92);
-  color: var(--ion-color-primary);
+  top: 50%;
+  left: 50%;
+  z-index: 4;
+  padding: 4px 16px 3px;
+  border: 3px solid rgba(57, 103, 84, 0.65);
+  border-radius: 6px;
+  background: rgba(255, 248, 239, 0.88);
+  color: rgba(57, 103, 84, 0.78);
   font-family: 'Special Elite', cursive;
-  font-size: 0.5rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  transform: rotate(-8deg);
-  box-shadow: 0 4px 10px rgba(70, 44, 14, 0.12);
+  transform: translate(-50%, -50%) rotate(-14deg);
+  box-shadow:
+    0 0 0 2px rgba(57, 103, 84, 0.15),
+    0 4px 12px rgba(70, 44, 14, 0.14);
+  pointer-events: none;
+  white-space: nowrap;
+  animation: stampIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes stampIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-14deg) scale(1.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-14deg) scale(1);
+  }
 }
 
 .plate-top-row,
@@ -689,6 +707,68 @@ ion-loading.ephemera-loading {
   .plate-tag-text {
     font-size: 2.45rem;
   }
+}
+
+.location-precision {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 20px 0;
+  padding: 14px 16px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.location-precision__label {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(79, 93, 90, 0.85);
+}
+
+.precision-segments {
+  display: inline-flex;
+  padding: 3px;
+  background: #efe7d4;
+  border: 1px solid #d2cbba;
+  border-radius: 50px;
+}
+
+.precision-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 7px 18px;
+  border-radius: 50px;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(79, 93, 90, 0.7);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+
+  &.active {
+    background: #396754;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(57, 103, 84, 0.24);
+  }
+
+  &:not(.active):hover {
+    color: var(--app-ink-deep);
+  }
+}
+
+.location-precision__hint {
+  max-width: 40ch;
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: rgba(0, 0, 0, 0.42);
 }
 
 .footer-spacer {

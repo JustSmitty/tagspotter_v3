@@ -4,9 +4,14 @@ import {
   OnDestroy,
   effect,
   computed,
+  signal,
+  output,
   AfterViewInit,
   ViewEncapsulation,
-  NgZone
+  NgZone,
+  ElementRef,
+  ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { take } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
@@ -14,10 +19,24 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import * as maplibregl from 'maplibre-gl';
 
-import { StoredStateRecord } from '../../models/game-state.model';
+import { StoredStateRecord, getCorrectAnswersCount } from '../../models/game-state.model';
 import { GameStateStore } from '../../services/game-state.store';
 
-let statesGeoJsonPromise: Promise<any> | null = null;
+interface StateAtlasFeature {
+  id?: number;
+  properties?: {
+    name?: string;
+  };
+  [key: string]: unknown;
+}
+
+interface StateAtlasGeoJson {
+  type: 'FeatureCollection';
+  features: StateAtlasFeature[];
+  [key: string]: unknown;
+}
+
+let statesGeoJsonPromise: Promise<StateAtlasGeoJson> | null = null;
 
 @Component({
   selector: 'app-road-atlas',
@@ -25,19 +44,26 @@ let statesGeoJsonPromise: Promise<any> | null = null;
   styleUrls: ['./road-atlas.component.scss'],
   standalone: true,
   imports: [CommonModule],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RoadAtlasComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('roadAtlasMap', { static: true }) private readonly mapContainer?: ElementRef<HTMLElement>;
+
   private readonly gameStateStore = inject(GameStateStore);
   private readonly http = inject(HttpClient);
   private readonly ngZone = inject(NgZone);
   
   private map: maplibregl.Map | null = null;
-  private statesData: any = null;
+  private statesData: StateAtlasGeoJson | null = null;
   private previousFoundIds = new Set<number>();
 
   readonly snapshot = this.gameStateStore.snapshot;
   readonly foundCount = computed(() => this.snapshot().foundCount);
+  readonly selectedState = signal<StoredStateRecord | null>(null);
+
+  /** Emits the state ID when the user asks to spot a state from the map detail card. */
+  readonly spotRequested = output<number>();
   readonly stateNameToId = computed(() => {
     return new Map(
       this.snapshot().states.map((state) => [state.Name.toLowerCase(), state.ID]),
@@ -58,7 +84,7 @@ export class RoadAtlasComponent implements AfterViewInit, OnDestroy {
         }
       }
     ]
-  };
+  } as maplibregl.StyleSpecification;
 
   // Bounds for US-centric view (Contiguous US + padding)
   private readonly US_BOUNDS: maplibregl.LngLatBoundsLike = [
@@ -90,15 +116,38 @@ export class RoadAtlasComponent implements AfterViewInit, OnDestroy {
   }
 
   private initializeMap(): void {
+    const mapContainer = this.mapContainer?.nativeElement;
+
+    if (!mapContainer) {
+      return;
+    }
+
     this.ngZone.runOutsideAngular(() => {
       this.map = new maplibregl.Map({
-        container: 'road-atlas-map',
-        style: this.VINTAGE_STYLE as any,
+        container: mapContainer,
+        style: this.VINTAGE_STYLE,
         center: [-98.5795, 39.8283],
         zoom: 3.5,
+        minZoom: 3,
+        maxZoom: 7,
+        maxBounds: this.US_BOUNDS,
         pitch: 0,
         bearing: 0,
-        interactive: false // Disable pan and zoom
+        // The atlas is a static, full-country composite. Every pan/zoom gesture
+        // is disabled so a vertical swipe scrolls the page (to reach the plate
+        // grid below) rather than being captured by the map canvas. Tap-to-
+        // select a state still works via the 'click' handler wired up in
+        // setupMapInteractions(); click events are independent of these handlers.
+        interactive: true,
+        dragPan: false,
+        dragRotate: false,
+        scrollZoom: false,
+        boxZoom: false,
+        doubleClickZoom: false,
+        touchZoomRotate: false,
+        touchPitch: false,
+        keyboard: false,
+        pitchWithRotate: false
       });
 
       this.map.on('load', () => {
@@ -112,7 +161,7 @@ export class RoadAtlasComponent implements AfterViewInit, OnDestroy {
   private async loadStatesGeoJson(): Promise<void> {
     try {
       const data = await this.getStatesGeoJson();
-      this.statesData = JSON.parse(JSON.stringify(data));
+      this.statesData = this.cloneStatesGeoJson(data);
       this.injectFeatureIds();
       this.setupMapLayers();
     } catch (error) {
@@ -120,19 +169,29 @@ export class RoadAtlasComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  private async getStatesGeoJson(): Promise<any> {
+  private async getStatesGeoJson(): Promise<StateAtlasGeoJson> {
     if (!statesGeoJsonPromise) {
-      statesGeoJsonPromise = firstValueFrom(this.http.get('assets/us-states.json'));
+      statesGeoJsonPromise = firstValueFrom(this.http.get<StateAtlasGeoJson>('assets/us-states.json'));
     }
 
     return statesGeoJsonPromise;
+  }
+
+  private cloneStatesGeoJson(data: StateAtlasGeoJson): StateAtlasGeoJson {
+    return {
+      ...data,
+      features: data.features.map((feature) => ({
+        ...feature,
+        properties: feature.properties ? { ...feature.properties } : undefined,
+      })),
+    };
   }
 
   private injectFeatureIds(): void {
     if (!this.statesData || !this.statesData.features) return;
 
     const stateNameToId = this.stateNameToId();
-    this.statesData.features.forEach((feature: any) => {
+    this.statesData.features.forEach((feature) => {
       const stateId = stateNameToId.get(String(feature.properties?.name ?? '').toLowerCase());
       if (stateId !== undefined) {
         feature.id = stateId;
@@ -145,7 +204,7 @@ export class RoadAtlasComponent implements AfterViewInit, OnDestroy {
 
     this.map.addSource('states', {
       type: 'geojson',
-      data: this.statesData,
+      data: this.statesData as unknown as maplibregl.GeoJSONSourceSpecification['data'],
       generateId: false // Use our manually injected IDs
     });
 
@@ -213,6 +272,53 @@ export class RoadAtlasComponent implements AfterViewInit, OnDestroy {
     });
 
     this.updateStateHighlights(this.snapshot().states);
+    this.setupMapInteractions();
+  }
+
+  closeStateDetail(): void {
+    this.selectedState.set(null);
+  }
+
+  requestSpot(stateId: number): void {
+    this.spotRequested.emit(stateId);
+    this.selectedState.set(null);
+  }
+
+  getCorrectAnswersCount(state: StoredStateRecord): number {
+    return state.fnd.mode === 'trivia' ? getCorrectAnswersCount(state.fnd.questionsCorrect, state.fnd.difficulty) : 0;
+  }
+
+  private setupMapInteractions(): void {
+    if (!this.map) return;
+
+    // Query a small box around the tap instead of the exact pixel so that
+    // geographically tiny states (e.g. RI, DE) are still easy to select on the
+    // compact atlas.
+    const tapTolerancePx = 10;
+
+    this.map.on('click', (event) => {
+      if (!this.map) {
+        return;
+      }
+
+      const { x, y } = event.point;
+      const box: [maplibregl.PointLike, maplibregl.PointLike] = [
+        [x - tapTolerancePx, y - tapTolerancePx],
+        [x + tapTolerancePx, y + tapTolerancePx],
+      ];
+      const features = this.map.queryRenderedFeatures(box, { layers: ['states-fill'] });
+      const stateId = Number(features?.[0]?.id);
+
+      if (!Number.isFinite(stateId)) {
+        return;
+      }
+
+      this.ngZone.run(() => this.selectStateById(stateId));
+    });
+  }
+
+  private selectStateById(stateId: number): void {
+    this.selectedState.set(this.snapshot().states.find((state) => state.ID === stateId) ?? null);
   }
 
   private updateStateHighlights(states: StoredStateRecord[]) {

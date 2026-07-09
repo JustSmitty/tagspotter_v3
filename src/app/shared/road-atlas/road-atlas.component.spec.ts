@@ -92,6 +92,20 @@ describe('RoadAtlasComponent', () => {
 
     expect(setFeatureState).not.toHaveBeenCalled();
   });
+
+  it('selects and closes state details from map feature ids', () => {
+    (component as any).selectStateById(1);
+    fixture.detectChanges();
+
+    expect(component.selectedState()?.Name).toBe('Alabama');
+    expect((fixture.nativeElement as HTMLElement).querySelector('.atlas-detail')?.textContent).toContain('Alabama');
+
+    component.closeStateDetail();
+    fixture.detectChanges();
+
+    expect(component.selectedState()).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.atlas-detail')).toBeNull();
+  });
 });
 
 function buildState(id: number, name: string, stateFound: boolean, distance = 0) {
