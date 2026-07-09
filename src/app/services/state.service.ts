@@ -10,6 +10,7 @@ import {
   StoredStateRecord,
   QuizDifficulty,
   TripHistoryEntry,
+  TEMP_QUIZ_SESSION_KEY,
 } from '../models/game-state.model';
 import { DEFAULT_LOCATION_PRECISION, LocationPrecision } from '../models/location.model';
 import statesFile from '../../data/states.json';
@@ -44,7 +45,8 @@ export class StateService {
     this.difficultyStorageKey,
     this.unifiedStorageKey,
     this.onboardingSeenKey,
-    this.locationPrecisionKey
+    this.locationPrecisionKey,
+    TEMP_QUIZ_SESSION_KEY
   ];
 
   private get checksumSuffix(): string {
@@ -267,6 +269,14 @@ export class StateService {
 
   async setLocationPrecision(precision: LocationPrecision): Promise<void> {
     await this.setPreference(this.locationPrecisionKey, precision);
+  }
+
+  /**
+   * Drops any in-flight quiz session. Called on trip reset so a stale quiz for
+   * a no-longer-found state cannot be resumed against the fresh save.
+   */
+  async clearTempQuizSession(): Promise<void> {
+    await this.removePreference(TEMP_QUIZ_SESSION_KEY);
   }
 
   async resetSnapshot(tripHistory: TripHistoryEntry[] = [], hasSeenOnboarding = false): Promise<PersistedGameSnapshot> {

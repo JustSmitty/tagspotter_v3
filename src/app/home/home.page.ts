@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { closeCircle, helpCircleOutline, refreshOutline, ribbonOutline, searchOutline } from 'ionicons/icons';
 
-import { QuizDismissResult, QuizSession, StateCardViewModel, QuizDifficulty, StateRegion } from '../models/game-state.model';
+import { QuizDismissResult, QuizSession, StateCardViewModel, QuizDifficulty, StateRegion, TEMP_QUIZ_SESSION_KEY } from '../models/game-state.model';
 import { LocationPrecision } from '../models/location.model';
 import { GameStateStore } from '../services/game-state.store';
 import type { LocationErrorCode } from '../services/location.service';
@@ -103,7 +103,7 @@ export class HomePage implements OnInit {
   }
 
   private async checkAndResumeQuiz(): Promise<void> {
-    const { value } = await Preferences.get({ key: 'temp_quiz_session' });
+    const { value } = await Preferences.get({ key: TEMP_QUIZ_SESSION_KEY });
     if (!value) {
       return;
     }
@@ -155,13 +155,13 @@ export class HomePage implements OnInit {
       totalCorrect
     };
     await Preferences.set({
-      key: 'temp_quiz_session',
+      key: TEMP_QUIZ_SESSION_KEY,
       value: JSON.stringify(data)
     });
   }
 
   private async clearTempQuizSession(): Promise<void> {
-    await Preferences.remove({ key: 'temp_quiz_session' });
+    await Preferences.remove({ key: TEMP_QUIZ_SESSION_KEY });
   }
 
   onSearchInput(event: Event): void {

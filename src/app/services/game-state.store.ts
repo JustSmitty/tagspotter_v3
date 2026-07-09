@@ -219,6 +219,9 @@ export class GameStateStore {
     await this.enqueueMutation(async () => {
       const tripHistory = this.withArchivedCurrentTrip(this.tripHistory());
       const resetSnapshot = await this.stateService.resetSnapshot(tripHistory, this.hasSeenOnboarding());
+      // A quiz saved mid-flight belongs to the old trip; resuming it against
+      // the fresh save would award trivia points to an unspotted state.
+      await this.stateService.clearTempQuizSession();
       this.setSnapshot(resetSnapshot.states, resetSnapshot.points);
       this.hasSeenOnboarding.set(resetSnapshot.hasSeenOnboarding);
       this.gameMode.set(resetSnapshot.gameMode);
@@ -301,6 +304,13 @@ export class GameStateStore {
       }
 
       const foundState = states[stateIndex];
+
+      // Guard against stale sessions (e.g. a quiz resumed after a trip reset):
+      // trivia points may only attach to a state that is actually spotted.
+      if (!foundState.fnd.stateFound) {
+        return;
+      }
+
       const normalizedPoints = Math.max(earnedPoints, 0);
       const delta = normalizedPoints - foundState.fnd.questionsCorrect;
 

@@ -217,6 +217,8 @@ export interface TriviaViewModel {
 
 export const DISTRICT_OF_COLUMBIA_ID = 9;
 export const QUIZ_QUESTION_COUNT = 3;
+/** Preferences key holding an in-flight quiz so it can be resumed after a kill. */
+export const TEMP_QUIZ_SESSION_KEY = 'temp_quiz_session';
 
 export function createEmptyPoints(): StoredPoints {
   return {

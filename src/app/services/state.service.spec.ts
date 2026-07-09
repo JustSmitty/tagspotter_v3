@@ -218,7 +218,7 @@ describe('StateService', () => {
 
     await service.clearStorage();
 
-    expect((service as any).removeStorageItem).toHaveBeenCalledTimes(8);
+    expect((service as any).removeStorageItem).toHaveBeenCalledTimes(9);
     expect((service as any).removeStorageItem).toHaveBeenCalledWith('states');
     expect((service as any).removeStorageItem).toHaveBeenCalledWith('points');
     expect((service as any).removeStorageItem).toHaveBeenCalledWith('hasSeenOnboarding');

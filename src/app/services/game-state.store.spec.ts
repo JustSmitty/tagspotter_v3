@@ -23,6 +23,7 @@ describe('GameStateStore', () => {
       'resetSnapshot',
       'getLocationPrecision',
       'setLocationPrecision',
+      'clearTempQuizSession',
     ]);
     locationService = jasmine.createSpyObj<LocationService>('LocationService', [
       'getCurrentLocationAccess',
@@ -33,6 +34,7 @@ describe('GameStateStore', () => {
     stateService.saveSnapshot.and.resolveTo();
     stateService.getLocationPrecision.and.resolveTo('coarse');
     stateService.setLocationPrecision.and.resolveTo();
+    stateService.clearTempQuizSession.and.resolveTo();
     locationService.getCurrentLocationAccess.and.resolveTo({
       status: 'granted',
       coordinates: { lat: 33, lng: -86 },
@@ -179,6 +181,20 @@ describe('GameStateStore', () => {
     expect(store.error()).toBe('Failed to save progress. Storage may be full.');
   });
 
+  it('ignores quiz completion for a state that is not spotted (stale session guard)', async () => {
+    stateService.loadSnapshot.and.resolveTo(buildSnapshot({
+      states: [buildState(1, 'AL')],
+      points: createEmptyPoints(),
+    }));
+
+    await store.hydrate();
+    await store.completeQuiz(1, 3);
+
+    expect(store.homeViewModel().states[0].questionsCorrect).toBe(0);
+    expect(store.homeViewModel().points.total).toBe(0);
+    expect(stateService.saveSnapshot).not.toHaveBeenCalled();
+  });
+
   it('completes quiz scoring without double counting the same result', async () => {
     stateService.loadSnapshot.and.resolveTo(buildSnapshot({
       states: [
@@ -224,6 +240,7 @@ describe('GameStateStore', () => {
 
     expect(store.dashboardViewModel().foundCount).toBe(0);
     expect(store.homeViewModel().points.total).toBe(0);
+    expect(stateService.clearTempQuizSession).toHaveBeenCalled();
   });
 
   it('archives the current trip when resetting progress', async () => {
