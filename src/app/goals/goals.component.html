@@ -44,6 +44,8 @@
                 class="travel-stamp__image"
                 [src]="stamp.flagUrl"
                 [alt]="stamp.name + ' state flag'"
+                width="56"
+                height="56"
                 loading="lazy" />
               <span class="travel-stamp__label">{{ stamp.code }}</span>
             </div>
@@ -62,6 +64,37 @@
       <div class="section-rule"></div>
       <span class="section-label">Today&apos;s Routes</span>
       <div class="section-rule"></div>
+    </div>
+
+    <!-- Completing all three used to do nothing at all (audit F-11). -->
+    <div class="streak-card cardstock-layer" [class.streak-card--banked]="challengesCompletedToday()">
+      <div class="streak-figure">
+        <span class="streak-count">{{ streak().current }}</span>
+        <span class="streak-unit">{{ streak().current === 1 ? 'day' : 'days' }}</span>
+      </div>
+      <div class="streak-copy">
+        <span class="streak-title">
+          @if (challengesCompletedToday()) {
+            Today&apos;s routes are stamped
+          } @else if (streak().current > 0) {
+            Keep the run going
+          } @else {
+            Start a run
+          }
+        </span>
+        <p class="streak-note">
+          @if (challengesCompletedToday()) {
+            Come back tomorrow to add another day.
+          } @else if (streak().current > 0) {
+            Finish all three routes today to keep your streak alive.
+          } @else {
+            Finish all three of today&apos;s routes to begin a streak.
+          }
+        </p>
+      </div>
+      @if (streak().best > 0) {
+        <span class="streak-best">Best {{ streak().best }}</span>
+      }
     </div>
 
     <div class="challenge-list">

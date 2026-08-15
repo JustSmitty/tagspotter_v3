@@ -19,6 +19,7 @@ import {
   SummaryViewModel,
   TriviaTopicCard,
   TriviaViewModel,
+  TripComparisonViewModel,
   TripHistoryEntry,
 } from '../models/game-state.model';
 
@@ -31,12 +32,14 @@ export class GameViewModelService {
     states: StateCardViewModel[],
     isLoaded: boolean,
     isBusy: boolean,
+    error: string | null,
   ): HomeViewModel {
     return {
       points: this.toPointsSummary(snapshot),
       states,
       isLoaded,
       isBusy,
+      error,
     };
   }
 
@@ -60,6 +63,47 @@ export class GameViewModelService {
       travelLog: states
         .filter((state) => state.isFound)
         .sort((left, right) => right.distanceFound - left.distanceFound),
+    };
+  }
+
+  /**
+   * Compares the trip in progress with the archive (audit F-14).
+   *
+   * Deliberately compares against the *current* score rather than a finished
+   * one: the useful question mid-trip is "am I ahead of last time", and waiting
+   * until completion would make this visible only on a screen most players
+   * never reach.
+   */
+  buildTripComparison(snapshot: GameSnapshot, tripHistory: TripHistoryEntry[]): TripComparisonViewModel {
+    const currentScore = this.toPointsSummary(snapshot).total;
+
+    if (!tripHistory.length) {
+      return {
+        hasHistory: false,
+        bestScore: null,
+        bestFoundCount: null,
+        previousScore: null,
+        scoreDelta: null,
+        isPersonalBest: false,
+        pointsToBeat: null,
+        tripsCompleted: 0,
+      };
+    }
+
+    // History is stored newest-first (GameStateStore prepends on archive).
+    const previous = tripHistory[0];
+    const best = tripHistory.reduce((leader, trip) => (trip.finalScore > leader.finalScore ? trip : leader));
+    const isPersonalBest = currentScore > best.finalScore;
+
+    return {
+      hasHistory: true,
+      bestScore: best.finalScore,
+      bestFoundCount: best.foundCount,
+      previousScore: previous.finalScore,
+      scoreDelta: currentScore - previous.finalScore,
+      isPersonalBest,
+      pointsToBeat: isPersonalBest ? null : best.finalScore - currentScore + 1,
+      tripsCompleted: tripHistory.length,
     };
   }
 

@@ -13,6 +13,8 @@ describe('GoalsComponent', () => {
     rotatingChallenges: WritableSignal<RotatingChallengeViewModel[]>;
     goalsSouvenirFlags: WritableSignal<SouvenirFlagViewModel[]>;
     goalsSummary: WritableSignal<GoalsSummaryViewModel>;
+    challengeStreak: WritableSignal<{ current: number; best: number; lastCompletedDay: string | null }>;
+    challengesCompletedToday: WritableSignal<boolean>;
   };
 
   beforeEach(async () => {
@@ -53,6 +55,8 @@ describe('GoalsComponent', () => {
             unlocked: true,
           },
         ]),
+        challengeStreak: signal({ current: 2, best: 5, lastCompletedDay: '2026-08-15' }),
+        challengesCompletedToday: signal(false),
         goalsSummary: signal<GoalsSummaryViewModel>({
           total: 5,
           unlocked: 1,

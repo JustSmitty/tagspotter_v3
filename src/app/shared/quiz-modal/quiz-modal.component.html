@@ -2,7 +2,7 @@
   <ion-toolbar class="premium-toolbar cardstock-layer">
     <div class="toolbar-inner">
       <div class="toolbar-copy">
-        <span class="toolbar-kicker">Roadside Trivia</span>
+        <span class="toolbar-kicker">Roadside Quiz</span>
         <span class="toolbar-meta">Question {{ questionOrdinal }} of {{ questionCount }}</span>
       </div>
 
@@ -10,7 +10,7 @@
         fill="clear"
         class="close-button"
         (click)="onClose()"
-        aria-label="Close trivia">
+        aria-label="Close challenge">
         <ion-icon slot="icon-only" name="close-circle"></ion-icon>
       </ion-button>
     </div>
@@ -27,17 +27,17 @@
         </div>
 
         <div class="passport-stamp" *ngIf="imageSrc && question.topic !== 'Flag'">
-          <img [src]="imageSrc" [alt]="stateName + ' flag'" loading="lazy" />
+          <img [src]="imageSrc" [alt]="stateName + ' flag'" width="66" height="66" loading="lazy" />
         </div>
       </div>
 
       <div class="pass-banner">
         <span class="banner-topic">{{ question.topic }}</span>
-        <span class="banner-copy">Official Trivia Pass</span>
+        <span class="banner-copy">Roadside Trivia</span>
       </div>
 
       <div class="question-panel">
-        <span class="question-kicker">Punch {{ questionOrdinal }}</span>
+        <span class="question-kicker">No. {{ questionOrdinal }}</span>
         <p class="question-text">{{ question.prompt }}</p>
       </div>
 
@@ -46,14 +46,31 @@
           *ngFor="let option of question.options; let index = index"
           class="quiz-option stamped-effect"
           [class.image-option]="question.optionType === 'image'"
+          [class.selected]="selectedOption() === option"
+          [class.correct]="answered() && option === question.correctAnswer"
+          [class.incorrect]="answered() && selectedOption() === option && option !== question.correctAnswer"
+          [disabled]="answered()"
+          [attr.aria-pressed]="selectedOption() === option"
           type="button"
           (click)="onSelect(option)">
           <span class="option-marker" *ngIf="question.optionType !== 'image'">{{ answerMarkers[index] }}</span>
           <span class="option-label" *ngIf="question.optionType !== 'image'">{{ option }}</span>
-          <img class="option-image" *ngIf="question.optionType === 'image'" [src]="option" [alt]="stateNameFromUrl(option)" loading="lazy" />
+          <img class="option-image" *ngIf="question.optionType === 'image'" [src]="option" [alt]="stateNameFromUrl(option)" width="150" height="100" loading="lazy" />
           <span class="indicator" aria-hidden="true" *ngIf="question.optionType !== 'image'"></span>
         </button>
       </div>
+
+      @if (answered()) {
+        <div class="answer-feedback" [class.answer-feedback--correct]="selectedIsCorrect()" role="status" aria-live="polite">
+          <strong>{{ selectedIsCorrect() ? 'Right on the money.' : 'Not this time.' }}</strong>
+          <span>
+            {{ question.optionType === 'image' ? 'The correct flag is highlighted.' : 'The answer is ' + question.correctAnswer + '.' }}
+          </span>
+          <button type="button" class="continue-button" (click)="onContinue()">
+            {{ questionOrdinal === questionCount ? 'Finish up' : 'Next question' }}
+          </button>
+        </div>
+      }
 
       <div class="ticket-footer">
         <div class="progress-dots">
@@ -65,7 +82,7 @@
           </div>
         </div>
 
-        <div class="footer-seal">Valid For Bonus Points</div>
+        <div class="footer-seal">Road Tested</div>
       </div>
     </section>
   </div>

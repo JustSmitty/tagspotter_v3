@@ -2,7 +2,7 @@ import { signal, WritableSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { DashboardViewModel, StateCardViewModel } from '../models/game-state.model';
+import { DashboardViewModel, StateCardViewModel, TripComparisonViewModel } from '../models/game-state.model';
 import { GameStateStore } from '../services/game-state.store';
 import { DashboardComponent } from './dashboard.component';
 
@@ -12,6 +12,7 @@ describe('DashboardComponent', () => {
   let gameStateStore: jasmine.SpyObj<GameStateStore> & {
     dashboardViewModel: WritableSignal<DashboardViewModel>;
     dashboardSouvenirFlags: WritableSignal<StateCardViewModel[]>;
+    tripComparison: WritableSignal<TripComparisonViewModel>;
   };
 
   beforeEach(async () => {
@@ -87,6 +88,10 @@ describe('DashboardComponent', () => {
               region: 'south' as const,
             },
           ],
+        }),
+        tripComparison: signal<TripComparisonViewModel>({
+          hasHistory: false, bestScore: null, bestFoundCount: null, previousScore: null,
+          scoreDelta: null, isPersonalBest: false, pointsToBeat: null, tripsCompleted: 0,
         }),
         dashboardSouvenirFlags: signal<StateCardViewModel[]>([
           {

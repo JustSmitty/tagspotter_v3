@@ -12,11 +12,16 @@
       <span class="stat-key">YOUR COLLECTION</span>
     </div>
     <div class="stat-divider"></div>
-    <div class="stat-unit">
-      <ion-icon name="trophy-outline" aria-hidden="true"></ion-icon>
-      <span class="stat-value">SOUVENIRS</span>
-      <span class="stat-key">{{ viewModel().achievements.length }} BADGES</span>
-    </div>
+    <!--
+      The Road Log is where /summary becomes reachable (audit F-08). Before this
+      the trip summary — and the share action on it — could only be seen by
+      completing all 51 plates, so effectively nobody saw it.
+    -->
+    <a class="stat-unit actionable" routerLink="/summary">
+      <ion-icon name="ribbon-outline" aria-hidden="true"></ion-icon>
+      <span class="stat-value">TRIP SUMMARY</span>
+      <span class="stat-key">SCORE &amp; SHARE</span>
+    </a>
   </div>
 </ion-header>
 
@@ -72,6 +77,8 @@
                       class="travel-stamp__image"
                       [src]="state.flagUrl"
                       [alt]="state.name + ' state flag'"
+                      width="56"
+                      height="56"
                       loading="lazy" />
                     <span class="travel-stamp__label">{{ state.code }}</span>
                   </div>
@@ -118,6 +125,8 @@
                   class="travel-stamp__image"
                   [src]="state.flagUrl"
                   [alt]="state.name + ' state flag'"
+                  width="56"
+                  height="56"
                   loading="lazy" />
                 <span class="travel-stamp__label">{{ state.code }}</span>
               </div>
@@ -142,6 +151,49 @@
         <div class="section-label">PAST TRIPS</div>
         <div class="section-rule"></div>
       </div>
+
+      <!--
+        Trip history was archived but never compared (audit F-14), so ten trips
+        of data said nothing. This reads against the trip in progress, because
+        "am I ahead of last time" is only a useful question mid-trip.
+      -->
+      @if (comparison().hasHistory) {
+        <article class="trip-compare cardstock-layer" [class.trip-compare--best]="comparison().isPersonalBest">
+          <div class="trip-compare__headline">
+            @if (comparison().isPersonalBest) {
+              <span class="trip-compare__badge">Personal best</span>
+              <span class="trip-compare__lede">This is your best trip yet</span>
+            } @else {
+              <span class="trip-compare__badge">Best {{ comparison().bestScore }} pts</span>
+              <span class="trip-compare__lede">{{ comparison().pointsToBeat }} more to beat it</span>
+            }
+          </div>
+
+          <div class="trip-compare__rows">
+            <div class="trip-compare__row">
+              <span class="trip-compare__key">This trip</span>
+              <span class="trip-compare__val">{{ viewModel().points.total }} pts</span>
+            </div>
+            <div class="trip-compare__row">
+              <span class="trip-compare__key">Last trip</span>
+              <span class="trip-compare__val">
+                {{ comparison().previousScore }} pts
+                @if (comparison().scoreDelta !== null && comparison().scoreDelta !== 0) {
+                  <span
+                    class="trip-compare__delta"
+                    [class.trip-compare__delta--up]="(comparison().scoreDelta ?? 0) > 0">
+                    {{ (comparison().scoreDelta ?? 0) > 0 ? '+' : '' }}{{ comparison().scoreDelta }}
+                  </span>
+                }
+              </span>
+            </div>
+            <div class="trip-compare__row">
+              <span class="trip-compare__key">Trips logged</span>
+              <span class="trip-compare__val">{{ comparison().tripsCompleted }}</span>
+            </div>
+          </div>
+        </article>
+      }
 
       <div class="trip-history-list">
         @for (trip of viewModel().tripHistory; track trip.id) {

@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonButton, IonIcon, ToastController } from '@ionic/angular/standalone';
+import { AlertController, IonContent, IonButton, IonIcon, ToastController } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { GameStateStore } from '../services/game-state.store';
 import { addIcons } from 'ionicons';
 import { refreshOutline, mapOutline, shareSocialOutline } from 'ionicons/icons';
+import { ShareService } from '../services/platform/share.service';
 
 @Component({
   selector: 'app-summary',
@@ -18,6 +19,8 @@ export class SummaryPage implements OnInit {
   readonly gameStateStore = inject(GameStateStore);
   private readonly router = inject(Router);
   private readonly toastController = inject(ToastController);
+  private readonly alertController = inject(AlertController);
+  private readonly shareService = inject(ShareService);
   readonly summary = this.gameStateStore.summaryViewModel;
 
   constructor() {
@@ -29,32 +32,32 @@ export class SummaryPage implements OnInit {
   }
 
   async playAgain(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Start a New Trip?',
+      message: 'Your current road log will be archived and a fresh trip will begin.',
+      buttons: [
+        { text: 'Keep This Trip', role: 'cancel' },
+        { text: 'Start New Trip', role: 'confirm' },
+      ],
+      cssClass: 'ephemera-alert',
+    });
+    await alert.present();
+    if ((await alert.onDidDismiss()).role !== 'confirm') return;
     await this.gameStateStore.resetProgress();
     await this.router.navigate(['/home']);
   }
 
-  async viewMap(): Promise<void> {
+  async openRoadLog(): Promise<void> {
     await this.router.navigate(['/dashboard']);
   }
 
   async shareSummary(): Promise<void> {
     const text = this.buildShareText();
 
-    if (navigator.share) {
-      await navigator.share({
-        title: 'Tag Spotter Road Log',
-        text,
-      });
-      return;
-    }
-
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-      await this.showShareToast('Road log copied for sharing.');
-      return;
-    }
-
-    await this.showShareToast('Sharing is unavailable on this device.');
+    const outcome = await this.shareService.share('Tag Spotter Road Log', text);
+    if (outcome === 'copied') await this.showShareToast('Road log copied for sharing.');
+    if (outcome === 'unavailable') await this.showShareToast('Sharing is unavailable on this device.');
+    if (outcome === 'failed') await this.showShareToast('Sharing failed. Please try again.');
   }
 
   private buildShareText(): string {
@@ -64,7 +67,7 @@ export class SummaryPage implements OnInit {
       'Tag Spotter Road Log',
       `${summary.foundCount}/${summary.totalStates} plates found`,
       `${summary.finalScore} final points`,
-      `${Math.round(summary.miles).toLocaleString()} miles logged`,
+      `${Math.round(summary.miles).toLocaleString()} miles of spotting range`,
     ].join(' · ');
   }
 

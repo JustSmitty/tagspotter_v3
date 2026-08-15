@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, Input, signal } from '@angular/core';
 import {
   IonHeader,
   IonToolbar,
@@ -10,11 +10,11 @@ import {
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { closeCircle } from 'ionicons/icons';
-import { Capacitor } from '@capacitor/core';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { ImpactStyle } from '@capacitor/haptics';
 
 import { getStateRegion } from '../../constants/us-states';
 import { QuizDismissResult, QuizQuestion, StateRegion } from '../../models/game-state.model';
+import { NativeUiService } from '../../services/platform/native-ui.service';
 
 @Component({
   selector: 'app-quiz-modal',
@@ -32,9 +32,13 @@ import { QuizDismissResult, QuizQuestion, StateRegion } from '../../models/game-
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QuizModalComponent {
-  readonly answerMarkers = ['A', 'B', 'C', 'D', 'E', 'F'];
+  readonly answerMarkers = ['A', 'B', 'C', 'D'];
 
   private readonly modalCtrl = inject(ModalController);
+  private readonly nativeUi = inject(NativeUiService);
+  readonly selectedOption = signal<string | null>(null);
+  readonly answered = computed(() => this.selectedOption() !== null);
+  readonly selectedIsCorrect = computed(() => this.selectedOption() === this.question?.correctAnswer);
 
   @Input() question!: QuizQuestion;
   @Input() stateCode!: string;
@@ -60,17 +64,25 @@ export class QuizModalComponent {
   }
 
   onClose(): void {
-    this.dismiss({ kind: 'cancelled' });
+    if (this.answered()) {
+      this.onContinue();
+    } else {
+      this.dismiss({ kind: 'cancelled' });
+    }
   }
 
   onSelect(option: string): void {
+    if (this.answered()) return;
     const isCorrect = option === this.question.correctAnswer;
-    if (isCorrect && Capacitor.isNativePlatform()) {
-      Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
-    }
+    this.selectedOption.set(option);
+    if (isCorrect) void this.nativeUi.impact(ImpactStyle.Light);
+  }
+
+  onContinue(): void {
+    if (!this.answered()) return;
     this.dismiss({
       kind: 'answered',
-      score: isCorrect ? (this.question.points ?? 1) : 0,
+      score: this.selectedIsCorrect() ? (this.question.points ?? 1) : 0,
     });
   }
 

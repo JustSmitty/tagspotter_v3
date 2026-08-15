@@ -13,6 +13,36 @@ ion-content.road-content {
   --padding-bottom: var(--content-inner-padding);
 }
 
+.game-error {
+  margin: 12px 20px 20px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 2px solid #a54016;
+  border-radius: 8px;
+  background: var(--app-surface-alert);
+  color: var(--app-ink-deep);
+
+  strong { font-family: 'Newsreader', serif; }
+  p { margin: 4px 0 0; font: 0.78rem/1.4 'Work Sans', sans-serif; }
+  button {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    border: 1px solid #8d2707;
+    border-radius: 999px;
+    background: #a54016;
+    color: #fff;
+    font-weight: 700;
+  }
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
 .digital-ephemera-header {
   overflow: visible;
   z-index: 1000;
@@ -201,7 +231,8 @@ ion-content.road-content {
   font-family: 'Special Elite', cursive;
   font-size: 2rem;
   line-height: 1;
-  color: var(--app-ink-deep);
+  /* Printed on the postcard, which stays cream in both themes (dec-0012). */
+  color: var(--app-ink-on-ephemera);
 }
 
 .points-label {
@@ -399,8 +430,8 @@ ion-content.road-content {
   position: relative;
   display: flex;
   align-items: center;
-  background: #fdfae9;
-  border: 1px solid #d2cbba;
+  background: var(--app-surface-card);
+  border: 1px solid var(--card-border);
   padding: 6px 12px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -419,7 +450,7 @@ ion-content.road-content {
     height: 8px;
     background: rgba(79, 93, 90, 0.08);
     border-radius: 50%;
-    border: 1px solid #d2cbba;
+    border: 1px solid var(--card-border);
     
     &:first-child { left: -5px; }
     &:last-child { right: -5px; }
@@ -434,7 +465,7 @@ ion-content.road-content {
     box-shadow: 0 4px 8px rgba(57, 103, 84, 0.24);
 
     .stub-label { color: #ffffff; }
-    .stub-edge { background: #fdfae9; border-color: #2d5243; }
+    .stub-edge { background: var(--app-surface-card); border-color: #2d5243; }
   }
 }
 
@@ -509,8 +540,8 @@ ion-content.road-content {
   position: relative;
   display: flex;
   align-items: center;
-  background: #fdfae9;
-  border: 1px solid #d2cbba;
+  background: var(--app-surface-card);
+  border: 1px solid var(--card-border);
   border-radius: 6px;
   padding: 0 12px;
 
@@ -634,8 +665,8 @@ ion-content.road-content {
 }
 
 .filter-chip {
-  background: #fdfae9;
-  border: 1px solid #d2cbba;
+  background: var(--app-surface-card);
+  border: 1px solid var(--card-border);
   border-radius: 50px;
   padding: 6px 14px;
   font-family: 'Work Sans', sans-serif;
@@ -655,5 +686,22 @@ ion-content.road-content {
     border-color: #2d5243;
     color: #ffffff;
     box-shadow: 0 2px 6px rgba(57, 103, 84, 0.2);
+  }
+}
+
+/*
+ * Reduced motion (audit F-31). Deliberately a blanket rule rather than a list of
+ * named animations: an allowlist goes stale the moment someone adds an effect
+ * and forgets to update it, and the failure mode of forgetting is motion shown
+ * to a user who asked for none. Nothing in this file animates information — the
+ * state a movement communicates is always also carried by colour, label or
+ * position.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

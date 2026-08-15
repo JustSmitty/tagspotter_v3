@@ -1,0 +1,270 @@
+{
+  "version": 1,
+  "$comment": "Acceptance criteria from docs/remediation-plan.md, made executable. Each guardrail's `baseline` is the violation count measured on the audit date. CI fails when a count rises ABOVE its baseline, so debt can only shrink. When a fix lands, run `npm run evals -- --update-baselines` and commit the lowered number — that turns the guardrail into a permanent regression test.",
+  "guardrails": [
+    {
+      "id": "copy-lexicon",
+      "title": "No golf metaphor in user-facing strings",
+      "finding": "F-01",
+      "phase": 1,
+      "owner": "tagspotter-copy",
+      "type": "regex-scan",
+      "include": [
+        "src/app/**/*.html",
+        "src/app/services/home-workflow.service.ts",
+        "README.md"
+      ],
+      "exclude": [
+        "**/*.spec.ts"
+      ],
+      "$note": "'scorecard' is deliberately NOT banned — a 1950s road-trip ledger can legitimately be a scorecard (maintainer call, 2026-08-15). The second half of this pattern was added after the first rewrite pass: the quiz modal shipped 'Pinseeker Challenge', 'Clubhouse Shot Tracker', 'Shot N of M' and 'Punch N', none of which the original pattern caught. A guardrail that misses a class gets widened, not excused.",
+      "pattern": "\\bcaddie\\b|\\btee off\\b|\\bfairway\\b|green in reg|\\blayup\\b|\\bbirdie\\b|on the bag|walk off the green|\\bthe green\\b|\\bhole\\b|1st tee|18th|\\bpinseeker\\b|\\bclubhouse\\b|shot tracker|flushed it|caught the rough|\\bmulligan\\b|\\bputt\\b|\\bputter\\b|putting green",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "ai-capability-claims",
+      "title": "No claim of AI capability the app does not have",
+      "finding": "F-02",
+      "phase": 1,
+      "owner": "tagspotter-copy",
+      "type": "regex-scan",
+      "include": [
+        "src/app/**/*.html",
+        "src/app/**/*.ts",
+        "README.md",
+        "docs/store-metadata.*.json"
+      ],
+      "exclude": [
+        "**/*.spec.ts"
+      ],
+      "pattern": "\\bai (caddie|assistant|guide|powered)\\b|ai-powered|powered by ai|\\bour ai\\b",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "stale-tech-claims",
+      "title": "Docs may not name a dependency the project no longer has",
+      "finding": "F-03",
+      "phase": 1,
+      "owner": "tagspotter-copy",
+      "type": "custom",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "distance-mislabelled",
+      "title": "Centroid distance may not be called travel",
+      "finding": "F-07",
+      "phase": 1,
+      "owner": "tagspotter-copy",
+      "type": "regex-scan",
+      "include": [
+        "src/app/**/*.html",
+        "src/app/**/*.ts",
+        "README.md"
+      ],
+      "exclude": [
+        "**/*.spec.ts"
+      ],
+      "pattern": "miles traveled|miles travelled|\\bodometer\\b|distance driven|miles driven",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "crypto-theater",
+      "title": "No hardcoded key material presented as encryption",
+      "finding": "F-20",
+      "phase": 1,
+      "owner": "tagspotter-feature",
+      "type": "regex-scan",
+      "$note": "legacy-save-reader.service.ts is excluded deliberately: it reproduces the <= 1.1.0 key constants for DECRYPT ONLY, so players upgrading do not lose their trip. It has no encrypt path. Delete the file and this exclusion once no supported upgrade starts below 1.2.0 (dec-0009).",
+      "include": [
+        "src/app/**/*.ts"
+      ],
+      "exclude": [
+        "**/*.spec.ts",
+        "src/app/services/legacy-save-reader.service.ts"
+      ],
+      "pattern": "const password = '|const salt = new TextEncoder\\(\\)\\.encode\\('|deriveKey|PBKDF2|subtle\\.encrypt",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "csp-unsafe-eval",
+      "title": "CSP may not allow unsafe-eval",
+      "finding": "F-21",
+      "phase": 1,
+      "owner": "tagspotter-release",
+      "type": "regex-scan",
+      "include": [
+        "src/index.html"
+      ],
+      "pattern": "unsafe-eval",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "viewport-zoom",
+      "title": "Pinch zoom may never be disabled (WCAG 1.4.4)",
+      "finding": "F-29",
+      "phase": 1,
+      "owner": "tagspotter-a11y-gate",
+      "type": "regex-scan",
+      "include": [
+        "src/index.html"
+      ],
+      "pattern": "user-scalable\\s*=\\s*no|maximum-scale",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "low-alpha-text",
+      "title": "Text colour may not use black at low alpha",
+      "finding": "F-30",
+      "phase": 1,
+      "owner": "tagspotter-a11y-gate",
+      "type": "regex-scan",
+      "include": [
+        "src/**/*.scss",
+        "src/app/**/*.html"
+      ],
+      "pattern": "color:\\s*rgba\\(0,\\s*0,\\s*0,\\s*0\\.[0-4]",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "cli-analytics",
+      "title": "No CLI analytics UUID committed",
+      "finding": "F-41",
+      "phase": 1,
+      "owner": "tagspotter-release",
+      "type": "regex-scan",
+      "include": [
+        "angular.json"
+      ],
+      "pattern": "\"analytics\":\\s*\"[0-9a-f-]{8,}\"",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "flag-budget",
+      "title": "State flags stay small enough to render at 56px",
+      "finding": "F-23",
+      "phase": 2,
+      "owner": "tagspotter-asset-pipeline",
+      "type": "size-budget",
+      "$note": "Covers both extensions on purpose — flags are hybrid SVG/WebP since dec-0010, and an oversized raster must fail exactly like an oversized vector.",
+      "include": [
+        "src/assets/stateflags/*.svg",
+        "src/assets/stateflags/*.webp"
+      ],
+      "dir": "src/assets/stateflags",
+      "maxBytesPerFile": 40960,
+      "maxBytesTotal": 1048576,
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "ionicons-glob",
+      "title": "The unused ionicons SVG directory is not copied into the build",
+      "finding": "F-24",
+      "phase": 2,
+      "owner": "tagspotter-asset-pipeline",
+      "type": "regex-scan",
+      "include": [
+        "angular.json"
+      ],
+      "pattern": "ionicons/dist/ionicons/svg",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "preload-strategy",
+      "title": "Lazy routes are not all preloaded at boot",
+      "finding": "F-27",
+      "phase": 2,
+      "owner": "tagspotter-feature",
+      "type": "regex-scan",
+      "include": [
+        "src/main.ts"
+      ],
+      "pattern": "PreloadAllModules",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "r8-disabled",
+      "title": "Release APK is shrunk by R8",
+      "finding": "F-34",
+      "phase": 2,
+      "owner": "tagspotter-release",
+      "type": "regex-scan",
+      "include": [
+        "android/app/build.gradle"
+      ],
+      "pattern": "minifyEnabled false",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "dead-handlers",
+      "title": "No component method that nothing binds",
+      "finding": "F-08",
+      "phase": 3,
+      "owner": "tagspotter-feature",
+      "type": "custom",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "reduced-motion",
+      "title": "Every animating stylesheet honours prefers-reduced-motion",
+      "finding": "F-31",
+      "phase": 3,
+      "owner": "tagspotter-a11y-gate",
+      "type": "paired-pattern",
+      "include": [
+        "src/**/*.scss"
+      ],
+      "pattern": "animation:",
+      "requires": "prefers-reduced-motion",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "svg-tabindex",
+      "title": "The atlas SVG has no focusable children",
+      "finding": "F-32",
+      "phase": 3,
+      "owner": "tagspotter-a11y-gate",
+      "type": "regex-scan",
+      "include": [
+        "src/app/shared/road-atlas/road-atlas.component.html"
+      ],
+      "pattern": "tabindex",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "untested-services",
+      "title": "Every injectable service has a spec file",
+      "finding": "F-37",
+      "phase": 4,
+      "owner": "tagspotter-feature",
+      "type": "custom",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "version-parity",
+      "title": "package.json version matches android versionName",
+      "finding": "F-40",
+      "phase": 4,
+      "owner": "tagspotter-release",
+      "type": "custom",
+      "baseline": 0,
+      "measuredAt": "2026-08-15"
+    }
+  ]
+}

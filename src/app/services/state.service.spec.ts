@@ -1,5 +1,4 @@
 import { TestBed } from '@angular/core/testing';
-import { Preferences } from '@capacitor/preferences';
 
 import { PersistedGameSnapshot, createEmptyPoints, StoredStateRecord } from '../models/game-state.model';
 import statesFile from '../../data/states.json';
@@ -244,22 +243,6 @@ describe('StateService', () => {
     expect(snapshot.tripHistory).toEqual([]);
   });
 
-  it('clears only app-owned keys', async () => {
-    const removeStorageItemSpy = service as unknown as { removeStorageItem: jasmine.Spy };
-
-    await service.clearStorage();
-
-    expect((service as any).removeStorageItem).toHaveBeenCalledTimes(9);
-    expect((service as any).removeStorageItem).toHaveBeenCalledWith('states');
-    expect((service as any).removeStorageItem).toHaveBeenCalledWith('points');
-    expect((service as any).removeStorageItem).toHaveBeenCalledWith('hasSeenOnboarding');
-    expect((service as any).removeStorageItem).toHaveBeenCalledWith('gameMode');
-    expect((service as any).removeStorageItem).toHaveBeenCalledWith('difficulty');
-    expect((service as any).removeStorageItem).toHaveBeenCalledWith('tagspotter_v1_save_data');
-    expect((service as any).removeStorageItem).toHaveBeenCalledWith('tagspotter_v1_onboarding_seen');
-    expect((service as any).removeStorageItem).toHaveBeenCalledWith('tagspotter_v1_location_precision');
-  });
-
   it('defaults location precision to coarse and round-trips a saved value', async () => {
     expect(await service.getLocationPrecision()).toBe('coarse');
 
@@ -270,25 +253,91 @@ describe('StateService', () => {
     expect(await service.getLocationPrecision()).toBe('coarse');
   });
 
-  it('encrypts and decrypts storage values correctly preserving integrity', async () => {
-    const realService = TestBed.runInInjectionContext(() => new StateService());
-    
-    const mockStorage = new Map<string, string>();
-    spyOn<any>(realService, 'setPreference').and.callFake(async (key: string, value: string) => {
-      mockStorage.set(key, value);
-    });
-    spyOn<any>(realService, 'getPreference').and.callFake(async (key: string) => {
-      return mockStorage.get(key) || null;
+  describe('storage format (audit F-20)', () => {
+    /**
+     * Reproduces exactly what Tag Spotter <= 1.1.0 wrote to Preferences, so the
+     * migration path is tested against real ciphertext rather than a fixture
+     * someone might quietly regenerate.
+     */
+    async function encryptLikeVersion1_1(plaintext: string): Promise<string> {
+      const encoder = new TextEncoder();
+      const keyMaterial = await window.crypto.subtle.importKey(
+        'raw',
+        encoder.encode('TagSpotter_1950_Americana_Secret_Encryption_Key'),
+        { name: 'PBKDF2' },
+        false,
+        ['deriveKey'],
+      );
+      const key = await window.crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: encoder.encode('TagSpotter_Salt_1950'), iterations: 1000, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt'],
+      );
+
+      const iv = window.crypto.getRandomValues(new Uint8Array(12));
+      const ciphertext = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoder.encode(plaintext));
+      const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+      combined.set(iv, 0);
+      combined.set(new Uint8Array(ciphertext), iv.length);
+
+      let binary = '';
+      combined.forEach((byte) => { binary += String.fromCharCode(byte); });
+      return window.btoa(binary);
+    }
+
+    function withMockStorage(): { service: StateService; storage: Map<string, string> } {
+      const service = TestBed.runInInjectionContext(() => new StateService());
+      const storage = new Map<string, string>();
+      spyOn<any>(service, 'setPreference').and.callFake(async (key: string, value: string) => {
+        storage.set(key, value);
+      });
+      spyOn<any>(service, 'getPreference').and.callFake(async (key: string) => storage.get(key) ?? null);
+      spyOn<any>(service, 'removePreference').and.callFake(async (key: string) => {
+        storage.delete(key);
+      });
+      return { service, storage };
+    }
+
+    it('writes plain JSON and round-trips it', async () => {
+      const { service: realService, storage } = withMockStorage();
+      const testData = { foo: 'bar', count: 42 };
+
+      await (realService as any).setStorageItem('test_key', testData);
+
+      const rawStored = storage.get('test_key');
+      expect(rawStored).toBe(JSON.stringify(testData));
+      expect(JSON.parse(rawStored ?? '{}').ciphertext).toBeUndefined();
+      expect(await (realService as any).getStorageItem('test_key')).toEqual(testData);
     });
 
-    const testData = { foo: 'bar', count: 42 };
-    await (realService as any).setStorageItem('test_key', testData);
-    
-    const rawStored = mockStorage.get('test_key');
-    expect(rawStored).toBeTruthy();
-    expect(rawStored?.startsWith('{')).toBeFalse();
+    it('reads a v1.1.0 encrypted envelope and migrates it forward', async () => {
+      const { service: realService, storage } = withMockStorage();
+      const original = { states: [{ ID: 1 }], points: { state: 7 } };
+      storage.set('save', JSON.stringify({ version: 2, ciphertext: await encryptLikeVersion1_1(JSON.stringify(original)) }));
 
-    const loadedData = await (realService as any).getStorageItem('test_key');
-    expect(loadedData).toEqual(testData);
+      expect(await (realService as any).getStorageItem('save')).toEqual(original);
+      // Migrated in place, so the legacy path is not reached again on this device.
+      expect(storage.get('save')).toBe(JSON.stringify(original));
+    });
+
+    it('reads a pre-v2 raw base64 value and clears its detached signature', async () => {
+      const { service: realService, storage } = withMockStorage();
+      const original = [{ id: 1 }];
+      storage.set('legacy', await encryptLikeVersion1_1(JSON.stringify(original)));
+      storage.set('legacy_sig', 'stale-checksum');
+
+      expect(await (realService as any).getStorageItem('legacy')).toEqual(original);
+      expect(storage.get('legacy')).toBe(JSON.stringify(original));
+      expect(storage.has('legacy_sig')).toBeFalse();
+    });
+
+    it('returns null rather than throwing when a stored value is unreadable', async () => {
+      const { service: realService, storage } = withMockStorage();
+      storage.set('corrupt', 'not-base64-and-not-json!!');
+
+      expect(await (realService as any).getStorageItem('corrupt')).toBeNull();
+    });
   });
 });

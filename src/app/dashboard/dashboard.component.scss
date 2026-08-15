@@ -159,7 +159,7 @@
   .stamp-code {
     font-family: 'Special Elite', cursive;
     font-size: 0.6rem;
-    color: rgba(0,0,0,0.2);
+    color: var(--app-ink-muted);
     font-weight: bold;
   }
 
@@ -457,4 +457,92 @@
   font-size: 0.72rem;
   color: rgba(57, 103, 84, 0.55);
   flex-shrink: 0;
+}
+
+/*
+ * Trip comparison (audit F-14). A clipped index card above the trip list: the
+ * archive already existed, this is what makes it mean something.
+ */
+.trip-compare {
+  margin: 0 20px 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--card-border);
+  border-top: 4px solid var(--ion-color-secondary);
+  border-radius: 6px;
+  background: var(--app-surface-card);
+
+  &--best {
+    border-top-color: var(--ion-color-tertiary);
+  }
+}
+
+.trip-compare__headline {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.trip-compare__badge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--ion-color-secondary);
+  color: #fff;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  .trip-compare--best & {
+    background: var(--ion-color-tertiary);
+    color: #4a3b12;
+  }
+}
+
+.trip-compare__lede {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--app-ink-deep);
+}
+
+.trip-compare__rows {
+  display: grid;
+  gap: 5px;
+}
+
+.trip-compare__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.trip-compare__key {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--app-ink-muted);
+}
+
+.trip-compare__val {
+  font-family: 'Special Elite', cursive;
+  font-size: 0.95rem;
+  color: var(--app-ink-deep);
+}
+
+.trip-compare__delta {
+  margin-left: 6px;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--ion-color-danger);
+
+  &--up {
+    color: var(--ion-color-success);
+  }
 }

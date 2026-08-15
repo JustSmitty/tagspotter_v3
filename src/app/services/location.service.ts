@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
-import { Geolocation } from '@capacitor/geolocation';
+import { Injectable, inject } from '@angular/core';
 import type { PermissionState } from '@capacitor/core';
 
 import { Coordinates, DEFAULT_LOCATION_PRECISION, LocationPrecision } from '../models/location.model';
+import { GeolocationAdapterService } from './platform/geolocation-adapter.service';
 
 interface CachedCoordinates {
   coordinates: Coordinates;
@@ -28,6 +28,7 @@ export type LocationAccessResult =
   providedIn: 'root'
 })
 export class LocationService {
+  private readonly geolocation = inject(GeolocationAdapterService);
   private readonly cacheTtlMs = 60_000;
   private cachedCoordinates: CachedCoordinates | null = null;
 
@@ -170,27 +171,17 @@ export class LocationService {
     };
   }
 
-  private async checkPermissionStatus(): Promise<Awaited<ReturnType<typeof Geolocation.checkPermissions>>> {
-    return Geolocation.checkPermissions();
+  private checkPermissionStatus(): ReturnType<GeolocationAdapterService['checkPermissions']> {
+    return this.geolocation.checkPermissions();
   }
 
-  private async requestPermissionStatus(
-    precision: LocationPrecision,
-  ): Promise<Awaited<ReturnType<typeof Geolocation.requestPermissions>>> {
-    // Requesting 'location' surfaces the OS precise/approximate toggle; requesting
-    // only 'coarseLocation' keeps the prompt to approximate accuracy.
-    return Geolocation.requestPermissions({
-      permissions: precision === 'fine' ? ['location'] : ['coarseLocation'],
-    });
+  private requestPermissionStatus(precision: LocationPrecision): ReturnType<GeolocationAdapterService['requestPermissions']> {
+    return this.geolocation.requestPermissions(precision);
   }
 
   private async readCurrentPosition(
     precision: LocationPrecision,
-  ): Promise<Awaited<ReturnType<typeof Geolocation.getCurrentPosition>>> {
-    return Geolocation.getCurrentPosition({
-      enableHighAccuracy: precision === 'fine',
-      maximumAge: this.cacheTtlMs,
-      timeout: 10_000,
-    });
+  ): Promise<Awaited<ReturnType<GeolocationAdapterService['getCurrentPosition']>>> {
+    return this.geolocation.getCurrentPosition(precision);
   }
 }

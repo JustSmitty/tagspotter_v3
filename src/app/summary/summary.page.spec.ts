@@ -1,7 +1,7 @@
 import { signal, WritableSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { ToastController } from '@ionic/angular/standalone';
+import { AlertController, ToastController } from '@ionic/angular/standalone';
 
 import { SummaryViewModel } from '../models/game-state.model';
 import { GameStateStore } from '../services/game-state.store';
@@ -15,6 +15,7 @@ describe('SummaryPage', () => {
   };
   let router: jasmine.SpyObj<Router>;
   let toastController: jasmine.SpyObj<ToastController>;
+  let alertController: jasmine.SpyObj<AlertController>;
   let originalShare: unknown;
   let originalClipboard: unknown;
 
@@ -47,6 +48,11 @@ describe('SummaryPage', () => {
     toastController.create.and.resolveTo({
       present: async () => undefined,
     } as any);
+    alertController = jasmine.createSpyObj<AlertController>('AlertController', ['create']);
+    alertController.create.and.resolveTo({
+      present: async () => undefined,
+      onDidDismiss: async () => ({ role: 'confirm' }),
+    } as any);
 
     await TestBed.configureTestingModule({
       imports: [SummaryPage],
@@ -54,6 +60,7 @@ describe('SummaryPage', () => {
         { provide: GameStateStore, useValue: gameStateStore },
         { provide: Router, useValue: router },
         { provide: ToastController, useValue: toastController },
+        { provide: AlertController, useValue: alertController },
       ],
     }).compileComponents();
 
@@ -107,5 +114,32 @@ describe('SummaryPage', () => {
     expect(toastController.create).toHaveBeenCalledWith(jasmine.objectContaining({
       message: 'Road log copied for sharing.',
     }));
+  });
+
+  it('treats cancellation of the native share sheet as a normal outcome', async () => {
+    const share = jasmine.createSpy('share').and.rejectWith(new DOMException('cancelled', 'AbortError'));
+    Object.defineProperty(navigator, 'share', { value: share, configurable: true });
+
+    await expectAsync(component.shareSummary()).toBeResolved();
+
+    expect(toastController.create).not.toHaveBeenCalled();
+  });
+
+  it('requires confirmation before starting a new trip', async () => {
+    alertController.create.and.resolveTo({
+      present: async () => undefined,
+      onDidDismiss: async () => ({ role: 'cancel' }),
+    } as any);
+
+    await component.playAgain();
+    expect(gameStateStore.resetProgress).not.toHaveBeenCalled();
+
+    alertController.create.and.resolveTo({
+      present: async () => undefined,
+      onDidDismiss: async () => ({ role: 'confirm' }),
+    } as any);
+    await component.playAgain();
+    expect(gameStateStore.resetProgress).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/home']);
   });
 });

@@ -10,10 +10,9 @@
  */
 
 /* Self-hosted typefaces (offline-safe) */
-@import './theme/fonts';
+@use './theme/fonts';
 
-/* Global Mapbox Layout Styles */
-@import 'maplibre-gl/dist/maplibre-gl.css';
+/* Global application layout styles */
 
 :root {
   --app-safe-top: env(safe-area-inset-top, 0px);
@@ -54,7 +53,14 @@ ion-app {
 }
 
 .digital-ephemera-header {
-  background: var(--page-header-gradient, linear-gradient(180deg, rgba(253, 250, 233, 0.98) 0%, rgba(253, 250, 233, 0.92) 75%, rgba(253, 250, 233, 0) 100%));
+  /* Built from --app-bg-cream-rgb so the fade-to-transparent follows the theme
+     instead of leaving a cream band across the top of a dark page. */
+  background: var(--page-header-gradient, linear-gradient(
+    180deg,
+    rgba(var(--app-bg-cream-rgb), 0.98) 0%,
+    rgba(var(--app-bg-cream-rgb), 0.92) 75%,
+    rgba(var(--app-bg-cream-rgb), 0) 100%
+  ));
   padding: calc(var(--app-safe-top) + 12px) 16px 10px;
 }
 
@@ -87,7 +93,7 @@ ion-app {
   font-family: 'Newsreader', serif;
   font-style: italic;
   font-size: 0.7rem;
-  color: rgba(0,0,0,0.3);
+  color: var(--app-ink-muted);
   padding: var(--footer-note-padding, 40px 20px 0);
 }
 
@@ -131,6 +137,17 @@ ion-app {
       transform: scale(1.02);
     }
   }
+}
+
+/*
+ * Ephemera surfaces keep daylight colours in both themes (dec-0012), so text on
+ * them inherits fixed ink instead of the themed --app-ink-deep. Without this,
+ * anything on the postcard that does not set its own colour — the score, for one
+ * — renders cream-on-cream at night.
+ */
+.postcard-front,
+.plate-body {
+  color: var(--app-ink-on-ephemera);
 }
 
 .plate-body {
@@ -346,14 +363,14 @@ ion-app {
 
 /* Digital Ephemera Theme Enhancements */
 .paper-texture {
-  background-color: #fdfae9; // Antique White / Creamy Paper
+  background-color: var(--app-bg-cream);
   background-image:
     repeating-linear-gradient(
       0deg,
       transparent,
       transparent 22px,
-      rgba(150, 110, 60, 0.08) 22px,
-      rgba(150, 110, 60, 0.08) 23px
+      var(--app-texture-line) 22px,
+      var(--app-texture-line) 23px
     ),
     repeating-linear-gradient(
       90deg,
@@ -372,7 +389,7 @@ ion-app {
   content: "";
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  opacity: 0.12;
+  opacity: var(--app-texture-opacity);
   pointer-events: none;
   // Finer Grain noise overlay
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -531,7 +548,7 @@ ion-router-outlet {
     font-family: 'Special Elite', cursive;
     font-size: 0.7rem;
     letter-spacing: 2px;
-    color: rgba(0,0,0,0.4);
+    color: var(--app-ink-muted);
     box-shadow: -2px -2px 5px rgba(0,0,0,0.1);
     z-index: -1;
   }
@@ -540,7 +557,7 @@ ion-router-outlet {
 
 .handbook-modal {
   &::part(content) {
-    background: #fdfae9; /* Paper inside the folder */
+    background: var(--app-surface-card); /* Paper inside the folder */
   }
   
   &::after {
@@ -555,10 +572,34 @@ ion-router-outlet {
   }
 }
 
+/*
+ * Achievement unlocks (audit F-12). Gold seal rather than the standard paper
+ * ticket, so an earned souvenir reads as an award and not as another status
+ * message. It rides on top of .teletype-toast, so the ticket edge and typewriter
+ * face carry over.
+ */
+.achievement-toast {
+  --background: #fff3cd;
+  --color: #4a3b12;
+  --box-shadow: 0 6px 22px rgba(120, 90, 10, 0.34);
+  border-top: 2px solid var(--ion-color-tertiary);
+  border-bottom: 2px solid var(--ion-color-tertiary);
+  font-weight: 700;
+
+  /* Still gold at night, but lit rather than glaring. */
+  @media (prefers-color-scheme: dark) {
+    --background: #3a2f10;
+    --color: #ffe9a8;
+    --box-shadow: 0 6px 22px rgba(0, 0, 0, 0.6);
+  }
+}
+
 /* Teletype / Telegram Toasts */
 .teletype-toast {
-  --background: #f4f1de;
-  --color: #2b2d42;
+  /* Tokenised so a notification does not flash a bright paper card across a
+     dark screen at night. The ticket edge and typewriter face carry over. */
+  --background: var(--app-surface-card);
+  --color: var(--app-ink-deep);
   --button-color: #d90429;
   --border-radius: 2px;
   --box-shadow: 0 4px 15px rgba(0,0,0,0.2);
@@ -573,15 +614,19 @@ ion-router-outlet {
     padding: 12px 20px;
   }
 
-  /* Punch hole effect */
+  /* Punched ticket edge. This was 28 bullet characters at rgba(0,0,0,0.05) —
+     decorative texture rendered as text, which both failed the contrast scan and
+     announced as a run of bullets to screen readers. It is a border, so it is
+     drawn as one now. */
   &::before, &::after {
-    content: '• • • • • • • • • • • • • • • • • • • • • • • • • • • •';
+    content: '';
     position: absolute;
     left: 0;
     right: 0;
-    font-size: 10px;
-    color: rgba(0,0,0,0.05);
-    text-align: center;
+    height: 6px;
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.12) 1.5px, transparent 1.6px);
+    background-size: 12px 6px;
+    background-repeat: repeat-x;
     pointer-events: none;
   }
 
@@ -652,14 +697,14 @@ ion-loading.ephemera-loading {
 
 /* Ephemera Alert: Public Bulletin Look */
 .ephemera-alert {
-  --background: #fdfae9;
+  --background: var(--app-surface-card);
   --backdrop-opacity: 0.6;
 
   &::part(container) {
     border-radius: 4px;
     border: 1px solid rgba(0,0,0,0.1);
     box-shadow: var(--app-shadow-paper);
-    background: #fdfae9 url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    background: var(--app-surface-card) url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
   }
 
   &::part(header) {
@@ -693,7 +738,7 @@ ion-loading.ephemera-loading {
     }
     
     &.alert-button-role-cancel {
-      color: rgba(0,0,0,0.4);
+      color: var(--app-ink-muted);
     }
   }
 }
@@ -771,7 +816,7 @@ ion-loading.ephemera-loading {
   font-style: italic;
   font-size: 0.74rem;
   line-height: 1.35;
-  color: rgba(0, 0, 0, 0.42);
+  color: var(--app-ink-muted);
 }
 
 .footer-spacer {
@@ -779,3 +824,25 @@ ion-loading.ephemera-loading {
   width: 100%;
 }
 
+/*
+ * Motion is decoration here, never information (audit F-31). When the OS asks
+ * for reduced motion every animation is dropped outright — the stamp, the neon
+ * VACANCY pulse, the paper flips and the stamping "busy" loop. Each of those
+ * states is still legible without movement: the stamp leaves its "Spotted"
+ * label and colour, the vacancy sign keeps its lit styling, and the busy state
+ * is carried by aria-busy and disabled controls rather than the animation.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .plate-found .plate-body,
+  .travel-stamp,
+  .paper-flip-enter,
+  .handbook-modal .paper-flip-enter,
+  .stamping-action {
+    animation: none !important;
+  }
+
+  .plate-body,
+  .atlas-state {
+    transition: none !important;
+  }
+}

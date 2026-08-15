@@ -306,6 +306,55 @@
       border-radius: 8px;
     }
   }
+
+  &.correct {
+    border-color: #2f6f4f;
+    box-shadow: 0 0 0 3px rgba(47, 111, 79, 0.18);
+  }
+
+  &.incorrect {
+    border-color: #a54016;
+    box-shadow: 0 0 0 3px rgba(165, 64, 22, 0.16);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.72;
+  }
+
+  &.selected,
+  &.correct {
+    opacity: 1;
+  }
+}
+
+.answer-feedback {
+  margin: 0 18px 20px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 5px;
+  border-left: 4px solid #a54016;
+  border-radius: 6px;
+  background: #fff3e8;
+  color: var(--app-ink-deep);
+  font-family: 'Work Sans', sans-serif;
+
+  &--correct {
+    border-left-color: #2f6f4f;
+    background: #edf7f0;
+  }
+}
+
+.continue-button {
+  justify-self: start;
+  margin-top: 8px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--quiz-accent);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .option-marker {

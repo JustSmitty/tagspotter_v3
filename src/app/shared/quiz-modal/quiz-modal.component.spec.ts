@@ -25,7 +25,6 @@ describe('QuizModalComponent', () => {
       prompt: 'What is Alabama\'s capital?',
       correctAnswer: 'Montgomery',
       options: ['Montgomery', 'Juneau', 'Phoenix', 'Austin'],
-      correctIndex: 0,
     });
     fixture.componentRef.setInput('stateCode', 'AL');
     fixture.componentRef.setInput('stateName', 'Alabama');
@@ -51,8 +50,14 @@ describe('QuizModalComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.quiz-pass')?.getAttribute('data-region')).toBe('west');
   });
 
-  it('dismisses with a score when the correct option is selected', () => {
+  it('shows feedback and dismisses with a score after continuing', () => {
     component.onSelect('Montgomery');
+
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.answer-feedback')?.textContent).toContain('Right on the money');
+    expect(modalController.dismiss).not.toHaveBeenCalled();
+
+    component.onContinue();
 
     expect(modalController.dismiss).toHaveBeenCalledWith({
       kind: 'answered',

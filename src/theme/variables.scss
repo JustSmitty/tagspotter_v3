@@ -7,10 +7,44 @@
 
   /** background palette **/
   --app-bg-cream: #fdfae9;
+  /* Component form, for gradients and scrims that need alpha over the page. */
+  --app-bg-cream-rgb: 253, 250, 233;
   --app-bg-paper: #F2E3C9;
   --app-surface-paper: #f7efdb;
   --app-surface-card: #fff7ec;
+  --app-surface-raised: #ffffff;
+  --app-surface-alert: #fff3e8;
   --app-ink-deep: #2f3640;
+  /**
+   * Ink for text printed ON ephemera (the postcard, the plates). Ephemera keeps
+   * its daylight paper in both themes, so this token is deliberately NEVER
+   * redefined in the dark block — using --app-ink-deep there would put cream
+   * text on cream card stock.
+   */
+  --app-ink-on-ephemera: #2f3640;
+
+  /** chrome accents that must invert with the theme **/
+  --app-nav-ink: #396754;
+  --app-thread: #5d4037;
+  --app-tag-hole: #2c3e50;
+  --app-texture-line: rgba(150, 110, 60, 0.08);
+  --app-texture-opacity: 0.12;
+
+  /** road atlas: a drawn map, so its ink and paper both follow the theme **/
+  --atlas-state-fill: rgba(253, 250, 233, 0.82);
+  --atlas-state-hover: #f7d8af;
+  --atlas-stroke: #576574;
+  --atlas-stroke-strong: #24394a;
+  --atlas-label-ink: #263238;
+  /**
+   * Faded-paper text tokens. The aesthetic used to be achieved with black at low
+   * alpha, which measured 2.5:1 (audit F-30). These are warm greys that keep the
+   * sun-bleached look while clearing WCAG AA on every surface in the palette:
+   * muted is >= 5.1:1 on cream, paper, card and the folder-tab tan; subtle is
+   * >= 4.6:1 and is only for text at 19px bold / 24px or larger.
+   */
+  --app-ink-muted: #635a4f;
+  --app-ink-subtle: #6f665b;
   
   /** primary: Interstate Rust **/
   --ion-color-primary: #D9541C;
@@ -111,6 +145,66 @@
   --region-west-primary: #2f6f7c;      /* Sun-Faded Teal */
   --region-west-bg: #f8efd7;           /* Desert Sand */
   --region-west-accent: #c75a28;       /* Canyon Orange */
+}
+
+/**
+ * Dark mode — "the instrument cluster" (audit F-10).
+ *
+ * The app is played in a car, often at night, frequently by a passenger. A
+ * desaturated inversion of the daytime paper would have looked like grey
+ * cardboard, so this is modelled on a 1950s dashboard at night instead: warm
+ * near-black panels, amber-lit type, brass and gold picked out of the existing
+ * Americana palette rather than invented.
+ *
+ * THE COLLECTIBLES DO NOT INVERT. License plates, flags and stamps keep their
+ * daylight colours in both themes, because they are physical objects in the
+ * fiction, not chrome — a Colorado plate is the same plate under a streetlight.
+ * Only the surfaces holding them change. That is why the region-* tokens are
+ * absent below: their omission is the decision, not an oversight.
+ *
+ * Only tokens are redefined here. Nothing gets its sole definition inside this
+ * block, so a viewer with no colour preference always has a complete palette.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --app-bg-cream: #14110d;
+    --app-bg-cream-rgb: 20, 17, 13;
+    --app-bg-paper: #1c1813;
+    --app-surface-paper: #211c16;
+    --app-surface-card: #262019;
+    --app-surface-raised: #302820;
+    --app-surface-alert: #33200f;
+    --app-ink-deep: #f2e7d3;
+    --app-ink-muted: #c9baa0;
+    --app-ink-subtle: #b3a58c;
+
+    --app-nav-ink: #9ec5b0;
+    --app-thread: #6b5a44;
+    --app-tag-hole: #0c0a07;
+    --app-texture-line: rgba(255, 214, 140, 0.05);
+    --app-texture-opacity: 0.06;
+
+    /* Unlit states recede into the panel; the spotted red ink stays exactly as
+       bright as it is by day, so progress is the thing that glows. */
+    --atlas-state-fill: rgba(72, 62, 48, 0.85);
+    --atlas-state-hover: #6b5a3a;
+    --atlas-stroke: #7a6a54;
+    --atlas-stroke-strong: #d9a441;
+    --atlas-label-ink: #e6d7bb;
+
+    --card-bg: #262019;
+    --card-border: #3b3226;
+    --card-shadow: rgba(0, 0, 0, 0.55);
+    --app-shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.5);
+    --app-shadow-paper: 0 3px 4px rgba(0, 0, 0, 0.45), 0 10px 22px rgba(0, 0, 0, 0.35);
+    --app-border-soft: rgba(240, 226, 198, 0.14);
+
+    /* Ionic's own surface tokens, so overlays and toolbars follow. */
+    --ion-background-color: #14110d;
+    --ion-background-color-rgb: 20, 17, 13;
+    --ion-text-color: #f2e7d3;
+    --ion-text-color-rgb: 242, 231, 211;
+  }
 }
 
 

@@ -1,25 +1,30 @@
 import { inject, Injectable } from '@angular/core';
-import { Preferences } from '@capacitor/preferences';
-import { ChecksumService } from './checksum.service';
 import {
+  ChallengeStreak,
   cloneStoredPoints,
   PersistedGameSnapshot,
   cloneStoredStates,
   createEmptyPoints,
+  createEmptyStreak,
+  normalizeStreak,
   StoredPoints,
   StoredStateRecord,
   QuizDifficulty,
   TripHistoryEntry,
-  TEMP_QUIZ_SESSION_KEY,
 } from '../models/game-state.model';
 import { DEFAULT_LOCATION_PRECISION, LocationPrecision } from '../models/location.model';
 import statesFile from '../../data/states.json';
+import { PreferenceStorageService } from './platform/preference-storage.service';
+import { QuizSessionRepository } from './quiz-session.repository';
+import { LegacySaveReaderService } from './legacy-save-reader.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StateService {
-  private readonly checksumService = inject(ChecksumService);
+  private readonly preferences = inject(PreferenceStorageService);
+  private readonly quizSessions = inject(QuizSessionRepository);
+  private readonly legacySaves = inject(LegacySaveReaderService);
   private readonly defaultGameMode: PersistedGameSnapshot['gameMode'] = 'classic';
   private readonly defaultDifficulty: QuizDifficulty = 'easy';
 
@@ -29,7 +34,7 @@ export class StateService {
   private readonly gameModeStorageKey = 'gameMode';
   private readonly difficultyStorageKey = 'difficulty';
   private readonly unifiedStorageKey = 'tagspotter_v1_save_data';
-  // The onboarding flag is stored on its own, outside the encrypted+signed save
+  // The onboarding flag is stored on its own, outside the main save
   // blob, so that losing or corrupting the save (which triggers a fresh reset)
   // does not make the handbook pop up again for a returning player. Users can
   // still re-open the handbook manually via the header help pin.
@@ -37,153 +42,46 @@ export class StateService {
   // Location accuracy is a device/privacy preference, stored on its own (outside
   // the game save) so it persists across trip resets and save corruption.
   private readonly locationPrecisionKey = 'tagspotter_v1_location_precision';
-  private readonly ownedStorageKeys = [
-    this.statesStorageKey,
-    this.pointsStorageKey,
-    this.onboardingStorageKey,
-    this.gameModeStorageKey,
-    this.difficultyStorageKey,
-    this.unifiedStorageKey,
-    this.onboardingSeenKey,
-    this.locationPrecisionKey,
-    TEMP_QUIZ_SESSION_KEY
-  ];
-
   private get checksumSuffix(): string {
     return '_sig';
   }
 
+  /**
+   * Saves are stored as plain JSON. The previous AES-GCM envelope used a key
+   * derived from constants that shipped in the bundle, so it never protected
+   * anything (audit F-20, dec-0009) — it only cost a key-derivation round-trip
+   * on every write. Blobs written by older builds are still readable via
+   * LegacySaveReaderService and are migrated forward on first load.
+   */
   private async setStorageItem<T>(key: string, value: T): Promise<void> {
-    const dataString = JSON.stringify(value);
-    const encryptedData = await this.encrypt(dataString);
-    const checksum = await this.checksumService.generateChecksum(dataString);
-    
-    await Promise.all([
-      this.setPreference(key, encryptedData),
-      this.setPreference(key + this.checksumSuffix, checksum)
-    ]);
+    await this.setPreference(key, JSON.stringify(value));
+    // Drop the detached signature the pre-v2 format kept in a sibling key.
+    try {
+      await this.removePreference(key + this.checksumSuffix);
+    } catch {
+      // A stale legacy signature is harmless once the current value is stored.
+    }
   }
 
   private async getStorageItem<T>(key: string): Promise<T | null> {
-    const [value, checksum] = await Promise.all([
-      this.getPreference(key),
-      this.getPreference(key + this.checksumSuffix)
-    ]);
+    const value = await this.getPreference(key);
 
     if (!value) return null;
 
     try {
-      let decrypted = '';
-      if (value.startsWith('{') || value.startsWith('[')) {
-        decrypted = value;
-        await this.setStorageItem(key, JSON.parse(decrypted));
-      } else {
-        decrypted = await this.decrypt(value);
+      const result = await this.legacySaves.read<T>(value);
+
+      if (result.kind === 'legacy') {
+        // Rewrite in the current format so this device only pays the migration
+        // cost once, and the legacy path stops being reachable for it.
+        await this.setStorageItem(key, result.value);
       }
 
-      // Integrity Check: Protect against manual tampering
-      const isValid = checksum && await this.checksumService.verify(decrypted, checksum);
-      if (!isValid) {
-        console.warn(`Data integrity failure for key: ${key}. Data may have been tampered with.`);
-        return null;
-      }
-
-      return JSON.parse(decrypted) as T;
+      return result.value;
     } catch (err) {
-      console.warn(`Failed to decrypt or parse storage item for key: ${key}:`, err);
+      console.warn(`Failed to read storage item for key: ${key}:`, err);
       return null;
     }
-  }
-
-  // The derived AES key is deterministic, so derive it once and reuse it for
-  // every encrypt/decrypt instead of re-running PBKDF2 on each storage call.
-  private encryptionKeyPromise: Promise<CryptoKey> | null = null;
-
-  private getEncryptionKey(): Promise<CryptoKey> {
-    if (!this.encryptionKeyPromise) {
-      this.encryptionKeyPromise = this.deriveEncryptionKey();
-    }
-    return this.encryptionKeyPromise;
-  }
-
-  private async deriveEncryptionKey(): Promise<CryptoKey> {
-    const password = 'TagSpotter_1950_Americana_Secret_Encryption_Key';
-    const salt = new TextEncoder().encode('TagSpotter_Salt_1950');
-    const passwordBuffer = new TextEncoder().encode(password);
-    
-    const keyMaterial = await window.crypto.subtle.importKey(
-      'raw',
-      passwordBuffer,
-      { name: 'PBKDF2' },
-      false,
-      ['deriveKey']
-    );
-    
-    return window.crypto.subtle.deriveKey(
-      {
-        name: 'PBKDF2',
-        salt: salt,
-        iterations: 1000,
-        hash: 'SHA-256'
-      },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt']
-    );
-  }
-
-  private async encrypt(text: string): Promise<string> {
-    const key = await this.getEncryptionKey();
-    const iv = window.crypto.getRandomValues(new Uint8Array(12));
-    const encoded = new TextEncoder().encode(text);
-    
-    const ciphertext = await window.crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      encoded
-    );
-    
-    const combined = new Uint8Array(iv.length + ciphertext.byteLength);
-    combined.set(iv, 0);
-    combined.set(new Uint8Array(ciphertext), iv.length);
-    
-    return this.arrayBufferToBase64(combined);
-  }
-
-  private async decrypt(encryptedBase64: string): Promise<string> {
-    const key = await this.getEncryptionKey();
-    const combined = this.base64ToArrayBuffer(encryptedBase64);
-    
-    const iv = combined.slice(0, 12);
-    const ciphertext = combined.slice(12);
-    
-    const decrypted = await window.crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      ciphertext
-    );
-    
-    return new TextDecoder().decode(decrypted);
-  }
-
-  private arrayBufferToBase64(buffer: Uint8Array): string {
-    let binary = '';
-    const len = buffer.byteLength;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(buffer[i]);
-    }
-    return window.btoa(binary);
-  }
-
-  private base64ToArrayBuffer(base64: string): Uint8Array {
-    const binaryString = window.atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes;
   }
 
   private async removeStorageItem(key: string): Promise<void> {
@@ -194,20 +92,15 @@ export class StateService {
   }
 
   protected async setPreference(key: string, value: string): Promise<void> {
-    await Preferences.set({ key, value });
+    await this.preferences.set(key, value);
   }
 
   protected async getPreference(key: string): Promise<string | null> {
-    const { value } = await Preferences.get({ key });
-    return value;
+    return this.preferences.get(key);
   }
 
   protected async removePreference(key: string): Promise<void> {
-    await Preferences.remove({ key });
-  }
-
-  async clearStorage(): Promise<void> {
-    await Promise.all(this.ownedStorageKeys.map((key) => this.removeStorageItem(key)));
+    await this.preferences.remove(key);
   }
 
   async loadSnapshot(): Promise<PersistedGameSnapshot> {
@@ -252,7 +145,7 @@ export class StateService {
     const normalized = this.normalizeSnapshot(snapshot);
     // Seed data (names, coordinates, trivia facts) ships in states.json and is
     // re-merged on load, so only per-state progress needs to be persisted.
-    // This keeps the encrypted payload roughly 10x smaller per save. Loading
+    // This keeps the stored payload roughly 10x smaller per save. Loading
     // remains backward compatible: full legacy blobs also carry ID + fnd.
     const slimSnapshot = {
       ...normalized,
@@ -295,10 +188,14 @@ export class StateService {
    * a no-longer-found state cannot be resumed against the fresh save.
    */
   async clearTempQuizSession(): Promise<void> {
-    await this.removePreference(TEMP_QUIZ_SESSION_KEY);
+    await this.quizSessions.clear();
   }
 
-  async resetSnapshot(tripHistory: TripHistoryEntry[] = [], hasSeenOnboarding = false): Promise<PersistedGameSnapshot> {
+  async resetSnapshot(
+    tripHistory: TripHistoryEntry[] = [],
+    hasSeenOnboarding = false,
+    currentStreak?: ChallengeStreak,
+  ): Promise<PersistedGameSnapshot> {
     const snapshot: PersistedGameSnapshot = {
       states: this.createSeedStates(),
       points: createEmptyPoints(),
@@ -306,6 +203,9 @@ export class StateService {
       gameMode: this.defaultGameMode,
       difficulty: this.defaultDifficulty,
       tripHistory,
+      // The streak measures days the player showed up, not progress in any one
+      // trip, so it deliberately survives a reset.
+      challengeStreak: currentStreak ?? createEmptyStreak(),
     };
 
     await this.saveSnapshot(snapshot);
@@ -354,6 +254,7 @@ export class StateService {
         ? snapshot.difficulty
         : this.defaultDifficulty,
       tripHistory: this.normalizeTripHistory(snapshot.tripHistory),
+      challengeStreak: normalizeStreak(snapshot.challengeStreak),
     };
   }
 

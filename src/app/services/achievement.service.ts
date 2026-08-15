@@ -41,7 +41,7 @@ export class AchievementService {
     {
       id: 'road-warrior',
       title: 'Road Warrior',
-      description: 'Travel over 5,000 cumulative miles.',
+      description: 'Build up 5,000 miles of total spotting range.',
       icon: 'car-outline',
       color: 'success',
       predicate: (s) => s.totalDistanceMiles >= 5000,
@@ -51,7 +51,7 @@ export class AchievementService {
         label: `${s.totalDistanceMiles.toLocaleString()} / 5,000 miles`,
         statusText: s.totalDistanceMiles >= 5000 
           ? 'Stamped and collected.' 
-          : `${(5000 - s.totalDistanceMiles).toLocaleString()} miles left on the odometer.`
+          : `${(5000 - s.totalDistanceMiles).toLocaleString()} more miles of range to go.`
       })
     },
     {
@@ -136,7 +136,7 @@ export class AchievementService {
     {
       id: 'long-haul',
       title: 'Long Haul',
-      description: 'Log 1,000 miles from your spotted plates.',
+      description: 'Reach 1,000 miles of spotting range.',
       getProgress: (s) => ({
         currentValue: s.totalDistanceMiles,
         targetValue: 1000,

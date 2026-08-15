@@ -249,3 +249,20 @@
   0% { transform: translateY(-30px) rotateX(-20deg) rotateZ(3deg) scale(0.9); opacity: 0; }
   100% { transform: translateY(0) rotateX(0) rotateZ(-1.4deg) scale(1); opacity: 1; }
 }
+
+/*
+ * Reduced motion (audit F-31). Deliberately a blanket rule rather than a list of
+ * named animations: an allowlist goes stale the moment someone adds an effect
+ * and forgets to update it, and the failure mode of forgetting is motion shown
+ * to a user who asked for none. Nothing in this file animates information — the
+ * state a movement communicates is always also carried by colour, label or
+ * position.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

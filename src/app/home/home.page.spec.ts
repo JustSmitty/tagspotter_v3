@@ -9,8 +9,6 @@ import { LocationErrorCode } from '../services/location.service';
 import { LocationPrecision } from '../models/location.model';
 import { HomePage } from './home.page';
 import { RoadAtlasComponent } from '../shared/road-atlas/road-atlas.component';
-import { OnboardingModalComponent } from '../shared/onboarding-modal/onboarding-modal.component';
-import { QuizModalComponent } from '../shared/quiz-modal/quiz-modal.component';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 
 @Component({
@@ -47,7 +45,8 @@ describe('HomePage', () => {
         'setDifficulty',
         'setGameMode',
         'setLocationPrecision',
-        'markOnboardingComplete'
+        'markOnboardingComplete',
+        'unspotState'
       ]),
       {
         homeViewModel: signal<HomeViewModel>({
@@ -74,6 +73,7 @@ describe('HomePage', () => {
           ],
           isLoaded: true,
           isBusy: false,
+          error: null,
         }),
         locationError: signal<LocationErrorCode | null>(null),
         difficulty: signal<QuizDifficulty>('easy'),
@@ -114,6 +114,7 @@ describe('HomePage', () => {
     gameStateStore.setGameMode.and.resolveTo();
     gameStateStore.setDifficulty.and.resolveTo();
     gameStateStore.markOnboardingComplete.and.resolveTo();
+    gameStateStore.unspotState.and.resolveTo();
 
     modalController = jasmine.createSpyObj<ModalController>('ModalController', ['create']);
     alertController = jasmine.createSpyObj<AlertController>('AlertController', ['create']);
@@ -186,21 +187,18 @@ describe('HomePage', () => {
         prompt: 'Question 1',
         correctAnswer: 'A',
         options: ['A', 'B', 'C', 'D'],
-        correctIndex: 0,
       },
       {
         topic: 'Capital',
         prompt: 'Question 2',
         correctAnswer: 'A',
         options: ['A', 'B', 'C', 'D'],
-        correctIndex: 0,
       },
       {
         topic: 'Flower',
         prompt: 'Question 3',
         correctAnswer: 'A',
         options: ['A', 'B', 'C', 'D'],
-        correctIndex: 0,
       },
     ];
     const session: QuizSession = {
@@ -211,7 +209,7 @@ describe('HomePage', () => {
       questions,
     };
 
-    gameStateStore.recordFoundState.and.resolveTo(session);
+    gameStateStore.recordFoundState.and.resolveTo({ quizSession: session, distanceBonus: Promise.resolve(null) });
     modalController.create.and.callFake(async () => ({
       present: async () => undefined,
       onWillDismiss: async () => ({
@@ -237,21 +235,18 @@ describe('HomePage', () => {
         prompt: 'Question 1',
         correctAnswer: 'A',
         options: ['A', 'B', 'C', 'D'],
-        correctIndex: 0,
       },
       {
         topic: 'Capital',
         prompt: 'Question 2',
         correctAnswer: 'A',
         options: ['A', 'B', 'C', 'D'],
-        correctIndex: 0,
       },
       {
         topic: 'Flower',
         prompt: 'Question 3',
         correctAnswer: 'A',
         options: ['A', 'B', 'C', 'D'],
-        correctIndex: 0,
       },
     ];
     const session: QuizSession = {
@@ -266,7 +261,7 @@ describe('HomePage', () => {
       { kind: 'cancelled' },
     ];
 
-    gameStateStore.recordFoundState.and.resolveTo(session);
+    gameStateStore.recordFoundState.and.resolveTo({ quizSession: session, distanceBonus: Promise.resolve(null) });
     modalController.create.and.callFake(async () => ({
       present: async () => undefined,
       onWillDismiss: async () => ({
@@ -315,30 +310,79 @@ describe('HomePage', () => {
     expect(gameStateStore.recordFoundState).not.toHaveBeenCalled();
   });
 
+  it('does not record a classic plate when the confirmation is dismissed by the backdrop', async () => {
+    gameStateStore.gameMode.set('classic');
+    alertController.create.and.resolveTo({
+      present: async () => undefined,
+      onDidDismiss: async () => ({ role: 'backdrop' }),
+    } as any);
+
+    await component.onRecord(gameStateStore.homeViewModel().states[0]);
+
+    expect(gameStateStore.recordFoundState).not.toHaveBeenCalled();
+  });
+
+  it('renders an assertive recovery panel when game state loading fails', () => {
+    gameStateStore.homeViewModel.set({
+      ...gameStateStore.homeViewModel(),
+      isLoaded: false,
+      error: 'Storage is unavailable.',
+    });
+    fixture.detectChanges();
+
+    const alert = (fixture.nativeElement as HTMLElement).querySelector('[role="alert"]');
+    expect(alert?.textContent).toContain('Storage is unavailable');
+    expect(alert?.querySelector('button')?.textContent).toContain('Retry');
+  });
+
   it('shows confirmation feedback after resetting progress', async () => {
     await component.onRefresh();
 
-    const alertConfig = alertController.create.calls.mostRecent().args[0] as any;
-    const confirmButton = alertConfig.buttons.find((button: any) => button.role === 'confirm');
-
-    await confirmButton.handler();
-
     expect(gameStateStore.resetProgress).toHaveBeenCalled();
     expect(toastController.create).toHaveBeenCalledWith(jasmine.objectContaining({
-      message: jasmine.stringMatching(/Trip reset/),
+      message: jasmine.stringMatching(/Road log cleared/),
       duration: 3000,
     }));
   });
 
-  it('shows a toast when distance bonus fails without a permission denial', async () => {
-    gameStateStore.locationError.set('UNAVAILABLE');
-    gameStateStore.recordFoundState.and.resolveTo(null);
+  it('shows a toast when the range bonus fails without a permission denial', async () => {
+    // The bonus reports through the returned promise now, not a signal read
+    // straight after the call (audit F-06).
+    gameStateStore.recordFoundState.and.resolveTo({
+      quizSession: null,
+      distanceBonus: Promise.resolve<LocationErrorCode | null>('UNAVAILABLE'),
+    });
 
     await component.onRecord(gameStateStore.homeViewModel().states[0]);
+    await fixture.whenStable();
 
     expect(toastController.create).toHaveBeenCalledWith(jasmine.objectContaining({
-      message: jasmine.stringMatching(/Location services are unavailable/),
+      message: jasmine.stringMatching(/no range bonus/),
       duration: 3500,
     }));
+  });
+
+  it('does not wait for the range bonus before returning', async () => {
+    let releaseBonus: (value: LocationErrorCode | null) => void = () => undefined;
+    const pending = new Promise<LocationErrorCode | null>((resolve) => { releaseBonus = resolve; });
+    gameStateStore.recordFoundState.and.resolveTo({ quizSession: null, distanceBonus: pending });
+
+    // Resolves while the location fix is still outstanding — this is the whole
+    // point of F-06: a tap must not hold the UI for the GPS timeout.
+    await component.onRecord(gameStateStore.homeViewModel().states[0]);
+
+    expect(gameStateStore.recordFoundState).toHaveBeenCalledWith(1);
+    releaseBonus(null);
+  });
+
+  it('confirms before removing an already-spotted plate', async () => {
+    const spotted = { ...gameStateStore.homeViewModel().states[0], isFound: true };
+
+    await component.onRecord(spotted);
+
+    expect(alertController.create).toHaveBeenCalledWith(jasmine.objectContaining({
+      header: jasmine.stringMatching(/Remove Alabama/),
+    }));
+    expect(gameStateStore.unspotState).toHaveBeenCalledWith(1);
   });
 });

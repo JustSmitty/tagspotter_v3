@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "$comment": "Trigger evals for the resolver. Each case asserts that a realistic request still reaches the skill that owns it. These are the org chart's regression tests — when a route is edited, these say whether the edit broke someone else's inbox.",
+  "cases": [
+    {
+      "id": "symptom-routes-to-triage",
+      "request": "the plate grid freezes for about ten seconds after I tap a state",
+      "expectPrimary": "tagspotter-triage",
+      "expectNoEscalation": true
+    },
+    {
+      "id": "crash-report-routes-to-triage",
+      "request": "the app crashes on launch after I reset my trip",
+      "expectPrimary": "tagspotter-triage"
+    },
+    {
+      "id": "copy-request-routes-to-copy",
+      "request": "rewrite the golf wording in the onboarding handbook",
+      "files": ["src/app/shared/onboarding-modal/onboarding-modal.component.html"],
+      "expectPrimary": "tagspotter-copy"
+    },
+    {
+      "id": "readme-claim-routes-to-copy",
+      "request": "the readme says maplibre but we removed it, fix the docs",
+      "expectPrimary": "tagspotter-copy"
+    },
+    {
+      "id": "assets-route-to-pipeline",
+      "request": "the state flag svgs are enormous, optimize them",
+      "files": ["src/assets/stateflags/Pennsylvania.svg"],
+      "expectPrimary": "tagspotter-asset-pipeline"
+    },
+    {
+      "id": "bundle-size-routes-to-pipeline",
+      "request": "why is our bundle size so large, can we trim the payload",
+      "expectPrimary": "tagspotter-asset-pipeline"
+    },
+    {
+      "id": "a11y-routes-to-gate",
+      "request": "check the colour contrast on the footer text against wcag",
+      "expectPrimary": "tagspotter-a11y-gate"
+    },
+    {
+      "id": "dark-mode-routes-to-gate",
+      "request": "add a dark mode for driving at night",
+      "expectPrimary": "tagspotter-a11y-gate"
+    },
+    {
+      "id": "build-config-routes-to-release",
+      "request": "migrate us to the esbuild application builder",
+      "files": ["angular.json"],
+      "expectPrimary": "tagspotter-release"
+    },
+    {
+      "id": "versioning-routes-to-release",
+      "request": "bump the versionCode and versionName for the next store build",
+      "expectPrimary": "tagspotter-release",
+      "expectEscalation": ["publishing"]
+    },
+    {
+      "id": "feature-work-is-the-default",
+      "request": "let players un-spot a state they tapped by mistake",
+      "expectPrimary": "tagspotter-feature"
+    },
+    {
+      "id": "signals-question-gets-vendored-support",
+      "request": "refactor this effect into a computed signal in the store",
+      "files": ["src/app/services/game-state.store.ts"],
+      "expectSupport": ["angular-signals"]
+    },
+    {
+      "id": "leaderboard-escalates-on-constraint",
+      "request": "add a leaderboard so friends can compare scores",
+      "expectEscalation": ["constraint-collision"]
+    },
+    {
+      "id": "cdn-escalates-on-constraint",
+      "request": "load the fonts from a cdn instead of bundling them",
+      "expectEscalation": ["constraint-collision"]
+    },
+    {
+      "id": "store-submission-escalates",
+      "request": "publish the release build to the play console",
+      "expectPrimary": "tagspotter-release",
+      "expectEscalation": ["publishing"]
+    },
+    {
+      "id": "seed-data-escalates-on-migration",
+      "request": "change the state id ordering in states.json",
+      "expectEscalation": ["data-migration"]
+    }
+  ]
+}

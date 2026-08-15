@@ -515,3 +515,80 @@
     flex-direction: column;
   }
 }
+
+/*
+ * Daily challenge streak (audit F-11). Styled as a punched transit pass rather
+ * than a scoreboard, because it deliberately carries no points — it marks days
+ * the traveller showed up, and adding points would have made every trip already
+ * archived in the road log incomparable with new ones.
+ */
+.streak-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  margin: 0 20px 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--card-border);
+  border-left: 4px solid var(--ion-color-secondary);
+  border-radius: 6px;
+  background: var(--app-surface-card);
+
+  &--banked {
+    border-left-color: var(--ion-color-tertiary);
+  }
+}
+
+.streak-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 46px;
+}
+
+.streak-count {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--ion-color-primary);
+}
+
+.streak-unit {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--app-ink-muted);
+}
+
+.streak-title {
+  display: block;
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--app-ink-deep);
+}
+
+.streak-note {
+  margin: 2px 0 0;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: var(--app-ink-muted);
+}
+
+.streak-best {
+  align-self: start;
+  padding: 3px 8px;
+  border: 1px dashed var(--app-border-soft);
+  border-radius: 999px;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--app-ink-muted);
+  white-space: nowrap;
+}

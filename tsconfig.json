@@ -17,13 +17,16 @@
     "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "es2022",
-    "module": "es2020",
+    "module": "es2022",
+    // Was ["es2018", "dom"] while target was already es2022 (audit F-39), so the
+    // compiler emitted modern syntax but refused modern library methods —
+    // Array.prototype.flatMap failed to typecheck on an es2022 target.
     "lib": [
-      "es2018",
+      "es2022",
       "dom"
     ],
     "skipLibCheck": true,
-    "useDefineForClassFields": false,
+    "useDefineForClassFields": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true
   },

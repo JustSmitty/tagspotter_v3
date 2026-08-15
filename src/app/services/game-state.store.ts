@@ -1,10 +1,10 @@
 import { computed, inject, Injectable, signal, effect } from '@angular/core';
 
 import {
-  cloneStoredPoints,
-  cloneStoredStates,
+  AchievementViewModel,
+  ChallengeStreak,
   createEmptyPoints,
-  DISTRICT_OF_COLUMBIA_ID,
+  createEmptyStreak,
   GameSnapshot,
   getCorrectAnswersCount,
   PersistedGameSnapshot,
@@ -16,14 +16,22 @@ import {
   TripHistoryEntry,
 } from '../models/game-state.model';
 import { AchievementService } from './achievement.service';
-import { LocationService } from './location.service';
 import { QuizService } from './quiz.service';
 import { StateService } from './state.service';
-import { RewardService } from './reward.service';
 import { GameViewModelService } from './game-view-model.service';
-import { Capacitor } from '@capacitor/core';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { ImpactStyle } from '@capacitor/haptics';
 import { DEFAULT_LOCATION_PRECISION, LocationPrecision } from '../models/location.model';
+import { GameCommandService } from './game-command.service';
+import { LocationErrorCode } from './location.service';
+import { NativeUiService } from './platform/native-ui.service';
+import { ClockService } from './clock.service';
+import { ChallengeStreakService } from './challenge-streak.service';
+
+export interface RecordFoundStateResult {
+  quizSession: QuizSession | null;
+  /** Resolves when the range bonus lands: null on success, else why it did not. */
+  distanceBonus: Promise<LocationErrorCode | null>;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -31,10 +39,12 @@ import { DEFAULT_LOCATION_PRECISION, LocationPrecision } from '../models/locatio
 export class GameStateStore {
   private readonly stateService = inject(StateService);
   private readonly achievementService = inject(AchievementService);
-  private readonly locationService = inject(LocationService);
   private readonly quizService = inject(QuizService);
-  private readonly rewardService = inject(RewardService);
   private readonly viewModelService = inject(GameViewModelService);
+  private readonly commands = inject(GameCommandService);
+  private readonly nativeUi = inject(NativeUiService);
+  private readonly clock = inject(ClockService);
+  private readonly streaks = inject(ChallengeStreakService);
 
   private readonly states = signal<StoredStateRecord[]>([]);
   private readonly points = signal<StoredPoints>(createEmptyPoints());
@@ -47,6 +57,17 @@ export class GameStateStore {
   readonly hasSeenOnboarding = signal(false);
   readonly tripHistory = signal<TripHistoryEntry[]>([]);
   readonly locationPrecision = signal<LocationPrecision>(DEFAULT_LOCATION_PRECISION);
+  private readonly storedStreak = signal<ChallengeStreak>(createEmptyStreak());
+
+  /**
+   * The streak as it reads today (audit F-11). Derived rather than stored so a
+   * streak that lapsed while the app was closed shows as 0 without anyone
+   * having to rewrite history at start-up.
+   */
+  readonly challengeStreak = computed(() => this.streaks.asOf(this.storedStreak(), this.clock.today()));
+  readonly challengesCompletedToday = computed(
+    () => this.streaks.isCompletedToday(this.storedStreak(), this.clock.today()),
+  );
 
 
   /**
@@ -71,7 +92,7 @@ export class GameStateStore {
   private readonly hapticTrigger = effect(() => {
     const foundCount = this.foundCount();
     const isLoaded = this.isLoaded();
-    
+
     if (isLoaded) {
       if (this.hapticsInitialized && foundCount > this.lastFoundCount) {
         void this.triggerFoundHaptic();
@@ -80,6 +101,66 @@ export class GameStateStore {
       this.hapticsInitialized = true;
     }
   });
+
+  /**
+   * The most recently unlocked achievement, or null once acknowledged.
+   * Achievements used to unlock in total silence (audit F-12) — nothing marked
+   * the moment, so the only way to discover one was to visit the Goals tab
+   * later and notice a badge had changed.
+   */
+  readonly justUnlocked = signal<AchievementViewModel | null>(null);
+
+  private unlockBaselineTaken = false;
+  private previouslyUnlocked = new Set<string>();
+  /**
+   * A genuine side effect rather than a computed: it announces a transition,
+   * and the first evaluation after load must establish a baseline instead of
+   * firing for every achievement the player already had.
+   */
+  private readonly unlockTrigger = effect(() => {
+    if (!this.isLoaded()) return;
+    const unlocked = this.achievements().filter((achievement) => achievement.unlocked);
+
+    if (!this.unlockBaselineTaken) {
+      this.previouslyUnlocked = new Set(unlocked.map((achievement) => achievement.id));
+      this.unlockBaselineTaken = true;
+      return;
+    }
+
+    const fresh = unlocked.find((achievement) => !this.previouslyUnlocked.has(achievement.id));
+    this.previouslyUnlocked = new Set(unlocked.map((achievement) => achievement.id));
+    if (fresh) this.justUnlocked.set(fresh);
+  });
+
+  /** Called once the unlock has been shown, so the same one is not re-announced. */
+  acknowledgeUnlock(): void {
+    this.justUnlocked.set(null);
+  }
+
+  /**
+   * Banks the day's streak the moment all three challenges are done (audit
+   * F-11). An effect rather than a computed because it persists — and it is
+   * cheap: `advance` returns the same object unless something actually changed,
+   * so the guard below stops it writing on every snapshot update.
+   */
+  private readonly streakTrigger = effect(() => {
+    if (!this.isLoaded()) return;
+
+    const next = this.streaks.advance(this.storedStreak(), this.rotatingChallenges(), this.clock.today());
+    if (next !== this.storedStreak()) void this.commitStreak(next);
+  });
+
+  private async commitStreak(streak: ChallengeStreak): Promise<void> {
+    try {
+      await this.enqueueMutation(async () => {
+        this.storedStreak.set(streak);
+        await this.persistCurrentSnapshot('your challenge streak');
+      });
+    } catch {
+      // A streak is a nicety; failing to store it must not surface as an error
+      // over the trip itself, which is already saved.
+    }
+  }
 
   private hydratePromise: Promise<void> | null = null;
   private mutationQueue: Promise<unknown> = Promise.resolve();
@@ -110,6 +191,7 @@ export class GameStateStore {
     this.stateCards(),
     this.isLoaded(),
     this.isBusy(),
+    this.error(),
   ));
 
   readonly dashboardViewModel = computed(() => {
@@ -130,8 +212,9 @@ export class GameStateStore {
   readonly dashboardSouvenirFlags = computed(() => this.rankedFoundStates().slice(0, 3));
   readonly goalsSouvenirFlags = computed(() => this.viewModelService.toSouvenirFlags(this.rankedFoundStates(), 5));
   readonly goalProgress = computed(() => this.achievementService.getGoalProgress(this.snapshot()));
-  readonly rotatingChallenges = computed(() => this.achievementService.getRotatingChallenges(this.snapshot()));
+  readonly rotatingChallenges = computed(() => this.achievementService.getRotatingChallenges(this.snapshot(), this.clock.today()));
   readonly goalsSummary = computed(() => this.viewModelService.buildGoalsSummary(this.goalProgress()));
+  readonly tripComparison = computed(() => this.viewModelService.buildTripComparison(this.snapshot(), this.tripHistory()));
   readonly summaryViewModel = computed(() => {
     const snapshot = this.snapshot();
     const distribution = this.summaryDistribution();
@@ -145,12 +228,12 @@ export class GameStateStore {
   ));
   readonly summaryDistribution = computed(() => this.viewModelService.buildSummaryDistribution(this.snapshot()));
 
-  async hydrate(force = false): Promise<void> {
-    if (!force && this.isLoaded()) {
+  async hydrate(): Promise<void> {
+    if (this.isLoaded()) {
       return;
     }
 
-    if (!force && this.hydratePromise) {
+    if (this.hydratePromise) {
       return this.hydratePromise;
     }
 
@@ -165,6 +248,7 @@ export class GameStateStore {
       this.gameMode.set(snapshot.gameMode);
       this.difficulty.set(snapshot.difficulty);
       this.tripHistory.set(snapshot.tripHistory);
+      this.storedStreak.set(snapshot.challengeStreak ?? createEmptyStreak());
       this.locationPrecision.set(locationPrecision);
 
       this.isLoaded.set(true);
@@ -180,7 +264,7 @@ export class GameStateStore {
 
   async markOnboardingComplete(): Promise<void> {
     await this.enqueueMutation(async () => {
-      await this.persistCurrentSnapshot({ hasSeenOnboarding: true });
+      await this.persistCurrentSnapshot('the handbook', { hasSeenOnboarding: true });
       this.hasSeenOnboarding.set(true);
     });
   }
@@ -189,7 +273,7 @@ export class GameStateStore {
     await this.hydrate();
 
     await this.enqueueMutation(async () => {
-      await this.persistCurrentSnapshot({ difficulty: level });
+      await this.persistCurrentSnapshot('your difficulty setting', { difficulty: level });
       this.difficulty.set(level);
     });
   }
@@ -198,7 +282,7 @@ export class GameStateStore {
     await this.hydrate();
 
     await this.enqueueMutation(async () => {
-      await this.persistCurrentSnapshot({ gameMode: mode });
+      await this.persistCurrentSnapshot('your mode setting', { gameMode: mode });
       this.gameMode.set(mode);
     });
   }
@@ -218,7 +302,7 @@ export class GameStateStore {
 
     await this.enqueueMutation(async () => {
       const tripHistory = this.withArchivedCurrentTrip(this.tripHistory());
-      const resetSnapshot = await this.stateService.resetSnapshot(tripHistory, this.hasSeenOnboarding());
+      const resetSnapshot = await this.stateService.resetSnapshot(tripHistory, this.hasSeenOnboarding(), this.storedStreak());
       // A quiz saved mid-flight belongs to the old trip; resuming it against
       // the fresh save would award trivia points to an unspotted state.
       await this.stateService.clearTempQuizSession();
@@ -227,67 +311,87 @@ export class GameStateStore {
       this.gameMode.set(resetSnapshot.gameMode);
       this.difficulty.set(resetSnapshot.difficulty);
       this.tripHistory.set(resetSnapshot.tripHistory);
+      this.storedStreak.set(resetSnapshot.challengeStreak ?? createEmptyStreak());
       this.error.set(null);
     });
   }
 
-  async recordFoundState(stateId: number): Promise<QuizSession | null> {
+  /**
+   * Logs the plate immediately and returns straight away (audit F-06). The
+   * range bonus needs a GPS fix that can take up to ten seconds, and waiting
+   * for it inside the mutation meant `isBusy` disabled the whole UI for that
+   * long after a single tap. `distanceBonus` resolves later with whatever went
+   * wrong, or null when the bonus was applied.
+   */
+  async recordFoundState(stateId: number): Promise<RecordFoundStateResult | null> {
     await this.hydrate();
 
-    return this.enqueueMutation(async () => {
-      const states = cloneStoredStates(this.states());
-      const points = cloneStoredPoints(this.points());
-      const stateIndex = states.findIndex((state) => state.ID === stateId);
+    const outcome = await this.enqueueMutation(async () => {
+      const result = this.commands.recordFoundState(
+        this.states(),
+        this.points(),
+        stateId,
+        this.gameMode(),
+        this.difficulty(),
+      );
+      if (!result) return null;
 
-      if (stateIndex === -1) {
-        return null;
-      }
-
-      const foundState = states[stateIndex];
-
-      if (foundState.fnd.stateFound) {
-        return null;
-      }
-
-      foundState.fnd.stateFound = true;
-      foundState.fnd.mode = this.gameMode();
-      foundState.fnd.difficulty = this.difficulty();
-      foundState.fnd.questionsCorrect = 0;
-      foundState.fnd.distance = 0;
-
-      const locationResult = await this.locationService.getCurrentLocationAccess(this.locationPrecision());
-
-      if (locationResult.status === 'granted') {
-        const distance = Math.round(
-          this.locationService.calculateDistanceMiles(
-            { lat: foundState.Lat, lng: foundState.Lng },
-            locationResult.coordinates,
-          ),
-        );
-
-        foundState.fnd.distance = distance;
-        points.distance += this.rewardService.getDistanceReward(distance);
-      } else {
-        this.error.set(locationResult.message);
-        this.locationError.set(locationResult.errorCode);
-      }
-
-      points.state += this.rewardService.getStateDiscoveryReward();
-
-      const quizSession = foundState.ID === DISTRICT_OF_COLUMBIA_ID || this.gameMode() === 'classic'
-        ? null
-        : this.quizService.createQuizSession(foundState, states, this.difficulty());
-      
-      await this.persistSnapshot(states, points);
-      this.setSnapshot(states, points);
-
-      if (locationResult.status === 'granted') {
-        this.error.set(null);
-        this.locationError.set(null);
-      }
-
-      return quizSession;
+      await this.persistSnapshot(result.states, result.points, 'that plate');
+      this.setSnapshot(result.states, result.points);
+      this.error.set(null);
+      this.locationError.set(null);
+      return { quizSession: result.quizSession };
     });
+
+    if (!outcome) return null;
+
+    return {
+      quizSession: outcome.quizSession,
+      distanceBonus: this.resolveDistanceBonus(stateId),
+    };
+  }
+
+  /** Removes a spot and every point earned from it (audit F-04). */
+  async unspotState(stateId: number): Promise<void> {
+    await this.hydrate();
+
+    await this.enqueueMutation(async () => {
+      const result = this.commands.unspotState(this.states(), this.points(), stateId);
+      if (!result) return;
+      await this.persistSnapshot(result.states, result.points, 'that removal');
+      this.setSnapshot(result.states, result.points);
+      this.error.set(null);
+    });
+  }
+
+  /**
+   * Runs entirely outside the mutation queue until it has an answer, so the
+   * slow part never blocks the player. Only the tiny apply step is queued.
+   */
+  private async resolveDistanceBonus(stateId: number): Promise<LocationErrorCode | null> {
+    try {
+      const location = await this.commands.readLocation(this.locationPrecision());
+
+      if (location.status !== 'granted') {
+        this.locationError.set(location.errorCode);
+        return location.errorCode;
+      }
+
+      await this.enqueueMutation(async () => {
+        const result = this.commands.applyDistance(this.states(), this.points(), stateId, location.coordinates);
+        if (!result) return;
+        await this.persistSnapshot(result.states, result.points, 'the range bonus');
+        this.setSnapshot(result.states, result.points);
+      });
+
+      this.locationError.set(null);
+      return null;
+    } catch {
+      // A failed bonus must never surface as a failed spot — the plate is
+      // already logged and saved by the time this runs.
+      this.locationError.set('UNKNOWN');
+      return 'UNKNOWN';
+    }
   }
 
 
@@ -295,30 +399,10 @@ export class GameStateStore {
     await this.hydrate();
 
     await this.enqueueMutation(async () => {
-      const states = cloneStoredStates(this.states());
-      const points = cloneStoredPoints(this.points());
-      const stateIndex = states.findIndex((state) => state.ID === stateId);
-
-      if (stateIndex === -1) {
-        return;
-      }
-
-      const foundState = states[stateIndex];
-
-      // Guard against stale sessions (e.g. a quiz resumed after a trip reset):
-      // trivia points may only attach to a state that is actually spotted.
-      if (!foundState.fnd.stateFound) {
-        return;
-      }
-
-      const normalizedPoints = Math.max(earnedPoints, 0);
-      const delta = normalizedPoints - foundState.fnd.questionsCorrect;
-
-      foundState.fnd.questionsCorrect = normalizedPoints;
-      points.question += delta;
-
-      await this.persistSnapshot(states, points);
-      this.setSnapshot(states, points);
+      const result = this.commands.completeQuiz(this.states(), this.points(), stateId, earnedPoints);
+      if (!result) return;
+      await this.persistSnapshot(result.states, result.points, 'your quiz answers');
+      this.setSnapshot(result.states, result.points);
       this.error.set(null);
     });
   }
@@ -326,6 +410,7 @@ export class GameStateStore {
   private async persistSnapshot(
     states: StoredStateRecord[],
     points: StoredPoints,
+    action: string,
     overrides: Partial<Pick<PersistedGameSnapshot, 'hasSeenOnboarding' | 'gameMode' | 'difficulty' | 'tripHistory'>> = {},
   ): Promise<void> {
     const snapshot: PersistedGameSnapshot = {
@@ -335,27 +420,35 @@ export class GameStateStore {
       gameMode: this.gameMode(),
       difficulty: this.difficulty(),
       tripHistory: this.tripHistory(),
+      challengeStreak: this.storedStreak(),
       ...overrides,
     };
 
-    await this.persistGameSnapshot(snapshot);
+    await this.persistGameSnapshot(snapshot, action);
   }
 
-  private async persistGameSnapshot(snapshot: PersistedGameSnapshot): Promise<void> {
+  /**
+   * The message names the action that failed (audit F-19). Persisting happens
+   * before the in-memory update, so a storage failure means the change the
+   * player just made did not happen — "Failed to save progress" left them
+   * guessing which one.
+   */
+  private async persistGameSnapshot(snapshot: PersistedGameSnapshot, action: string): Promise<void> {
     try {
       await this.stateService.saveSnapshot(snapshot);
     } catch (err) {
-      console.error('Failed to persist game state:', err);
-      const message = 'Failed to save progress. Storage may be full.';
+      console.error(`Failed to persist game state while saving ${action}:`, err);
+      const message = `Couldn't save ${action}. Your device storage may be full — free some space and try again.`;
       this.error.set(message);
       throw new Error(message);
     }
   }
 
   private async persistCurrentSnapshot(
+    action: string,
     overrides: Partial<Pick<PersistedGameSnapshot, 'hasSeenOnboarding' | 'gameMode' | 'difficulty' | 'tripHistory'>> = {},
   ): Promise<void> {
-    await this.persistSnapshot(this.states(), this.points(), overrides);
+    await this.persistSnapshot(this.states(), this.points(), action, overrides);
   }
 
   private setSnapshot(states: StoredStateRecord[], points: StoredPoints): void {
@@ -366,15 +459,16 @@ export class GameStateStore {
   }
 
   private async triggerFoundHaptic(): Promise<void> {
-    if (!Capacitor.isNativePlatform()) {
-      return;
-    }
+    await this.nativeUi.impact(ImpactStyle.Heavy);
+  }
 
-    try {
-      await Haptics.impact({ style: ImpactStyle.Heavy });
-    } catch {
-      // Haptics are a best-effort flourish; unsupported devices should keep playing.
-    }
+  clearError(): void {
+    this.error.set(null);
+  }
+
+  async retryHydrate(): Promise<void> {
+    this.isLoaded.set(false);
+    await this.hydrate();
   }
 
   private withArchivedCurrentTrip(history: TripHistoryEntry[]): TripHistoryEntry[] {

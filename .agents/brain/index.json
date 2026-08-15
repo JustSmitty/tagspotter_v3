@@ -1,0 +1,597 @@
+{
+  "generated": "2026-08-15T21:10:18.902Z",
+  "count": 24,
+  "records": [
+    {
+      "id": "audit-2026-08-15",
+      "type": "finding",
+      "title": "Full-repo audit — 41 findings across product, correctness, perf, a11y and process",
+      "status": "open",
+      "date": "2026-08-15",
+      "source": "audit:full-scan-2026-08-15",
+      "confidence": "high",
+      "tags": [
+        "audit",
+        "backlog",
+        "copy",
+        "performance",
+        "accessibility",
+        "security",
+        "testing"
+      ],
+      "claims": {},
+      "supersedes": [],
+      "related": [
+        "dec-0005-retire-save-encryption",
+        "dec-0008-americana-brand-voice",
+        "con-0002-csp-no-remote-hosts"
+      ],
+      "file": ".agents/brain/findings/audit-2026-08-15.md",
+      "review_by": "2026-11-30"
+    },
+    {
+      "id": "con-0001-offline-first",
+      "type": "constraint",
+      "title": "The app must fully function with no network, forever",
+      "status": "accepted",
+      "date": "2026-07-09",
+      "source": "file:src/index.html:9",
+      "confidence": "high",
+      "tags": [
+        "offline",
+        "architecture",
+        "assets"
+      ],
+      "claims": {
+        "network-required-at-runtime": false
+      },
+      "supersedes": [],
+      "related": [
+        "dec-0003-self-host-fonts",
+        "dec-0004-inline-svg-atlas",
+        "con-0002-csp-no-remote-hosts"
+      ],
+      "file": ".agents/brain/constraints/con-0001-offline-first.md",
+      "review_by": "2027-06-30"
+    },
+    {
+      "id": "con-0002-csp-no-remote-hosts",
+      "type": "constraint",
+      "title": "CSP allows no remote hosts; keep it that way and keep it accurate",
+      "status": "accepted",
+      "date": "2026-08-14",
+      "source": "file:src/index.html:14",
+      "confidence": "high",
+      "tags": [
+        "security",
+        "csp",
+        "offline"
+      ],
+      "claims": {
+        "csp-remote-hosts": "none"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0001-offline-first",
+        "dec-0003-self-host-fonts",
+        "dec-0004-inline-svg-atlas"
+      ],
+      "file": ".agents/brain/constraints/con-0002-csp-no-remote-hosts.md",
+      "review_by": "2027-01-31"
+    },
+    {
+      "id": "con-0003-windows-dev-commands",
+      "type": "constraint",
+      "title": "Development happens on Windows — use npm.cmd and PowerShell-safe paths",
+      "status": "accepted",
+      "date": "2026-08-15",
+      "source": "file:AGENTS.md:3",
+      "confidence": "high",
+      "tags": [
+        "tooling",
+        "environment",
+        "windows"
+      ],
+      "claims": {
+        "dev-platform": "windows"
+      },
+      "supersedes": [],
+      "related": [],
+      "file": ".agents/brain/constraints/con-0003-windows-dev-commands.md",
+      "review_by": "2027-06-30"
+    },
+    {
+      "id": "con-0004-no-backend-no-accounts",
+      "type": "constraint",
+      "title": "No backend, no accounts, no server that trusts client data",
+      "status": "accepted",
+      "date": "2026-07-09",
+      "source": "file:capacitor.config.ts:1",
+      "confidence": "high",
+      "tags": [
+        "architecture",
+        "privacy",
+        "threat-model"
+      ],
+      "claims": {
+        "backend": "none",
+        "accounts": "none"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0001-offline-first",
+        "dec-0005-retire-save-encryption",
+        "dec-0007-coarse-location-default"
+      ],
+      "file": ".agents/brain/constraints/con-0004-no-backend-no-accounts.md",
+      "review_by": "2027-06-30"
+    },
+    {
+      "id": "con-0005-portrait-only",
+      "type": "constraint",
+      "title": "Android is locked to portrait; layouts need not handle landscape",
+      "status": "accepted",
+      "date": "2026-08-13",
+      "source": "commit:dff551d",
+      "confidence": "medium",
+      "tags": [
+        "layout",
+        "android",
+        "ux"
+      ],
+      "claims": {
+        "android-orientation": "portrait"
+      },
+      "supersedes": [],
+      "related": [],
+      "file": ".agents/brain/constraints/con-0005-portrait-only.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "con-0006-design-system-authority",
+      "type": "constraint",
+      "title": "docs/design_principles.md is the authority for visuals and voice",
+      "status": "accepted",
+      "date": "2026-08-15",
+      "source": "file:docs/design_principles.md:3",
+      "confidence": "high",
+      "tags": [
+        "design-system",
+        "copy",
+        "brand"
+      ],
+      "claims": {
+        "design-authority": "docs/design_principles.md"
+      },
+      "supersedes": [],
+      "related": [
+        "dec-0008-americana-brand-voice"
+      ],
+      "file": ".agents/brain/constraints/con-0006-design-system-authority.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "ctx-0001-states-dataset",
+      "type": "context",
+      "title": "The states dataset — shape, gaps, and why DC is special",
+      "status": "accepted",
+      "date": "2026-08-15",
+      "source": "file:src/data/states.json:1",
+      "confidence": "high",
+      "tags": [
+        "data",
+        "trivia",
+        "quiz",
+        "seed"
+      ],
+      "claims": {
+        "state-count": "51",
+        "dc-state-id": "9"
+      },
+      "supersedes": [],
+      "related": [
+        "dec-0002-slim-save-payload"
+      ],
+      "file": ".agents/brain/context/ctx-0001-states-dataset.md",
+      "review_by": "2027-06-30"
+    },
+    {
+      "id": "dec-0001-encrypted-save-envelope",
+      "type": "decision",
+      "title": "Store the save blob in a versioned AES-GCM envelope",
+      "status": "superseded",
+      "date": "2026-07-11",
+      "source": "file:src/app/services/state.service.ts:49",
+      "confidence": "high",
+      "tags": [
+        "storage",
+        "security",
+        "save-format"
+      ],
+      "claims": {
+        "save-format": "v2-envelope",
+        "save-encryption": "aes-gcm-hardcoded-key"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0004-no-backend-no-accounts",
+        "dec-0002-slim-save-payload"
+      ],
+      "file": ".agents/brain/decisions/dec-0001-encrypted-save-envelope.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "dec-0002-slim-save-payload",
+      "type": "decision",
+      "title": "Persist only per-state progress, re-merge seed data on load",
+      "status": "accepted",
+      "date": "2026-08-14",
+      "source": "commit:106dac1",
+      "confidence": "high",
+      "tags": [
+        "storage",
+        "performance",
+        "save-format"
+      ],
+      "claims": {
+        "save-payload": "progress-only"
+      },
+      "supersedes": [],
+      "related": [
+        "dec-0001-encrypted-save-envelope",
+        "ctx-0001-states-dataset"
+      ],
+      "file": ".agents/brain/decisions/dec-0002-slim-save-payload.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "dec-0003-self-host-fonts",
+      "type": "decision",
+      "title": "Self-host all typefaces as woff2",
+      "status": "accepted",
+      "date": "2026-08-14",
+      "source": "commit:b110499",
+      "confidence": "high",
+      "tags": [
+        "typography",
+        "offline",
+        "csp",
+        "assets"
+      ],
+      "claims": {
+        "font-delivery": "self-hosted"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0001-offline-first",
+        "con-0002-csp-no-remote-hosts"
+      ],
+      "file": ".agents/brain/decisions/dec-0003-self-host-fonts.md",
+      "review_by": "2027-06-30"
+    },
+    {
+      "id": "dec-0004-inline-svg-atlas",
+      "type": "decision",
+      "title": "Render the road atlas as inline SVG over bundled GeoJSON, not MapLibre",
+      "status": "accepted",
+      "date": "2026-07-09",
+      "source": "commit:d2a2eff",
+      "confidence": "high",
+      "tags": [
+        "map",
+        "rendering",
+        "offline",
+        "csp",
+        "bundle-size"
+      ],
+      "claims": {
+        "map-renderer": "inline-svg"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0001-offline-first",
+        "con-0002-csp-no-remote-hosts"
+      ],
+      "file": ".agents/brain/decisions/dec-0004-inline-svg-atlas.md",
+      "review_by": "2027-06-30"
+    },
+    {
+      "id": "dec-0005-retire-save-encryption",
+      "type": "decision",
+      "title": "Retire the save encryption or relabel it as tamper-friction",
+      "status": "superseded",
+      "date": "2026-08-15",
+      "source": "audit:audit-2026-08-15#F-20",
+      "confidence": "high",
+      "tags": [
+        "security",
+        "storage",
+        "threat-model"
+      ],
+      "claims": {},
+      "supersedes": [],
+      "related": [
+        "dec-0001-encrypted-save-envelope",
+        "con-0004-no-backend-no-accounts"
+      ],
+      "file": ".agents/brain/decisions/dec-0005-retire-save-encryption.md",
+      "review_by": "2026-11-30"
+    },
+    {
+      "id": "dec-0006-standalone-onboarding-flag",
+      "type": "decision",
+      "title": "Keep the onboarding-seen flag outside the encrypted save blob",
+      "status": "accepted",
+      "date": "2026-07-11",
+      "source": "file:src/app/services/state.service.ts:37",
+      "confidence": "high",
+      "tags": [
+        "storage",
+        "onboarding",
+        "ux"
+      ],
+      "claims": {
+        "onboarding-flag-location": "standalone-key"
+      },
+      "supersedes": [],
+      "related": [
+        "dec-0001-encrypted-save-envelope"
+      ],
+      "file": ".agents/brain/decisions/dec-0006-standalone-onboarding-flag.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "dec-0007-coarse-location-default",
+      "type": "decision",
+      "title": "Default to coarse location, make precise opt-in",
+      "status": "accepted",
+      "date": "2026-08-13",
+      "source": "commit:dff551d",
+      "confidence": "high",
+      "tags": [
+        "privacy",
+        "location",
+        "permissions"
+      ],
+      "claims": {
+        "location-default": "coarse"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0004-no-backend-no-accounts"
+      ],
+      "file": ".agents/brain/decisions/dec-0007-coarse-location-default.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "dec-0008-americana-brand-voice",
+      "type": "decision",
+      "title": "One voice — 1950s Americana road trip, no golf metaphor",
+      "status": "accepted",
+      "date": "2026-08-15",
+      "source": "audit:audit-2026-08-15#F-01",
+      "confidence": "high",
+      "tags": [
+        "copy",
+        "brand",
+        "design-system",
+        "ux"
+      ],
+      "claims": {
+        "brand-voice": "americana-roadtrip"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0006-design-system-authority"
+      ],
+      "file": ".agents/brain/decisions/dec-0008-americana-brand-voice.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "dec-0009-plain-json-saves",
+      "type": "decision",
+      "title": "Saves are plain JSON; legacy encrypted blobs are read-only migrated",
+      "status": "accepted",
+      "date": "2026-08-15",
+      "source": "audit:audit-2026-08-15#F-20",
+      "confidence": "high",
+      "tags": [
+        "storage",
+        "security",
+        "save-format",
+        "migration"
+      ],
+      "claims": {
+        "save-format": "plain-json",
+        "save-encryption": "none"
+      },
+      "supersedes": [
+        "dec-0001-encrypted-save-envelope",
+        "dec-0005-retire-save-encryption"
+      ],
+      "related": [
+        "con-0004-no-backend-no-accounts",
+        "dec-0002-slim-save-payload"
+      ],
+      "file": ".agents/brain/decisions/dec-0009-plain-json-saves.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "dec-0010-hybrid-flag-assets",
+      "type": "decision",
+      "title": "Flags are SVG when cheap, WebP when they are seals",
+      "status": "accepted",
+      "date": "2026-08-15",
+      "source": "audit:audit-2026-08-15#F-23",
+      "confidence": "high",
+      "tags": [
+        "assets",
+        "performance",
+        "flags",
+        "build"
+      ],
+      "claims": {
+        "flag-format": "hybrid-svg-webp",
+        "flag-raster-width": "384"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0001-offline-first",
+        "dec-0002-slim-save-payload",
+        "ctx-0001-states-dataset"
+      ],
+      "file": ".agents/brain/decisions/dec-0010-hybrid-flag-assets.md",
+      "review_by": "2027-06-30"
+    },
+    {
+      "id": "dec-0011-esbuild-application-builder",
+      "type": "decision",
+      "title": "Build with the esbuild application builder, output flat into www/",
+      "status": "accepted",
+      "date": "2026-08-15",
+      "source": "audit:audit-2026-08-15#F-25",
+      "confidence": "high",
+      "tags": [
+        "build",
+        "performance",
+        "capacitor",
+        "angular"
+      ],
+      "claims": {
+        "angular-builder": "application-esbuild",
+        "web-output-dir": "www"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0003-windows-dev-commands",
+        "dec-0010-hybrid-flag-assets"
+      ],
+      "file": ".agents/brain/decisions/dec-0011-esbuild-application-builder.md",
+      "review_by": "2027-06-30"
+    },
+    {
+      "id": "dec-0012-dark-mode-instrument-cluster",
+      "type": "decision",
+      "title": "Dark mode inverts the chrome; ephemera keeps its daylight colours",
+      "status": "accepted",
+      "date": "2026-08-15",
+      "source": "audit:audit-2026-08-15#F-10",
+      "confidence": "high",
+      "tags": [
+        "design-system",
+        "dark-mode",
+        "accessibility",
+        "theming"
+      ],
+      "claims": {
+        "dark-mode": "prefers-color-scheme",
+        "ephemera-inverts": false
+      },
+      "supersedes": [],
+      "related": [
+        "con-0006-design-system-authority",
+        "dec-0008-americana-brand-voice"
+      ],
+      "file": ".agents/brain/decisions/dec-0012-dark-mode-instrument-cluster.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "dec-0013-zoneless-and-plugin-tokens",
+      "type": "decision",
+      "title": "Zoneless change detection, and never hand a Capacitor proxy to DI",
+      "status": "accepted",
+      "date": "2026-08-15",
+      "source": "audit:audit-2026-08-15#F-26",
+      "confidence": "high",
+      "tags": [
+        "angular",
+        "performance",
+        "testing",
+        "capacitor",
+        "architecture"
+      ],
+      "claims": {
+        "change-detection": "zoneless",
+        "capacitor-plugins-injected": true
+      },
+      "supersedes": [],
+      "related": [
+        "dec-0011-esbuild-application-builder",
+        "con-0003-windows-dev-commands"
+      ],
+      "file": ".agents/brain/decisions/dec-0013-zoneless-and-plugin-tokens.md",
+      "review_by": "2027-06-30"
+    },
+    {
+      "id": "dec-0014-scoring-rebalance-and-streak",
+      "type": "decision",
+      "title": "Scoring changes are additive only; challenges pay a streak, not points",
+      "status": "accepted",
+      "date": "2026-08-15",
+      "source": "audit:audit-2026-08-15#F-13",
+      "confidence": "high",
+      "tags": [
+        "scoring",
+        "game-design",
+        "streak",
+        "persistence"
+      ],
+      "claims": {
+        "scoring-changes": "additive-only",
+        "challenge-reward": "streak"
+      },
+      "supersedes": [],
+      "related": [
+        "dec-0008-americana-brand-voice",
+        "con-0006-design-system-authority"
+      ],
+      "file": ".agents/brain/decisions/dec-0014-scoring-rebalance-and-streak.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "f-042-contrast-debt",
+      "type": "finding",
+      "title": "F-42 — 45 text elements fail WCAG AA contrast, in both themes",
+      "status": "open",
+      "date": "2026-08-15",
+      "source": "audit:contrast-audit-2026-08-15",
+      "confidence": "high",
+      "tags": [
+        "accessibility",
+        "contrast",
+        "design-system",
+        "backlog"
+      ],
+      "claims": {},
+      "supersedes": [],
+      "related": [
+        "dec-0012-dark-mode-instrument-cluster",
+        "con-0006-design-system-authority"
+      ],
+      "file": ".agents/brain/findings/f-042-contrast-debt.md",
+      "review_by": "2026-12-31"
+    },
+    {
+      "id": "pm-0001-stale-quiz-session",
+      "type": "postmortem",
+      "title": "A quiz saved mid-flight could score points against a reset trip",
+      "status": "resolved",
+      "date": "2026-08-14",
+      "source": "commit:98a2113",
+      "confidence": "high",
+      "tags": [
+        "quiz",
+        "state",
+        "reset",
+        "bug"
+      ],
+      "claims": {},
+      "supersedes": [],
+      "related": [
+        "dec-0006-standalone-onboarding-flag"
+      ],
+      "file": ".agents/brain/postmortems/pm-0001-stale-quiz-session.md",
+      "review_by": "2027-02-28"
+    }
+  ]
+}

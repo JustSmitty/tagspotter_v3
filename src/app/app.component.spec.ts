@@ -26,7 +26,7 @@ describe('AppComponent', () => {
     const router = testBed.inject<Router>(Router);
     spyOn(router, 'navigate').and.resolveTo(true);
 
-    app.currentUrl = '/dashboard';
+    app.currentUrl.set('/dashboard');
 
     expect(app.isRouteActive('/dashboard')).toBeTrue();
     expect(app.isRouteActive('/home')).toBeFalse();

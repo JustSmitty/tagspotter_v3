@@ -28,7 +28,7 @@
 
           <div class="summary-stats">
             <div class="stat-row">
-              <span class="stat-label">Miles Logged:</span>
+              <span class="stat-label">Spotting Range:</span>
               <span class="stat-value">{{ summary().miles | number:'1.0-0' }}</span>
             </div>
             <div class="stat-row">
@@ -58,7 +58,7 @@
         Share Road Log
       </ion-button>
 
-      <ion-button expand="block" class="americana-btn americana-btn--primary" (click)="viewMap()">
+      <ion-button expand="block" class="americana-btn americana-btn--primary" (click)="openRoadLog()">
         <ion-icon slot="start" name="map-outline"></ion-icon>
         View Final Road Log
       </ion-button>
