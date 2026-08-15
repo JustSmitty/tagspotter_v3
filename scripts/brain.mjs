@@ -285,9 +285,14 @@ export function lint(records, { strict = false } = {}) {
 
 // -------------------------------------------------------------------- indexing
 
+/**
+ * Deliberately carries no timestamp. The index is derived data committed so CI
+ * can prove it matches the corpus (`brain index` + `git diff --exit-code`), and
+ * a generation timestamp makes that check impossible to pass — every run
+ * produces a different file. Git already records when it changed.
+ */
 function buildIndex(records) {
   return {
-    generated: new Date().toISOString(),
     count: records.length,
     records: records
       .map((record) => ({
