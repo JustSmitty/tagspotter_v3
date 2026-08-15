@@ -11,16 +11,30 @@
  * layout. The regex guardrail in .agents/evals/guardrails.json catches one
  * specific bad pattern; this catches the truth.
  *
- * Two things it does that a naive checker gets wrong:
+ * Four things it does that a naive checker gets wrong. Each was a real false
+ * reading during F-42, and each cost more time than the bug it was hiding:
  *   1. It climbs ancestors to find the effective background, compositing every
  *      translucent layer on the way, instead of assuming the parent is opaque.
  *   2. It treats a gradient as a real surface by taking its first colour stop.
  *      Without that, the postcard — whose paper is a gradient — reported its
  *      whole contents as failures against the page background behind it.
+ *   3. It composites the accumulated stack over the page rather than discarding
+ *      it when nothing fully opaque is found. The postcard's paper is alpha
+ *      0.98, so dropping it reported dark-on-cream as dark-on-dark.
+ *   4. It reads ion-button's fill out of the shadow root. Ionic paints it on
+ *      .button-native, so the host measures transparent.
  *
- * Baseline on Home (audit F-42): originally 45 in light and 45 in dark, of which
- * 29 were .plate-state-name — those are fixed. Current baseline is 16 / 16, and
- * that is the number that must not rise. Dark mode adds none.
+ * Do NOT resolve a surface by reading the --background custom property: custom
+ * properties inherit, so every descendant of ion-content reports the page's
+ * background as its own and the whole page reads as failing.
+ *
+ * Measure a POPULATED app. Spotted states draw stamps, badges and the summary
+ * that an empty save never renders — a clean run against a fresh install proves
+ * only that the empty state is fine.
+ *
+ * Baseline (audit F-42): originally 45 in light and 45 in dark on Home alone.
+ * Now 0 and 0, measured across all five routes in both themes with 26 of 51
+ * states spotted. Zero is the baseline; anything above it is a regression.
  */
 (() => {
   const lum = (r, g, b) => {
@@ -49,6 +63,16 @@
       const firstStop = parse(image);
       if (firstStop && firstStop.a > 0) return firstStop;
     }
+    // Ionic paints ion-button's fill on .button-native inside the shadow root,
+    // so the host measures transparent and the climb sails past it to the page.
+    // That reported the rust-filled buttons as cream-on-cream in light mode and
+    // as passing in dark — a fill that never themed appearing to flip with the
+    // theme is the tell that the checker, not the app, is wrong.
+    const shadowFill = node.shadowRoot?.querySelector('.button-native, .toolbar-background');
+    if (shadowFill) {
+      const inner = parse(getComputedStyle(shadowFill).backgroundColor);
+      if (inner && inner.a > 0) return inner;
+    }
     return null;
   };
 
@@ -63,7 +87,11 @@
       }
       node = node.parentElement;
     }
-    return acc && acc.a >= 0.999 ? acc : rootBg;
+    // Composite whatever was accumulated over the page, rather than discarding
+    // it. Dropping a nearly-opaque stack (the postcard's gradient is alpha 0.98)
+    // reported dark-on-cream text as if it were dark-on-dark — a bug in the
+    // checker that looked exactly like a bug in the app.
+    return acc ? over(acc, rootBg) : rootBg;
   };
 
   const failures = [];

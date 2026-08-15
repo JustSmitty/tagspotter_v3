@@ -134,6 +134,22 @@
       "measuredAt": "2026-08-15"
     },
     {
+      "id": "background-token-as-ink",
+      "title": "A background token may not be used as a text colour",
+      "finding": "F-42",
+      "phase": 5,
+      "owner": "tagspotter-a11y-gate",
+      "type": "regex-scan",
+      "include": [
+        "src/**/*.scss",
+        "src/app/**/*.html"
+      ],
+      "pattern": "(^|[^-])color:\\s*var\\(--app-bg-",
+      "baseline": 0,
+      "measuredAt": "2026-08-15",
+      "note": "Cream text on a fixed coloured fill was written as --app-bg-cream in four places. That token inverts to near-black in dark mode, so the label vanished into its own chip. Fixed fills take --app-ink-on-fill; only surfaces take --app-bg-*."
+    },
+    {
       "id": "cli-analytics",
       "title": "No CLI analytics UUID committed",
       "finding": "F-41",
