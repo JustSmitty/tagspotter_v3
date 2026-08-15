@@ -150,6 +150,22 @@
       "note": "Cream text on a fixed coloured fill was written as --app-bg-cream in four places. That token inverts to near-black in dark mode, so the label vanished into its own chip. Fixed fills take --app-ink-on-fill; only surfaces take --app-bg-*."
     },
     {
+      "id": "currentcolor-in-background-image",
+      "title": "currentColor is inert inside a background-image data URI",
+      "finding": "F-43",
+      "phase": 5,
+      "owner": "tagspotter-a11y-gate",
+      "type": "regex-scan",
+      "include": [
+        "src/**/*.scss",
+        "src/app/**/*.html"
+      ],
+      "pattern": "background-image:\\s*url\\((['\"])?data:image/svg\\+xml[^)]*currentColor",
+      "baseline": 0,
+      "measuredAt": "2026-08-15",
+      "note": "An SVG used as an image is its own document, so currentColor there resolves to the initial black rather than inheriting the element colour. The four bottom-nav glyphs were black in both themes for this reason — invisible on the dark tags, and the active tab drew a rust label beside a black icon. Use mask-image + background-color: currentColor instead."
+    },
+    {
       "id": "cli-analytics",
       "title": "No CLI analytics UUID committed",
       "finding": "F-41",

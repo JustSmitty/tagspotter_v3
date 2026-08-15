@@ -1,5 +1,5 @@
 {
-  "count": 25,
+  "count": 26,
   "records": [
     {
       "id": "audit-2026-08-15",
@@ -602,6 +602,34 @@
       ],
       "file": ".agents/brain/findings/f-042-contrast-debt.md",
       "review_by": "2026-12-31"
+    },
+    {
+      "id": "f-043-nav-icons-were-black",
+      "type": "finding",
+      "title": "F-43 — the bottom-nav glyphs ignored their ink and painted black in both themes",
+      "status": "resolved",
+      "date": "2026-08-15",
+      "source": "device:pixel-10-pro-xl-screenshot-2026-08-15",
+      "confidence": "high",
+      "tags": [
+        "accessibility",
+        "dark-mode",
+        "design-system",
+        "icons",
+        "navigation"
+      ],
+      "claims": [
+        "nav-icons.paint-method: mask-image",
+        "nav-icons.currentcolor-works: true"
+      ],
+      "supersedes": [],
+      "related": [
+        "dec-0015-ink-follows-its-ground",
+        "dec-0012-dark-mode-instrument-cluster",
+        "f-042-contrast-debt"
+      ],
+      "file": ".agents/brain/findings/f-043-nav-icons-were-black.md",
+      "review_by": "2027-02-28"
     },
     {
       "id": "pm-0001-stale-quiz-session",
