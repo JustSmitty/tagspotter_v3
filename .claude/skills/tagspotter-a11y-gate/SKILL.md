@@ -32,8 +32,24 @@ below 4.5:1 against its actual background (3:1 for ≥ 24 px or ≥ 19 px bold).
 > **The guardrail is a floor, not the standard.** It only sees black-at-low-alpha, and it is at 0.
 > Measuring what actually rendered, with `scripts/contrast-audit.js`, found **45 further failures in
 > both themes** (F-42) — mostly saturated brand colours on pale surfaces, which that regex could
-> never see. 29 of those were the plate state names and are fixed; **16 remain**. Run the audit. Do
-> not trust the green tick.
+> never see. All are now fixed and the audit is at **0 in both themes**. Run it anyway. Do not trust
+> the green tick.
+
+**Measure a populated app.** The last four failures of F-42 only existed once states were spotted:
+stamps, badges and the summary do not render on a fresh save, so a clean audit against an empty
+install proves only that the empty state is fine. Seed progress first.
+
+**Two inks, two grounds.** Before changing a text colour, ask whether its *background* themes:
+
+| Ground | Ink | Token |
+| --- | --- | --- |
+| Ephemera (postcard, plates, stamps) | fixed | `--app-ink-on-ephemera`, `--app-ink-on-ephemera-muted`, `--app-rust-on-ephemera` |
+| Fixed coloured fills (ribbons, chips, quiz banner) | fixed cream | `--app-ink-on-fill` |
+| Chrome that goes dark (cards, page) | themed | `--app-ink-deep`, `--app-ink-muted`, `--app-rust-ink`, `--app-success-ink` |
+
+Getting this backwards is the single most common way this app breaks: a themed ink on a fixed ground
+inverts into its own background. `guardrail:background-token-as-ink` catches the worst version of it
+(`--app-bg-*` used as a text colour) but only that version.
 
 **One colour, two jobs.** The regional accents pass easily on the 43px plate code and failed badly on
 the 9px state name beneath it. That is why each region now has a separate `--region-*-name` ink: a
@@ -99,11 +115,12 @@ For contrast, the guardrails are not enough — run the real thing:
 
 ```bash
 npm start
-# open localhost:4200, paste scripts/contrast-audit.js in the console
+# open localhost:4200, spot some states, paste scripts/contrast-audit.js in the console
 # flip the colour scheme, RELOAD (matchMedia lies until you do), run it again
 ```
 
-Baseline to beat: **16 failures in light, 16 in dark** (F-42).
+Baseline to beat: **0 in light, 0 in dark**, across all five routes (F-42). The CSP blocks `eval`,
+so the snippet has to be pasted rather than re-hydrated from storage between reloads.
 
 For component-level ARIA and focus-management recipes, the vendored `fixing-accessibility` and
 `accessibility-audit` skills are the reference. This skill owns the project-specific line those

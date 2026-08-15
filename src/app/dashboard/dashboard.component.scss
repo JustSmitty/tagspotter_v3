@@ -1,5 +1,5 @@
 :host {
-  --page-header-gradient: linear-gradient(180deg, rgba(253, 250, 233, 0.98) 0%, rgba(253, 250, 233, 0.88) 85%, rgba(253, 250, 233, 0) 100%);
+  --page-header-gradient: linear-gradient(180deg, var(--app-surface-paper) 0%, rgba(253, 250, 233, 0.88) 85%, rgba(253, 250, 233, 0) 100%);
   --section-header-padding: 24px 4px 12px;
   --section-rule-opacity: 0.15;
   --section-label-font: 'Work Sans', sans-serif;
@@ -33,11 +33,11 @@
   justify-content: center;
   gap: 4px;
   text-align: center;
-  color: var(--app-bg-cream);
+  color: var(--app-ink-on-fill);
 
   ion-icon {
     font-size: 1.2rem;
-    color: rgba(253, 250, 233, 0.82);
+    color: var(--app-ink-on-fill);
   }
 
   &.actionable {
@@ -64,14 +64,14 @@
   font-weight: 800;
   letter-spacing: 1.8px;
   text-transform: uppercase;
-  color: var(--app-bg-cream);
+  color: var(--app-ink-on-fill);
 }
 
 .stat-key {
   font-family: 'Newsreader', serif;
   font-style: italic;
   font-size: 0.68rem;
-  color: rgba(253, 250, 233, 0.66);
+  color: var(--app-ink-on-fill);
 }
 
 .stat-divider {
@@ -124,7 +124,7 @@
     font-family: 'Newsreader', serif;
     font-weight: 800;
     font-size: 1.1rem;
-    color: var(--ion-color-primary);
+    color: var(--app-rust-ink);
     margin: 0;
     letter-spacing: 1px;
   }
@@ -133,7 +133,7 @@
     font-family: 'Work Sans', sans-serif;
     font-size: 0.5rem;
     font-weight: 700;
-    color: var(--ion-color-secondary);
+    color: var(--app-nav-ink);
     letter-spacing: 3px;
     margin: 4px 0 0;
   }
@@ -166,10 +166,23 @@
   &.stamped {
     border: 1px solid rgba(0,0,0,0.05);
 
+    /**
+     * The code sits on the region-coloured overlay, which is only 0.7 opaque
+     * over cream paper — so the four region primaries composite to something
+     * between rgb(228,134,90) and lighter, and plain white measured 2.67:1.
+     *
+     * The regions are fixed ephemera and cannot be darkened, so the ink gets its
+     * own ground instead: the same translucent slug the travel stamp's
+     * abbreviation already uses. At 0.82 the slug dominates whatever region is
+     * beneath it, which is what makes this hold for all four rather than for the
+     * one that happened to be measured.
+     */
     .stamp-code {
-      color: #fff;
       z-index: 2;
-      text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+      padding: 1px 4px;
+      border-radius: 999px;
+      background: rgba(28, 34, 30, 0.82);
+      color: var(--app-ink-on-fill);
     }
 
     .stamp-overlay {
@@ -267,7 +280,7 @@
   top: 6px; right: 6px;
   padding: 2px 6px;
   border: 2px solid var(--ion-color-secondary);
-  color: var(--ion-color-secondary);
+  color: var(--app-nav-ink);
   font-family: 'Work Sans', sans-serif;
   font-weight: 800;
   font-size: 0.45rem;
@@ -294,7 +307,7 @@
 .souvenir-desc {
   font-family: 'Work Sans', sans-serif;
   font-size: 0.55rem;
-  color: rgba(47, 54, 64, 0.68);
+  color: var(--app-ink-muted);
   margin: 0;
   line-height: 1.4;
   font-weight: 500;
@@ -313,7 +326,7 @@
   justify-content: center;
   font-family: 'Special Elite', cursive;
   font-size: 0.5rem;
-  color: rgba(217, 84, 28, 0.4);
+  color: var(--app-rust-ink);
   transform: rotate(-15deg);
   pointer-events: none;
 
@@ -363,7 +376,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(47, 54, 64, 0.58);
+  color: var(--app-ink-muted);
 }
 
 .trip-history-meta {
@@ -448,14 +461,14 @@
   font-size: 0.52rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: rgba(47, 54, 64, 0.52);
+  color: var(--app-ink-muted);
   text-transform: uppercase;
 }
 
 .timeline-index {
   font-family: 'Special Elite', cursive;
   font-size: 0.72rem;
-  color: rgba(57, 103, 84, 0.55);
+  color: var(--app-nav-ink);
   flex-shrink: 0;
 }
 
@@ -543,6 +556,6 @@
   color: var(--ion-color-danger);
 
   &--up {
-    color: var(--ion-color-success);
+    color: var(--app-success-ink);
   }
 }

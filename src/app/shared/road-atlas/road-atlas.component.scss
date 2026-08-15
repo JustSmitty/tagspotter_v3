@@ -76,7 +76,7 @@
   strong { font: 800 1.1rem 'Newsreader', serif; }
   span, small { font-family: 'Work Sans', sans-serif; }
   &__close { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border: 0; background: transparent; font-size: 1.4rem; }
-  &__action { justify-self: start; margin-top: 5px; padding: 8px 14px; border: 0; border-radius: 999px; background: #d9541c; color: #fff; font-weight: 800; }
+  &__action { justify-self: start; margin-top: 5px; padding: 8px 14px; border: 0; border-radius: 999px; background: var(--app-rust-ink); color: #fff; font-weight: 800; }
 }
 
 @media (max-width: 520px) {

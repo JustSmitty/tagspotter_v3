@@ -1,5 +1,5 @@
 {
-  "count": 24,
+  "count": 25,
   "records": [
     {
       "id": "audit-2026-08-15",
@@ -548,10 +548,38 @@
       "review_by": "2027-02-28"
     },
     {
+      "id": "dec-0015-ink-follows-its-ground",
+      "type": "decision",
+      "title": "An ink themes only if the thing it is printed on themes",
+      "status": "accepted",
+      "date": "2026-08-15",
+      "source": "audit:contrast-audit-2026-08-15",
+      "confidence": "high",
+      "tags": [
+        "design-system",
+        "dark-mode",
+        "accessibility",
+        "theming",
+        "tokens"
+      ],
+      "claims": {
+        "ink-themes-with-ground": true,
+        "fixed-ground-fixed-ink": true
+      },
+      "supersedes": [],
+      "related": [
+        "dec-0012-dark-mode-instrument-cluster",
+        "f-042-contrast-debt",
+        "con-0006-design-system-authority"
+      ],
+      "file": ".agents/brain/decisions/dec-0015-ink-follows-its-ground.md",
+      "review_by": "2027-02-28"
+    },
+    {
       "id": "f-042-contrast-debt",
       "type": "finding",
-      "title": "F-42 — WCAG AA contrast debt; plate names fixed, 16 remain",
-      "status": "open",
+      "title": "F-42 — WCAG AA contrast debt, cleared to zero in both themes",
+      "status": "resolved",
       "date": "2026-08-15",
       "source": "audit:contrast-audit-2026-08-15",
       "confidence": "high",
@@ -559,13 +587,18 @@
         "accessibility",
         "contrast",
         "design-system",
-        "backlog"
+        "dark-mode"
       ],
-      "claims": {},
+      "claims": [
+        "contrast.baseline.light: 0",
+        "contrast.baseline.dark: 0",
+        "contrast.scope: all-five-routes-populated"
+      ],
       "supersedes": [],
       "related": [
         "dec-0012-dark-mode-instrument-cluster",
-        "con-0006-design-system-authority"
+        "con-0006-design-system-authority",
+        "dec-0015-ink-follows-its-ground"
       ],
       "file": ".agents/brain/findings/f-042-contrast-debt.md",
       "review_by": "2026-12-31"

@@ -22,6 +22,66 @@
    * text on cream card stock.
    */
   --app-ink-on-ephemera: #2f3640;
+  /**
+   * Secondary ink for the postcard's micro-type — the postmark, ledger keys and
+   * footer (audit F-42). Also fixed in both themes, for the same reason.
+   *
+   * These were all pine green or slate at 0.32-0.82 alpha, measuring as low as
+   * 1.62:1. At full opacity the very same colours clear 4.5:1 comfortably, which
+   * is the whole point of the "adjust lightness, never reach for alpha" rule in
+   * the a11y skill: the palette was never the problem, the transparency was.
+   */
+  --app-ink-on-ephemera-muted: #4f5d5a;
+
+  /**
+   * Cream ink for text on any FIXED coloured fill: the pine-green ribbons (Road
+   * Log header, Goals counter), the stamp's abbreviation pill, the quiz banner
+   * and its option markers, the reset badge. None of those fills theme, so their
+   * text must not either — every one of them was written as --app-bg-cream,
+   * which inverts to near-black and put dark text on a dark chip the moment dark
+   * mode was switched on.
+   *
+   * Named for the fill rather than the colour: it started life as
+   * --app-ink-on-green and the name stopped being true the moment the same fix
+   * was needed on a red badge and a rust gradient.
+   *
+   * Same rule as the ephemera inks: a surface that does not change needs ink
+   * that does not change.
+   */
+  --app-ink-on-fill: #fdfae9;
+
+  /**
+   * Interstate Rust for small text. The brand rust passes 3:1 as a large display
+   * colour and as a UI/graphical element, but lands at 3.83:1 on a section label
+   * and 4.01:1 on an active nav tag, both of which need 4.5:1. Kept as its own
+   * token so --ion-color-primary stays exactly as designed for fills, rules and
+   * large type.
+   *
+   * It has to invert with the theme, unlike the ephemera inks above: darkening
+   * rust fixes it on cream and actively makes it worse on a near-black page
+   * (3.84:1 there, against 4.69:1 for the undarkened brand colour). Small text
+   * that sits on the themed page background needs a themed ink.
+   */
+  --app-rust-ink: #b34513;
+
+  /**
+   * Rust for FILLED controls that always carry cream text. Unlike --app-rust-ink
+   * this must not brighten in dark mode: the fill and its text move together, so
+   * lightening the fill only makes cream-on-rust worse.
+   */
+  --app-rust-fill: #b34513;
+
+  /**
+   * Rust for text printed ON the ephemera — the summary postmark and logotype.
+   * The third case that --app-rust-ink cannot serve: that token brightens to
+   * #e8703a in dark because it usually sits on the themed page, but the postcard
+   * stays cream, so the brightened rust lands at 2.79:1 on it.
+   *
+   * Same fixed value as the light-mode rust ink, which measures 5.01:1 on the
+   * postcard's paper. Third time this rule has been learned in one palette: a
+   * surface that does not change needs ink that does not change.
+   */
+  --app-rust-on-ephemera: #b34513;
 
   /** chrome accents that must invert with the theme **/
   --app-nav-ink: #396754;
@@ -45,6 +105,15 @@
    */
   --app-ink-muted: #635a4f;
   --app-ink-subtle: #6f665b;
+
+  /**
+   * "Up since last trip" ink for the trip comparison. --ion-color-success is a
+   * signal colour picked for fills and icons; at the delta's 10px/800 it lands
+   * at 2.70:1 on the card. Darkened for light mode, and — like --app-rust-ink,
+   * and unlike the ephemera inks — it has to invert, because the comparison card
+   * is chrome and does go dark.
+   */
+  --app-success-ink: #1b7a43;
   
   /** primary: Interstate Rust **/
   --ion-color-primary: #D9541C;
@@ -195,6 +264,10 @@
     --app-ink-deep: #f2e7d3;
     --app-ink-muted: #c9baa0;
     --app-ink-subtle: #b3a58c;
+
+    /* Brightened, not darkened — see the note on the light-mode token. */
+    --app-rust-ink: #e8703a;
+    --app-success-ink: #4ade80;
 
     --app-nav-ink: #9ec5b0;
     --app-thread: #6b5a44;

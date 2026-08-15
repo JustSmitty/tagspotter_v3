@@ -37,7 +37,7 @@
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.22em;
-  color: rgba(57, 103, 84, 0.72);
+  color: var(--ion-color-secondary);
   text-transform: uppercase;
 }
 
@@ -66,7 +66,7 @@
   --quiz-accent-strong: #a54016;
   --quiz-surface: var(--app-surface-card);
   --quiz-banner: var(--region-south-accent);
-  --quiz-banner-ink: #3c4d47;
+  --quiz-banner-ink: #1b3330;
   position: relative;
   background: linear-gradient(180deg, rgba(255, 247, 236, 0.98) 0%, rgba(253, 250, 233, 0.98) 100%);
   border: 3px solid var(--quiz-accent);
@@ -110,7 +110,7 @@
     --quiz-accent-strong: #a54016;
     --quiz-surface: var(--region-south-bg);
     --quiz-banner: var(--region-south-accent);
-    --quiz-banner-ink: #234440;
+    --quiz-banner-ink: #1b3330;
   }
 
   &[data-region='midwest'] {
@@ -118,7 +118,7 @@
     --quiz-accent-strong: #2f5849;
     --quiz-surface: #fbf4d6;
     --quiz-banner: var(--region-midwest-accent);
-    --quiz-banner-ink: #56431a;
+    --quiz-banner-ink: #3d2f0c;
   }
 
   &[data-region='west'] {
@@ -136,9 +136,26 @@
   justify-content: space-between;
   gap: 12px;
   padding: 22px 22px 14px;
+  /**
+   * Runs from --quiz-accent-strong to a darkened form of it, rather than from
+   * --quiz-accent. The accent end carried .route-name at 11px, where cream
+   * measures 3.83:1 on Southern rust and 4.07:1 on Canyon Orange — the same
+   * "one colour, two jobs" trap as the plate state names (F-42): the accent was
+   * picked for the 48px route code, which only needs 3:1.
+   *
+   * Every point on this ramp is at least as dark as --quiz-accent-strong, so the
+   * worst case is 5.99:1 wherever the text happens to land — no reasoning about
+   * which end a label sits on. The solid fallback below covers WebViews without
+   * color-mix, and it passes too.
+   */
+  background: var(--quiz-accent-strong);
   background:
-    linear-gradient(135deg, var(--quiz-accent) 0%, var(--quiz-accent-strong) 100%);
-  color: var(--app-bg-cream);
+    linear-gradient(
+      135deg,
+      var(--quiz-accent-strong) 0%,
+      color-mix(in srgb, var(--quiz-accent-strong) 82%, #12100c) 100%
+    );
+  color: var(--app-ink-on-fill);
 }
 
 .route-copy {
@@ -160,7 +177,6 @@
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.2em;
-  opacity: 0.9;
   text-transform: uppercase;
 }
 
@@ -191,8 +207,8 @@
   background:
     repeating-linear-gradient(
       90deg,
-      rgba(253, 250, 233, 0.16) 0,
-      rgba(253, 250, 233, 0.16) 7px,
+      rgba(253, 250, 233, 0.07) 0,
+      rgba(253, 250, 233, 0.07) 7px,
       transparent 7px,
       transparent 14px
     ),
@@ -225,7 +241,7 @@
   font-family: 'Special Elite', cursive;
   font-size: 0.72rem;
   letter-spacing: 0.16em;
-  color: rgba(57, 103, 84, 0.72);
+  color: var(--ion-color-secondary);
   text-transform: uppercase;
 }
 
@@ -364,8 +380,10 @@
   width: 34px;
   height: 34px;
   border-radius: 999px;
-  background: var(--quiz-accent);
-  color: var(--app-bg-cream);
+  /* Strong, not accent: cream on the plain accent is 3.83:1 (South) and 4.07:1
+     (West) behind this 14px marker. See the note on .pass-topline. */
+  background: var(--quiz-accent-strong);
+  color: var(--app-ink-on-fill);
   font-family: 'Work Sans', sans-serif;
   font-size: 0.86rem;
   font-weight: 800;

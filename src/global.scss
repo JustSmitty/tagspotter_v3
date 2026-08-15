@@ -83,7 +83,7 @@ ion-app {
   font-style: var(--section-label-style, italic);
   font-weight: var(--section-label-weight, 600);
   font-size: var(--section-label-size, 0.8rem);
-  color: var(--section-label-color, var(--ion-color-primary));
+  color: var(--section-label-color, var(--app-rust-ink));
   letter-spacing: var(--section-label-spacing, 2px);
   text-transform: uppercase;
 }
@@ -329,7 +329,7 @@ ion-app {
   border: 3px solid rgba(57, 103, 84, 0.65);
   border-radius: 6px;
   background: rgba(255, 248, 239, 0.88);
-  color: rgba(57, 103, 84, 0.78);
+  color: var(--ion-color-secondary);
   font-family: 'Special Elite', cursive;
   font-size: 0.75rem;
   font-weight: 900;
@@ -452,7 +452,7 @@ ion-app {
   padding: 2px 5px 1px;
   border-radius: 999px;
   background: rgba(34, 46, 42, 0.74);
-  color: var(--app-bg-cream);
+  color: var(--app-ink-on-fill);
   font-family: 'Work Sans', sans-serif;
   font-size: 0.46rem;
   font-weight: 800;
@@ -774,14 +774,14 @@ ion-loading.ephemera-loading {
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(79, 93, 90, 0.85);
+  color: var(--app-ink-muted);
 }
 
 .precision-segments {
   display: inline-flex;
   padding: 3px;
-  background: #efe7d4;
-  border: 1px solid #d2cbba;
+  background: var(--app-surface-paper);
+  border: 1px solid var(--card-border);
   border-radius: 50px;
 }
 
@@ -795,7 +795,7 @@ ion-loading.ephemera-loading {
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: rgba(79, 93, 90, 0.7);
+  color: var(--app-ink-muted);
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 
