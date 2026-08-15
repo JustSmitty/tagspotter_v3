@@ -129,22 +129,40 @@
   /** Tag Typography **/
   --tag-font: 'Special Elite', 'Courier New', monospace;
 
-  /** Regional Palette (Curated Americana) **/
+  /**
+   * Regional Palette (Curated Americana)
+   *
+   * Each region also carries a `-name` ink for the small state name on the plate
+   * (audit F-42). The accent colours were chosen for the large die-cast plate
+   * code, which is 43px and only needs 3:1 — at 9px they measured 2.26:1
+   * (South) and 2.18:1 (Midwest) on their own plate backgrounds, which is the
+   * bulk of the app's contrast debt.
+   *
+   * Rather than repaint the palette, the `-name` inks are darkened members of
+   * the same colour family, so a Midwest plate still reads as harvest gold and a
+   * Southern one as dusty turquoise. Northeast and West already cleared 4.5:1,
+   * so their name ink is the accent unchanged — defined explicitly anyway, so
+   * the next person editing an accent sees that two different jobs depend on it.
+   */
   --region-south-primary: #D9541C;    /* Interstate Rust */
   --region-south-bg: #fdf5e6;         /* Dusty Parchment */
   --region-south-accent: #66B2B2;     /* Dusty Turquoise */
+  --region-south-name: #407070;       /* Deep Turquoise  — 5.14:1 on plate */
 
   --region-northeast-primary: #1A252F; /* Deep Navy */
   --region-northeast-bg: #f0f4f8;      /* Ivory/Ice */
   --region-northeast-accent: #8b0000;  /* Crimson */
+  --region-northeast-name: #8b0000;    /* Crimson       — 9.06:1 on plate */
 
   --region-midwest-primary: #396754;   /* Pine Green */
   --region-midwest-bg: #fffde7;        /* Harvest Sun */
   --region-midwest-accent: #DAA520;    /* Harvest Gold */
+  --region-midwest-name: #876614;      /* Harvest Bronze — 5.19:1 on plate */
 
   --region-west-primary: #2f6f7c;      /* Sun-Faded Teal */
   --region-west-bg: #f8efd7;           /* Desert Sand */
   --region-west-accent: #c75a28;       /* Canyon Orange */
+  --region-west-name: #2f6f7c;         /* Sun-Faded Teal — 4.97:1 on plate */
 }
 
 /**

@@ -32,7 +32,12 @@ below 4.5:1 against its actual background (3:1 for ≥ 24 px or ≥ 19 px bold).
 > **The guardrail is a floor, not the standard.** It only sees black-at-low-alpha, and it is at 0.
 > Measuring what actually rendered, with `scripts/contrast-audit.js`, found **45 further failures in
 > both themes** (F-42) — mostly saturated brand colours on pale surfaces, which that regex could
-> never see. Run the audit. Do not trust the green tick.
+> never see. 29 of those were the plate state names and are fixed; **16 remain**. Run the audit. Do
+> not trust the green tick.
+
+**One colour, two jobs.** The regional accents pass easily on the 43px plate code and failed badly on
+the 9px state name beneath it. That is why each region now has a separate `--region-*-name` ink: a
+colour validated at one size is not validated at another.
 
 Verify against the *real* background — cream, paper, card, or the region-tinted plate — and note that
 the postcard's paper is a **gradient**, so a checker that only reads `background-color` will climb
@@ -98,7 +103,7 @@ npm start
 # flip the colour scheme, RELOAD (matchMedia lies until you do), run it again
 ```
 
-Baseline to beat: **45 failures in light, 45 in dark** (F-42).
+Baseline to beat: **16 failures in light, 16 in dark** (F-42).
 
 For component-level ARIA and focus-management recipes, the vendored `fixing-accessibility` and
 `accessibility-audit` skills are the reference. This skill owns the project-specific line those

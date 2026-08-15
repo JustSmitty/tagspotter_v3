@@ -269,7 +269,7 @@ ion-app {
   }
 
   .plate-state-name {
-    color: var(--region-northeast-accent);
+    color: var(--region-northeast-name);
     transform: skewX(-5deg);
   }
 }
@@ -283,7 +283,7 @@ ion-app {
   }
 
   .plate-state-name {
-    color: var(--region-south-accent);
+    color: var(--region-south-name);
     font-family: 'Newsreader', serif;
     font-style: italic;
     font-weight: 700;
@@ -300,7 +300,7 @@ ion-app {
   }
 
   .plate-state-name {
-    color: var(--region-west-primary);
+    color: var(--region-west-name);
   }
 }
 
@@ -315,7 +315,7 @@ ion-app {
   }
 
   .plate-state-name {
-    color: var(--region-midwest-accent);
+    color: var(--region-midwest-name);
     letter-spacing: 0.18em;
   }
 }

@@ -550,7 +550,7 @@
     {
       "id": "f-042-contrast-debt",
       "type": "finding",
-      "title": "F-42 — 45 text elements fail WCAG AA contrast, in both themes",
+      "title": "F-42 — WCAG AA contrast debt; plate names fixed, 16 remain",
       "status": "open",
       "date": "2026-08-15",
       "source": "audit:contrast-audit-2026-08-15",

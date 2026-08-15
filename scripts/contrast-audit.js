@@ -18,8 +18,9 @@
  *      Without that, the postcard — whose paper is a gradient — reported its
  *      whole contents as failures against the page background behind it.
  *
- * Baseline recorded 2026-08-15 on Home: 45 failures in light, 45 in dark
- * (audit F-42). Dark mode adds none. 29 of the 45 are .plate-state-name.
+ * Baseline on Home (audit F-42): originally 45 in light and 45 in dark, of which
+ * 29 were .plate-state-name — those are fixed. Current baseline is 16 / 16, and
+ * that is the number that must not rise. Dark mode adds none.
  */
 (() => {
   const lum = (r, g, b) => {
