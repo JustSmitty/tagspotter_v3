@@ -7,6 +7,7 @@ import {
   QuizSession,
   QuizTopic,
   QuizDifficulty,
+  TriviaTopicCard,
   StoredStateRecord,
 } from '../models/game-state.model';
 
@@ -20,18 +21,43 @@ export class QuizService {
     hard: ['Flower', 'Tree', 'LargestCity', 'Flag', 'Movie', 'Sports'],
   };
 
+  private readonly TOPIC_SUBTITLES: Record<QuizTopic, string> = {
+    Bird: 'Identify each state bird from the road atlas.',
+    Capital: 'Match the plate to its capital city.',
+    Flower: 'Remember the bloom on each state seal.',
+    Nickname: 'Decode the nickname painted on the roadside sign.',
+    Abbreviation: 'Recognize the two-letter postal code.',
+    Region: 'Pinpoint the geographical region of the state.',
+    AdmissionYear: 'Know when the state joined the union.',
+    LargestCity: 'Find the most populous city in the state.',
+    Tree: 'Identify the official state tree.',
+    Flag: 'Pick the correct state flag.',
+    Landmark: 'Recall the landmark travelers seek out.',
+    Movie: 'Match the state to a memorable movie setting.',
+    Sports: 'Connect the state to its familiar sports team.',
+  };
+
   private readonly POINTS_MAP: Record<QuizDifficulty, number> = {
     easy: 1,
     medium: 2,
     hard: 3,
   };
+
+  getTriviaTopics(): TriviaTopicCard[] {
+    const tierTopics: QuizTopic[] = ([] as QuizTopic[]).concat(...Object.values(this.TOPIC_TIERS));
+
+    return tierTopics.map((title) => ({
+        title,
+        subtitle: this.TOPIC_SUBTITLES[title],
+      }));
+  }
+
   createQuizSession(foundState: StoredStateRecord, allStates: StoredStateRecord[], difficulty: QuizDifficulty): QuizSession {
     const candidateStates = allStates.filter(
       (state) => state.ID !== foundState.ID && state.ID !== DISTRICT_OF_COLUMBIA_ID,
     );
-    const availableTopics = this.TOPIC_TIERS[difficulty].filter((topic) => this.getTopicValue(foundState, topic) !== '');
     const points = this.POINTS_MAP[difficulty];
-    const chosenTopics = this.shuffle([...availableTopics]).slice(0, QUIZ_QUESTION_COUNT);
+    const chosenTopics = this.selectTopics(foundState, difficulty);
     const questions = chosenTopics.map((topic) => this.createQuestion(foundState, candidateStates, topic, points));
 
     return {
@@ -41,6 +67,35 @@ export class QuizService {
       imageSrc: foundState.flagURL,
       questions,
     };
+  }
+
+  /**
+   * Always returns exactly QUIZ_QUESTION_COUNT topics (audit F-18).
+   *
+   * The tier is the preference, not a hard limit. `medium` has exactly three
+   * topics, so a single missing field in the dataset used to yield a
+   * two-question quiz — while accuracy elsewhere still divided by three,
+   * silently understating the player's score. Rather than track how many
+   * questions each session happened to ask, the invariant is made true here:
+   * short tiers top up from the other tiers, preferring topics this state
+   * actually has data for.
+   */
+  private selectTopics(foundState: StoredStateRecord, difficulty: QuizDifficulty): QuizTopic[] {
+    const hasValue = (topic: QuizTopic) => this.getTopicValue(foundState, topic) !== '';
+    const preferred = this.shuffle(this.TOPIC_TIERS[difficulty].filter(hasValue));
+
+    if (preferred.length >= QUIZ_QUESTION_COUNT) {
+      return preferred.slice(0, QUIZ_QUESTION_COUNT);
+    }
+
+    const fallback = this.shuffle(
+      (Object.keys(this.TOPIC_TIERS) as QuizDifficulty[])
+        .filter((tier) => tier !== difficulty)
+        .flatMap((tier) => this.TOPIC_TIERS[tier])
+        .filter((topic) => hasValue(topic) && !preferred.includes(topic)),
+    );
+
+    return [...preferred, ...fallback].slice(0, QUIZ_QUESTION_COUNT);
   }
 
   private createQuestion(
@@ -60,13 +115,8 @@ export class QuizService {
       ),
     ).slice(0, 3);
 
-    if (distractors.length < 3) {
-      throw new Error(`Unable to build quiz question for topic ${topic}.`);
-    }
-
-    const correctIndex = this.randomInt(0, 3);
     const options = [...distractors];
-    options.splice(correctIndex, 0, correctAnswer);
+    options.splice(this.randomInt(0, options.length), 0, correctAnswer);
 
     let prompt = `What is ${foundState.Name}'s ${this.getTopicLabel(topic)}?`;
     let optionType: 'text' | 'image' = 'text';
@@ -81,7 +131,6 @@ export class QuizService {
       prompt,
       correctAnswer,
       options,
-      correctIndex,
       optionType,
       points,
     };

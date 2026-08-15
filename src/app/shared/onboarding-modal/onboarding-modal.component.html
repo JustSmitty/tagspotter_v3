@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-button fill="clear" (click)="finish()" class="skip-btn">SKIP</ion-button>
     </ion-buttons>
-    <ion-title>1950 &middot; TRAVELER GUIDE</ion-title>
+    <ion-title>1950 &middot; TRAVELER'S HANDBOOK</ion-title>
     <div class="header-seal">
       <ion-icon name="book-outline"></ion-icon>
     </div>
@@ -12,21 +12,21 @@
 
 <ion-content class="handbook-content paper-texture">
   <div class="handbook-page" [ngSwitch]="currentPage()">
-    
+
     <!-- PAGE 0: Welcome -->
     <div *ngSwitchCase="0" class="page-inner fade-in">
       <div class="illustration-box">
         <ion-icon name="map-outline" class="hero-icon"></ion-icon>
       </div>
-      <h2 class="handbook-h2">Welcome, Traveler!</h2>
+      <h2 class="handbook-h2">Welcome, Traveler</h2>
       <p class="handbook-p">
-        You've just joined the most exclusive club on the open road. Your mission: 
-        <strong>Spot all 51 license plates</strong> from every state and DC.
+        You're setting out on a cross-country plate hunt. The target:
+        <strong>spot all 51 license plates</strong> across the states and DC.
       </p>
       <div class="rule-line"></div>
       <p class="handbook-p secondary">
-        Keep your eyes peeled and your road log ready. Every discovery brings you 
-        closer to becoming a Certified Road Tripper.
+        Keep your eyes on the road and the glovebox handy. Every plate you spot goes
+        straight into the road log.
       </p>
     </div>
 
@@ -34,17 +34,17 @@
     <div *ngSwitchCase="1" class="page-inner fade-in">
       <div class="illustration-box">
         <div class="mode-demo">
-          <div class="demo-tag classic">CLASSIC</div>
-          <div class="demo-tag trivia">TRIVIA</div>
+          <div class="demo-tag classic">SPOT</div>
+          <div class="demo-tag trivia">QUIZ</div>
         </div>
       </div>
-      <h2 class="handbook-h2">Choose Your Adventure</h2>
+      <h2 class="handbook-h2">Choose How You Travel</h2>
       <p class="handbook-p">
-        Use the <strong>Mode Toggle</strong> to switch how you play:
+        Use the <strong>mode switch</strong> to change how each plate gets logged:
       </p>
       <ul class="handbook-list">
-        <li><strong>Classic</strong>: Just find the plate and you're done! Simple and relaxing.</li>
-        <li><strong>Trivia</strong>: Test your knowledge with 3 mini-challenges per state.</li>
+        <li><strong>Spot (Classic)</strong>: see the plate, log the point. Simple and steady.</li>
+        <li><strong>Quiz (Trivia)</strong>: back it up with 3 questions about the state, and earn more for each one you get right.</li>
       </ul>
     </div>
 
@@ -53,17 +53,17 @@
       <div class="illustration-box">
         <ion-icon name="trophy-outline" class="hero-icon points-icon"></ion-icon>
       </div>
-      <h2 class="handbook-h2">The Art of the Score</h2>
+      <h2 class="handbook-h2">Keeping Score</h2>
       <p class="handbook-p">
-        Every stop on your journey earns you <strong>Discovery Points</strong>:
+        Every stop along the route adds to your total:
       </p>
       <div class="points-table">
-        <div class="p-row"><span class="p-lvl">State Spotted</span> <span class="p-pts">1 pt</span></div>
-        <div class="p-row"><span class="p-lvl">Trivia Wins</span> <span class="p-pts">1-3 pts</span></div>
-        <div class="p-row"><span class="p-lvl">Mileage Bonus</span> <span class="p-pts">1-5 pts</span></div>
+        <div class="p-row"><span class="p-lvl">Plate spotted</span> <span class="p-pts">1-3 pts</span></div>
+        <div class="p-row"><span class="p-lvl">Trivia answer</span> <span class="p-pts">1-3 pts</span></div>
+        <div class="p-row"><span class="p-lvl">Range bonus</span> <span class="p-pts">1-8 pts</span></div>
       </div>
       <p class="handbook-p secondary">
-        Maximize your score by taking challenges and tracking long distances!
+        Take on the trivia and cover some ground to build the highest total in your road log.
       </p>
     </div>
 
@@ -72,17 +72,18 @@
       <div class="illustration-box">
         <ion-icon name="speedometer-outline" class="hero-icon"></ion-icon>
       </div>
-      <h2 class="handbook-h2">Mile Markers</h2>
+      <h2 class="handbook-h2">Spotting Range</h2>
       <p class="handbook-p">
-        The further you are from a state when you spot it, the more 
-        <strong>Mileage Bonus Points</strong> you earn:
+        The farther you are from a state when you spot its plate, the bigger the
+        <strong>range bonus</strong> — and a really distant find is worth more on
+        its own too:
       </p>
       <ul class="handbook-list mileage-list">
         <li><strong>0 - 500 miles</strong>: 1 point</li>
         <li><strong>501 - 1000 miles</strong>: 2 points</li>
-        <li><strong>1001 - 2000 miles</strong>: 3 points</li>
-        <li><strong>2001 - 3000 miles</strong>: 4 points</li>
-        <li><strong>Over 3000 miles</strong>: 5 points!</li>
+        <li><strong>1001 - 2000 miles</strong>: 3 points, and the plate is worth 2</li>
+        <li><strong>2001 - 3000 miles</strong>: 5 points, and the plate is worth 3</li>
+        <li><strong>Over 3000 miles</strong>: 8 points (a real long-hauler)</li>
       </ul>
     </div>
 
@@ -91,14 +92,14 @@
       <div class="illustration-box">
         <ion-icon name="flag-outline" class="hero-icon"></ion-icon>
       </div>
-      <h2 class="handbook-h2">The Finish Line</h2>
+      <h2 class="handbook-h2">The Last Mile</h2>
       <p class="handbook-p">
-        Collect all <strong>50 States + DC</strong> to complete your Road Log. 
+        Log all <strong>50 states + DC</strong> to finish the trip.
       </p>
       <div class="rule-line"></div>
       <p class="handbook-p">
-        Your progress is saved automatically. We'll see you at the 
-        <strong>Grand Summary</strong> when you hit 51!
+        Your road log saves itself as you go. We'll roll out the
+        <strong>Grand Summary</strong> the moment you hit 51.
       </p>
     </div>
 
@@ -110,15 +111,15 @@
     <div class="page-dots">
       <div *ngFor="let i of [0,1,2,3,4]" class="dot" [class.active]="i === currentPage()"></div>
     </div>
-    
+
     <div class="nav-buttons">
       <ion-button fill="clear" (click)="prev()" [disabled]="currentPage() === 0" class="guide-btn">
         <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
       </ion-button>
-      
+
       <ion-button fill="solid" (click)="next()" class="guide-action-btn">
         <span *ngIf="currentPage() < totalPages - 1">NEXT PAGE</span>
-        <span *ngIf="currentPage() === totalPages - 1">START JOURNEY</span>
+        <span *ngIf="currentPage() === totalPages - 1">HIT THE ROAD</span>
         <ion-icon slot="end" [name]="currentPage() === totalPages - 1 ? 'checkmark-circle-outline' : 'chevron-forward-outline'"></ion-icon>
       </ion-button>
     </div>

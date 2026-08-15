@@ -22,6 +22,22 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    // Compile every module's Java with a JDK 21 toolchain. Some bundled
+    // Capacitor plugins (e.g. @capacitor/geolocation) require Java 21, and their
+    // generated build.gradle files set sourceCompatibility 21 without declaring
+    // a toolchain -- which otherwise fails ("invalid source release: 21") when
+    // Gradle itself runs on an older JDK. The foojay-resolver plugin (see
+    // settings.gradle) auto-downloads JDK 21 when the invoking JDK differs, so
+    // this builds on any machine/CI regardless of the default JAVA_HOME.
+    // (Kotlin modules pin their own target via kotlin { jvmToolchain(21) }.)
+    plugins.withId('java-base') {
+        tasks.withType(JavaCompile).configureEach {
+            javaCompiler = javaToolchains.compilerFor {
+                languageVersion = JavaLanguageVersion.of(21)
+            }
+        }
+    }
 }
 
 task clean(type: Delete) {

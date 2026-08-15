@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Backup and device-transfer rules for API 31+ (audit F-22).
+
+  `allowBackup="true"` was set with nothing declared, which leaves the decision
+  to platform defaults. These state it outright:
+
+  - cloud-backup and device-transfer both carry the trip, because losing a
+    collection on a phone upgrade would be unrecoverable — there is no account
+    to restore from (con-0004-no-backend-no-accounts).
+  - the in-flight quiz sidecar is excluded from both. Restoring one alongside a
+    save from a different moment is exactly pm-0001-stale-quiz-session: a resumed
+    quiz awarding points to a state the restored save does not have spotted.
+
+  Nothing sensitive is stored — no account, no credentials, no location history
+  (dec-0007-coarse-location-default). Location is read for one calculation and
+  discarded.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="sharedpref" path="." />
+        <exclude domain="sharedpref" path="CapacitorStorage.temp_quiz_session.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="sharedpref" path="." />
+        <exclude domain="sharedpref" path="CapacitorStorage.temp_quiz_session.xml" />
+    </device-transfer>
+</data-extraction-rules>

@@ -6,13 +6,21 @@
   <title>Tag Spotter</title>
 
   <base href="/" />
+  <!-- Fonts are self-hosted (src/theme/fonts.scss) so the vintage typography
+       survives offline starts; the CSP therefore has no font hosts. The atlas is
+       inline SVG projected from bundled GeoJSON, so there are no tile hosts and
+       no script host either. The runtime-string-evaluation allowance that
+       MapLibre's expression engine required went out with MapLibre itself —
+       nothing left in the bundle evaluates code at runtime. -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; base-uri 'self'; connect-src 'self' capacitor://localhost http://localhost https://localhost https://*.mapbox.com https://*.tile.openstreetmap.org; font-src 'self' data: https://fonts.gstatic.com; frame-src 'none'; img-src 'self' data: blob: capacitor://localhost http://localhost https://localhost https://*.tile.openstreetmap.org https://*.mapbox.com; object-src 'none'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; worker-src blob:; child-src blob:;"
+      content="default-src 'self'; base-uri 'self'; connect-src 'self' capacitor://localhost http://localhost https://localhost; font-src 'self' data:; frame-src 'none'; img-src 'self' data: blob: capacitor://localhost http://localhost https://localhost; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; worker-src blob:; child-src blob:;"
     />
 
-  <meta name="color-scheme" content="light dark" />
-  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="color-scheme" content="light" />
+  <!-- Pinch zoom is deliberately left enabled: locking the scale is a WCAG 1.4.4
+       failure, and Ionic handles input-focus zoom without needing a lock. -->
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="msapplication-tap-highlight" content="no" />
 

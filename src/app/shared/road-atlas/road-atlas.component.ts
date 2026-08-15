@@ -1,23 +1,36 @@
-import {
-  Component,
-  inject,
-  OnDestroy,
-  effect,
-  computed,
-  AfterViewInit,
-  ViewEncapsulation,
-  NgZone
-} from '@angular/core';
-import { take } from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import * as maplibregl from 'maplibre-gl';
 
-import { StoredStateRecord } from '../../models/game-state.model';
+import { StoredStateRecord, getCorrectAnswersCount } from '../../models/game-state.model';
 import { GameStateStore } from '../../services/game-state.store';
 
-let statesGeoJsonPromise: Promise<any> | null = null;
+type Position = [number, number];
+type PolygonCoordinates = Position[][];
+type MultiPolygonCoordinates = PolygonCoordinates[];
+
+interface GeoJsonFeature {
+  properties?: { name?: string };
+  geometry?: {
+    type: 'Polygon' | 'MultiPolygon';
+    coordinates: PolygonCoordinates | MultiPolygonCoordinates;
+  };
+}
+
+interface StateAtlasGeoJson {
+  type: 'FeatureCollection';
+  features: GeoJsonFeature[];
+}
+
+interface AtlasFeature {
+  id: number;
+  name: string;
+  code: string;
+  path: string;
+  labelX: number;
+  labelY: number;
+}
 
 @Component({
   selector: 'app-road-atlas',
@@ -25,216 +38,129 @@ let statesGeoJsonPromise: Promise<any> | null = null;
   styleUrls: ['./road-atlas.component.scss'],
   standalone: true,
   imports: [CommonModule],
-  encapsulation: ViewEncapsulation.None
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RoadAtlasComponent implements AfterViewInit, OnDestroy {
-  private readonly gameStateStore = inject(GameStateStore);
+export class RoadAtlasComponent implements OnInit {
+  private readonly store = inject(GameStateStore);
   private readonly http = inject(HttpClient);
-  private readonly ngZone = inject(NgZone);
-  
-  private map: maplibregl.Map | null = null;
-  private statesData: any = null;
-  private previousFoundIds = new Set<number>();
 
-  readonly snapshot = this.gameStateStore.snapshot;
-  readonly foundCount = computed(() => this.snapshot().foundCount);
-  readonly stateNameToId = computed(() => {
-    return new Map(
-      this.snapshot().states.map((state) => [state.Name.toLowerCase(), state.ID]),
-    );
+  readonly spotRequested = output<number>();
+
+  /**
+   * The selection holds an ID and derives the record (audit F-17). It used to
+   * hold the record itself, which meant an `effect` had to re-look-it-up on
+   * every snapshot change to keep the open detail panel from going stale. A
+   * `computed` cannot drift, so the effect is gone.
+   */
+  private readonly selectedStateId = signal<number | null>(null);
+  readonly selectedState = computed<StoredStateRecord | null>(() => {
+    const id = this.selectedStateId();
+    if (id === null) return null;
+    return this.store.snapshot().states.find((state) => state.ID === id) ?? null;
   });
-  
-  // Custom vintage 1950s map style (No OSM tiles, flat look)
-  private readonly VINTAGE_STYLE = {
-    version: 8,
-    name: 'VintageRoadTrip',
-    sources: {},
-    layers: [
-      {
-        id: 'background',
-        type: 'background',
-        paint: {
-          'background-color': '#f4e8d0' // Matches container parchment
-        }
-      }
-    ]
-  };
+  readonly features = signal<AtlasFeature[]>([]);
+  readonly isLoading = signal(true);
+  readonly loadError = signal<string | null>(null);
+  readonly foundIds = computed(() => new Set(
+    this.store.snapshot().states.filter((state) => state.fnd.stateFound).map((state) => state.ID),
+  ));
+  readonly foundCount = computed(() => this.foundIds().size);
 
-  // Bounds for US-centric view (Contiguous US + padding)
-  private readonly US_BOUNDS: maplibregl.LngLatBoundsLike = [
-    [-126.0, 24.0], // Southwest
-    [-66.0, 50.0]   // Northeast
-  ];
+  /**
+   * The map is a single image to assistive tech, so its label has to carry the
+   * information the 51 individual paths used to (audit F-32). The per-state
+   * detail lives in the plate grid below, which is a real list of buttons.
+   */
+  readonly atlasSummary = computed(() => {
+    const total = this.features().length || this.store.snapshot().states.length;
+    const found = this.foundCount();
+    return found === 0
+      ? `Map of the United States. No plates spotted yet, ${total} to find.`
+      : `Map of the United States. ${found} of ${total} plates spotted.`;
+  });
 
-  constructor() {
-    effect(() => {
-      if (this.map && this.map.isStyleLoaded()) {
-        this.updateStateHighlights(this.snapshot().states);
-      }
-    });
+  ngOnInit(): void {
+    void this.loadAtlas();
   }
 
-  ngAfterViewInit() {
-    // Better: Wait for the zone to become stable so we are 100% sure the DOM is complete.
-    // This replaces a fixed 50ms timeout.
-    this.ngZone.onStable.pipe(take(1)).subscribe(() => {
-      this.initializeMap();
-    });
+  async retryLoad(): Promise<void> {
+    await this.loadAtlas();
   }
 
-  ngOnDestroy() {
-    if (this.map && typeof this.map.remove === 'function') {
-      this.map.remove();
-    }
-    this.map = null;
+  selectStateById(stateId: number): void {
+    this.selectedStateId.set(stateId);
   }
 
-  private initializeMap(): void {
-    this.ngZone.runOutsideAngular(() => {
-      this.map = new maplibregl.Map({
-        container: 'road-atlas-map',
-        style: this.VINTAGE_STYLE as any,
-        center: [-98.5795, 39.8283],
-        zoom: 3.5,
-        pitch: 0,
-        bearing: 0,
-        interactive: false // Disable pan and zoom
-      });
-
-      this.map.on('load', () => {
-        this.map?.resize();
-        this.map?.fitBounds(this.US_BOUNDS, { padding: 10, animate: false });
-        void this.loadStatesGeoJson();
-      });
-    });
+  closeStateDetail(): void {
+    this.selectedStateId.set(null);
   }
 
-  private async loadStatesGeoJson(): Promise<void> {
+  requestSpot(stateId: number): void {
+    this.spotRequested.emit(stateId);
+    this.selectedStateId.set(null);
+  }
+
+  isFound(stateId: number): boolean {
+    return this.foundIds().has(stateId);
+  }
+
+  getCorrectAnswers(state: StoredStateRecord): number {
+    return state.fnd.mode === 'trivia'
+      ? getCorrectAnswersCount(state.fnd.questionsCorrect, state.fnd.difficulty)
+      : 0;
+  }
+
+  private async loadAtlas(): Promise<void> {
+    this.isLoading.set(true);
+    this.loadError.set(null);
     try {
-      const data = await this.getStatesGeoJson();
-      this.statesData = JSON.parse(JSON.stringify(data));
-      this.injectFeatureIds();
-      this.setupMapLayers();
-    } catch (error) {
-      console.error('Failed to load atlas GeoJSON:', error);
+      const data = await firstValueFrom(this.http.get<StateAtlasGeoJson>('assets/us-states.json'));
+      const statesByName = new Map(this.store.snapshot().states.map((state) => [state.Name.toLowerCase(), state]));
+      this.features.set(data.features.reduce<AtlasFeature[]>((result, feature) => {
+        const name = feature.properties?.name ?? '';
+        const state = statesByName.get(name.toLowerCase());
+        if (!state || !feature.geometry) return result;
+        const projected = this.toProjectedFeature(feature.geometry, name);
+        result.push({ id: state.ID, name, code: state.Abbrv, ...projected });
+        return result;
+      }, []));
+    } catch {
+      this.loadError.set('The road atlas could not be loaded.');
+    } finally {
+      this.isLoading.set(false);
     }
   }
 
-  private async getStatesGeoJson(): Promise<any> {
-    if (!statesGeoJsonPromise) {
-      statesGeoJsonPromise = firstValueFrom(this.http.get('assets/us-states.json'));
+  private toProjectedFeature(
+    geometry: NonNullable<GeoJsonFeature['geometry']>,
+    name: string,
+  ): Pick<AtlasFeature, 'path' | 'labelX' | 'labelY'> {
+    const polygons = geometry.type === 'Polygon'
+      ? [geometry.coordinates as PolygonCoordinates]
+      : geometry.coordinates as MultiPolygonCoordinates;
+    const allPoints: Array<{ x: number; y: number }> = [];
+    const path = polygons.map((polygon) => polygon.map((ring) => {
+      const projected = ring.map(([lng, lat]) => this.project(lng, lat, name));
+      allPoints.push(...projected);
+      return projected.map((point, index) => `${index === 0 ? 'M' : 'L'}${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(' ') + ' Z';
+    }).join(' ')).join(' ');
+
+    const xs = allPoints.map((point) => point.x);
+    const ys = allPoints.map((point) => point.y);
+    return {
+      path,
+      labelX: (Math.min(...xs) + Math.max(...xs)) / 2,
+      labelY: (Math.min(...ys) + Math.max(...ys)) / 2,
+    };
+  }
+
+  private project(lng: number, lat: number, name: string): { x: number; y: number } {
+    if (name === 'Alaska') {
+      return { x: 18 + (lng + 180) * 2.35, y: 292 + (72 - lat) * 3.1 };
     }
-
-    return statesGeoJsonPromise;
-  }
-
-  private injectFeatureIds(): void {
-    if (!this.statesData || !this.statesData.features) return;
-
-    const stateNameToId = this.stateNameToId();
-    this.statesData.features.forEach((feature: any) => {
-      const stateId = stateNameToId.get(String(feature.properties?.name ?? '').toLowerCase());
-      if (stateId !== undefined) {
-        feature.id = stateId;
-      }
-    });
-  }
-
-  private setupMapLayers(): void {
-    if (!this.map || !this.statesData) return;
-
-    this.map.addSource('states', {
-      type: 'geojson',
-      data: this.statesData,
-      generateId: false // Use our manually injected IDs
-    });
-
-    // Fill layer for states
-    this.map.addLayer({
-      id: 'states-fill',
-      type: 'fill',
-      source: 'states',
-      paint: {
-        'fill-color': [
-          'case',
-          ['boolean', ['feature-state', 'found'], false],
-          '#eb4d4b', // Vintage Red for found
-          'transparent' // Clear for not found
-        ],
-        'fill-opacity': [
-          'case',
-          ['boolean', ['feature-state', 'found'], false],
-          0.4,
-          0
-        ]
-      }
-    });
-
-    // Outline for all states (Vintage Atlas look)
-    this.map.addLayer({
-      id: 'states-outline',
-      type: 'line',
-      source: 'states',
-      paint: {
-        'line-color': '#576574',
-        'line-width': [
-          'case',
-          ['boolean', ['feature-state', 'found'], false],
-          2,
-          0.5
-        ],
-        'line-opacity': 0.5
-      }
-    });
-
-    // Labels for states
-    this.map.addLayer({
-      id: 'states-labels',
-      type: 'symbol',
-      source: 'states',
-      layout: {
-        'text-field': ['get', 'name'],
-        'text-font': ['Open Sans Regular'],
-        'text-size': 11,
-        'text-allow-overlap': false
-      },
-      paint: {
-        'text-color': '#2f3542',
-        'text-halo-color': '#ffffff',
-        'text-halo-width': 1,
-        'text-opacity': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          3, 0,
-          4, 1
-        ]
-      }
-    });
-
-    this.updateStateHighlights(this.snapshot().states);
-  }
-
-  private updateStateHighlights(states: StoredStateRecord[]) {
-    if (!this.map || !this.map.getSource('states')) return;
-
-    const nextFoundIds = new Set(states.filter((state) => state.fnd.stateFound).map((state) => state.ID));
-    const changedIds = new Set<number>([...nextFoundIds, ...this.previousFoundIds]);
-
-    changedIds.forEach((stateId) => {
-      const nextFound = nextFoundIds.has(stateId);
-      const previousFound = this.previousFoundIds.has(stateId);
-
-      if (nextFound === previousFound) {
-        return;
-      }
-
-      this.map?.setFeatureState(
-        { source: 'states', id: stateId },
-        { found: nextFound }
-      );
-    });
-
-    this.previousFoundIds = nextFoundIds;
+    if (name === 'Hawaii') {
+      return { x: 150 + (lng + 161) * 8.5, y: 348 + (23 - lat) * 11 };
+    }
+    return { x: 18 + (lng + 125) * 9.6, y: 16 + (50 - lat) * 15.2 };
   }
 }

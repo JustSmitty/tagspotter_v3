@@ -36,9 +36,13 @@ module.exports = function (config) {
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
-    autoWatch: true,
-    browsers: ['Chrome'],
-    singleRun: false,
+    // Headless single-run by default (audit F-36). The old defaults were
+    // `Chrome` + `singleRun: false`, so every contributor and every CI job had
+    // to remember the flags, and forgetting them hung the run. `npm start` is
+    // where you want a watching browser; `npm test` is where you want an answer.
+    autoWatch: false,
+    browsers: ['ChromeHeadless'],
+    singleRun: true,
     restartOnFileChange: true
   });
 };

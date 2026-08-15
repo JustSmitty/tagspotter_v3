@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Auto Backup rules for API 30 and below (audit F-22).
+
+  The trip is worth backing up: a player who changes phones should not lose their
+  collection, and there is no server to restore it from (con-0004-no-backend-no-accounts).
+
+  What is deliberately excluded is the in-flight quiz sidecar. Restoring a
+  half-finished quiz onto a device whose save came from a different point in time
+  is the same hazard as pm-0001-stale-quiz-session: a resumed quiz scoring points
+  against a state that is not spotted in the restored save.
+-->
+<full-backup-content>
+    <include domain="sharedpref" path="." />
+    <exclude domain="sharedpref" path="CapacitorStorage.temp_quiz_session.xml" />
+</full-backup-content>

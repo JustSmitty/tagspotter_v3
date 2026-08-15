@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, Input, signal } from '@angular/core';
 import {
   IonHeader,
   IonToolbar,
@@ -10,8 +10,11 @@ import {
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { closeCircle } from 'ionicons/icons';
+import { ImpactStyle } from '@capacitor/haptics';
 
-import { QuizDismissResult, QuizQuestion } from '../../models/game-state.model';
+import { getStateRegion } from '../../constants/us-states';
+import { QuizDismissResult, QuizQuestion, StateRegion } from '../../models/game-state.model';
+import { NativeUiService } from '../../services/platform/native-ui.service';
 
 @Component({
   selector: 'app-quiz-modal',
@@ -29,9 +32,13 @@ import { QuizDismissResult, QuizQuestion } from '../../models/game-state.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QuizModalComponent {
-  readonly answerMarkers = ['A', 'B', 'C', 'D', 'E', 'F'];
+  readonly answerMarkers = ['A', 'B', 'C', 'D'];
 
   private readonly modalCtrl = inject(ModalController);
+  private readonly nativeUi = inject(NativeUiService);
+  readonly selectedOption = signal<string | null>(null);
+  readonly answered = computed(() => this.selectedOption() !== null);
+  readonly selectedIsCorrect = computed(() => this.selectedOption() === this.question?.correctAnswer);
 
   @Input() question!: QuizQuestion;
   @Input() stateCode!: string;
@@ -52,33 +59,39 @@ export class QuizModalComponent {
     return Array.from({ length: this.questionCount }, (_, index) => index);
   }
 
-  get stateRegion(): 'northeast' | 'south' | 'midwest' | 'west' {
-    const stateCode = this.stateCode?.toUpperCase();
-
-    if (['CT', 'DC', 'DE', 'MA', 'MD', 'ME', 'NH', 'NJ', 'NY', 'PA', 'RI', 'VT'].includes(stateCode)) {
-      return 'northeast';
-    }
-
-    if (['AL', 'AR', 'FL', 'GA', 'KY', 'LA', 'MS', 'NC', 'OK', 'SC', 'TN', 'TX', 'VA', 'WV'].includes(stateCode)) {
-      return 'south';
-    }
-
-    if (['IA', 'IL', 'IN', 'KS', 'MI', 'MN', 'MO', 'ND', 'NE', 'OH', 'SD', 'WI'].includes(stateCode)) {
-      return 'midwest';
-    }
-
-    return 'west';
+  get stateRegion(): StateRegion {
+    return getStateRegion(this.stateCode?.toUpperCase() ?? '');
   }
 
   onClose(): void {
-    this.dismiss({ kind: 'cancelled' });
+    if (this.answered()) {
+      this.onContinue();
+    } else {
+      this.dismiss({ kind: 'cancelled' });
+    }
   }
 
   onSelect(option: string): void {
+    if (this.answered()) return;
+    const isCorrect = option === this.question.correctAnswer;
+    this.selectedOption.set(option);
+    if (isCorrect) void this.nativeUi.impact(ImpactStyle.Light);
+  }
+
+  onContinue(): void {
+    if (!this.answered()) return;
     this.dismiss({
       kind: 'answered',
-      score: option === this.question.correctAnswer ? (this.question.points ?? 1) : 0,
+      score: this.selectedIsCorrect() ? (this.question.points ?? 1) : 0,
     });
+  }
+
+  stateNameFromUrl(url: string): string {
+    if (!url) return 'State flag';
+    const parts = url.split('/');
+    const filename = parts[parts.length - 1] ?? '';
+    const name = filename.replace('.svg', '');
+    return name ? `Flag of ${name}` : 'State flag';
   }
 
   private dismiss(result: QuizDismissResult): void {

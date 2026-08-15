@@ -5,16 +5,22 @@
       <h1 class="marquee-title">State Fact Ledger</h1>
       <p class="marquee-note">Every spotted plate opens a fresh three-question punch card.</p>
 
-      <div class="marquee-stamps" *ngIf="viewModel().featuredStates.length">
-        <div *ngFor="let state of viewModel().featuredStates" class="travel-stamp marquee-stamp">
-          <img
-            class="travel-stamp__image"
-            [src]="state.flagUrl"
-            [alt]="state.name + ' state flag'"
-            loading="lazy" />
-          <span class="travel-stamp__label">{{ state.code }}</span>
+      @if (viewModel().featuredStates.length) {
+        <div class="marquee-stamps">
+          @for (state of viewModel().featuredStates; track state.id) {
+            <div class="travel-stamp marquee-stamp">
+              <img
+                class="travel-stamp__image"
+                [src]="state.flagUrl"
+                [alt]="state.name + ' state flag'"
+                width="56"
+                height="56"
+                loading="lazy" />
+              <span class="travel-stamp__label">{{ state.code }}</span>
+            </div>
+          }
         </div>
-      </div>
+      }
     </div>
 
     <div class="accuracy-stamp stamped-effect">
@@ -48,14 +54,16 @@
     </div>
 
     <div class="topics-grid">
-      <article *ngFor="let topic of viewModel().topics" class="topic-card cardstock-layer">
-        <span class="topic-chip">Punch Card</span>
-        <span class="topic-title">{{ topic.title }}</span>
-        <p class="topic-note">{{ topic.subtitle }}</p>
-      </article>
+      @for (topic of viewModel().topics; track topic.title) {
+        <article class="topic-card cardstock-layer">
+          <span class="topic-chip">Punch Card</span>
+          <span class="topic-title">{{ topic.title }}</span>
+          <p class="topic-note">{{ topic.subtitle }}</p>
+        </article>
+      }
     </div>
 
-    <ng-container *ngIf="viewModel().topStates.length; else emptyLedger">
+    @if (viewModel().topStates.length) {
       <div class="section-header">
         <div class="section-rule"></div>
         <span class="section-label">Best Passes</span>
@@ -63,35 +71,36 @@
       </div>
 
       <div class="leader-grid">
-        <article
-          *ngFor="let state of viewModel().topStates"
-          class="leader-card cardstock-layer"
-          [attr.data-region]="state.region">
-          <div class="leader-flag travel-stamp">
-            <img
-              class="travel-stamp__image"
-              [src]="state.flagUrl"
-              [alt]="state.name + ' state flag'"
-              loading="lazy" />
-            <span class="travel-stamp__label">{{ state.code }}</span>
-          </div>
+        @for (state of viewModel().topStates; track state.id) {
+          <article
+            class="leader-card cardstock-layer"
+            [attr.data-region]="state.region">
+            <div class="leader-flag travel-stamp">
+              <img
+                class="travel-stamp__image"
+                [src]="state.flagUrl"
+                [alt]="state.name + ' state flag'"
+                width="56"
+                height="56"
+                loading="lazy" />
+              <span class="travel-stamp__label">{{ state.code }}</span>
+            </div>
 
-          <div class="leader-copy">
-            <span class="leader-name">{{ state.name }}</span>
-            <span class="leader-score">{{ state.questionsCorrect }}/3 answers right</span>
-          </div>
+            <div class="leader-copy">
+              <span class="leader-name">{{ state.name }}</span>
+              <span class="leader-score">{{ state.questionsCorrect }}/3 answers right</span>
+            </div>
 
-          <span class="leader-mileage">{{ state.distanceFound }} mi</span>
-        </article>
+            <span class="leader-mileage">{{ state.distanceFound }} mi</span>
+          </article>
+        }
       </div>
-    </ng-container>
-
-    <ng-template #emptyLedger>
+    } @else {
       <div class="empty-card cardstock-layer">
         <span class="empty-title">No trivia passes yet.</span>
         <p class="empty-note">Spot your first license plate from the Explore screen to open the roadside quiz.</p>
       </div>
-    </ng-template>
+    }
 
     <div class="footer-note">Best route to more trivia: keep collecting plates and clear every punch card.</div>
     <div class="footer-spacer"></div>

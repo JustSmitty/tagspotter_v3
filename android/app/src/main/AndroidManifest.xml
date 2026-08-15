@@ -3,6 +3,8 @@
 
     <application
         android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -15,6 +17,7 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
+            android:screenOrientation="portrait"
             android:exported="true">
 
             <intent-filter>
@@ -36,6 +39,9 @@
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Location awards a distance bonus when a plate is spotted. Users choose the
+         accuracy in-app (Approximate vs Precise, see LocationService); coarse is the
+         default, fine is opt-in and only requested when the user selects "Precise". -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 </manifest>

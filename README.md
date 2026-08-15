@@ -22,7 +22,7 @@ Collect all 50 state license plates. Each plate is a unique piece of digital art
 
 ### 🧭 Traveler's Handbook (New)
 
-First-time users are inducted into the Collector's Club via an immersive, 4-page onboarding handbook. It explains the core mechanics of the road trip, from spotting plates to earning bonuses.
+First-time users are inducted into the Collector's Club via an immersive, 5-page onboarding handbook. It explains the core mechanics of the road trip, from spotting plates to earning bonuses.
 
 ### 🎮 Dual Game Modes
 
@@ -37,7 +37,7 @@ Challenge yourself with **Easy**, **Medium**, or **Hard** trivia levels. Harder 
 
 ### 📜 The Road Log (Dashboard)
 
-A centralized "Atlas" to track your Coast-to-Coast progress, view your souvenir collection, and audit your total miles traveled.
+A centralized "Atlas" to track your Coast-to-Coast progress, view your souvenir collection, and audit your total spotting range.
 
 ### 🏆 Certified Road Tripper
 
@@ -45,7 +45,7 @@ Complete the full collection of 51 plates (including DC) to earn your digital se
 
 ### 🗺️ The Road Atlas
 
-A beautiful, static vector map powered by MapLibre GL displaying a flat, full-country composite view. See your progress visually as spotted states fill in with vintage red ink!
+A static, flat, full-country map drawn as accessible inline SVG from bundled GeoJSON — no tile server, no network. See your progress fill in with vintage red ink as you spot each state.
 
 ### 🚀 Seamless Navigation
 
@@ -68,6 +68,18 @@ The Collector's Club rewards both persistence and knowledge. While the basic jou
 > [!NOTE]
 > In Trivia mode, you face 3 questions per state discovery. A perfect "Hard" find can net you **9 points**!
 
+### Spotting Range
+
+Spotting a Hawaii plate in Ohio is a better story than spotting an Ohio plate in Ohio, so every find
+also earns a **range bonus** — 1 to 8 points scaled by how far you are from that state when you spot
+it. A genuinely distant find is worth more on its own as well: the plate itself pays 2 points beyond
+1,000 miles and 3 beyond 2,000.
+
+To be precise about what the number means: **spotting range is the distance between you and the
+state, not the distance you have driven.** It is measured once, at the moment you log the plate, and
+your location is used for that single calculation and never stored. It is a measure of reach, not a
+trip meter.
+
 ### Trivia Topics
 
 Our carefully curated dataset covers the rich tapestry of American life:
@@ -84,7 +96,7 @@ Our carefully curated dataset covers the rich tapestry of American life:
 * **Framework:** [Ionic](https://ionicframework.com/) + [Angular](https://angular.io/) (Standalone Components)
 * **Native Engine:** [Capacitor](https://capacitorjs.com/)
 * **State Management:** Angular Signals & RxJS
-* **Map Rendering:** [MapLibre GL JS](https://maplibre.org/)
+* **Map Rendering:** Accessible inline SVG generated from bundled GeoJSON
 * **Styling:** Vanilla SCSS with a custom HSL-based design system.
 * **Typography:** Newsreader (Serif), Work Sans (Sans), and Special Elite (Typewriter).
 
@@ -117,7 +129,13 @@ npm.cmd run build:mobile
 # Open in Native IDEs
 npm.cmd run android:open
 npm.cmd run ios:open
+
+# Build + install the debug APK to a connected Android device
+cd android && ./gradlew installDebug
 ```
+
+> [!NOTE]
+> **Android JDK toolchain:** some bundled Capacitor plugins (e.g. `@capacitor/geolocation`) require **JDK 21**. The Gradle build auto-provisions it via the [`foojay-resolver`](https://github.com/gradle/foojay-toolchains) plugin (configured in `android/settings.gradle` + `android/build.gradle`), so `./gradlew` works even when your default `JAVA_HOME` is an older JDK — no manual JDK 21 install required.
 
 ---
 

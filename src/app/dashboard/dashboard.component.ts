@@ -11,6 +11,7 @@ import {
   bookOutline,
   carOutline,
   mapOutline,
+  ribbonOutline,
   swapHorizontalOutline,
   trophyOutline
 } from 'ionicons/icons';
@@ -36,12 +37,14 @@ export class DashboardComponent implements OnInit {
 
   readonly viewModel = this.gameStateStore.dashboardViewModel;
   readonly souvenirFlags = this.gameStateStore.dashboardSouvenirFlags;
+  readonly comparison = this.gameStateStore.tripComparison;
 
   constructor() {
     addIcons({
       mapOutline,
       carOutline,
       bookOutline,
+      ribbonOutline,
       trophyOutline,
       swapHorizontalOutline,
     });

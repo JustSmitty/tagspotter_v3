@@ -1,0 +1,66 @@
+name: CI
+
+# Closes audit finding F-35 (no CI). The eval job is what makes the remediation
+# plan self-enforcing: guardrail counts may fall, never rise.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  agents:
+    name: Agent workforce (brain + resolver + evals)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No dependencies needed — the workforce scripts are plain Node.
+      - name: Brain hygiene (librarian protocol, strict)
+        run: node scripts/brain.mjs lint --strict
+
+      - name: Brain index is current
+        run: |
+          node scripts/brain.mjs index
+          git diff --exit-code .agents/brain/index.json \
+            || (echo "::error::.agents/brain/index.json is stale — run 'npm run brain -- index' and commit"; exit 1)
+
+      - name: Trigger evals
+        run: node scripts/evals.mjs
+
+  app:
+    name: Lint, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test:ci
+
+      - name: Production build
+        run: npm run build
+
+      - name: Report shipped weight
+        run: |
+          echo "### Shipped weight" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          du -sh www >> "$GITHUB_STEP_SUMMARY"
+          du -sh www/* | sort -rh | head -10 >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

@@ -1,6 +1,6 @@
 {
   "name": "tagspotter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Tag Spotter",
   "scripts": {
     "ng": "ng",
@@ -9,8 +9,14 @@
     "build:mobile": "npm.cmd run build && npm.cmd run assets:mobile && npx cap sync",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
     "lint": "ng lint",
+    "brain": "node scripts/brain.mjs",
+    "resolve": "node scripts/resolve.mjs",
+    "evals": "node scripts/evals.mjs",
+    "verify": "npm run lint && npm run test:ci && npm run evals",
     "assets:mobile": "powershell -ExecutionPolicy Bypass -File scripts/generate-mobile-assets.ps1",
+    "assets:flags": "node scripts/optimize-flags.mjs",
     "cap:sync": "npx cap sync",
     "android:open": "npx cap open android",
     "ios:open": "npx cap open ios"
@@ -36,10 +42,8 @@
     "@capacitor/status-bar": "8.0.1",
     "@ionic/angular": "^8.0.0",
     "ionicons": "^7.0.0",
-    "maplibre-gl": "^5.21.1",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0",
-    "zone.js": "~0.15.0"
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^20.0.0",
@@ -67,6 +71,8 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "sharp": "^0.35.3",
+    "svgo": "^4.0.2",
     "typescript": "~5.9.0"
   },
   "description": "Tag Spotter is a retro road-trip game for collecting state plates, trivia, and distance bonuses."

@@ -1,6 +1,52 @@
-<div class="atlas-container paper-texture">
-  <div class="map-overlay">
-    <span>{{ foundCount() }} States Explored &middot; 1950 Atlas</span>
-  </div>
-  <div id="road-atlas-map"></div>
-</div>
+<section class="atlas-shell cardstock-layer" aria-labelledby="atlas-title">
+  <header class="atlas-header">
+    <div>
+      <span class="atlas-kicker">Interactive road atlas</span>
+      <h2 id="atlas-title">Tap a state to inspect its plate</h2>
+    </div>
+    <span class="atlas-count">{{ foundCount() }} spotted</span>
+  </header>
+
+  @if (isLoading()) {
+    <div class="atlas-status" role="status">Drawing the road atlas…</div>
+  } @else if (loadError()) {
+    <div class="atlas-status atlas-status--error" role="alert">
+      <span>{{ loadError() }}</span>
+      <button type="button" (click)="retryLoad()">Retry</button>
+    </div>
+  } @else {
+    <!--
+      The map is one image, not 51 controls (audit F-32). Every state here is
+      also a real <button> in the plate grid directly below, with the same
+      label and the same action — so making these paths focusable added 51 tab
+      stops in front of the content while duplicating an interface that was
+      already accessible. Tapping the map stays available to pointer users as a
+      progressive enhancement; nothing is reachable only through it.
+    -->
+    <svg class="atlas-map" viewBox="0 0 600 400" role="img" [attr.aria-label]="atlasSummary()">
+      @for (feature of features(); track feature.id) {
+        <path
+          class="atlas-state"
+          [class.atlas-state--found]="isFound(feature.id)"
+          [attr.d]="feature.path"
+          aria-hidden="true"
+          (click)="selectStateById(feature.id)">
+        </path>
+        <text class="atlas-label" [attr.x]="feature.labelX" [attr.y]="feature.labelY" aria-hidden="true">{{ feature.code }}</text>
+      }
+    </svg>
+  }
+
+  @if (selectedState(); as state) {
+    <aside class="atlas-detail" aria-live="polite">
+      <button type="button" class="atlas-detail__close" aria-label="Close state details" (click)="closeStateDetail()">×</button>
+      <strong>{{ state.Name }}</strong>
+      <span>{{ state.Abbrv }} · {{ state.fnd.stateFound ? 'Spotted' : 'Not spotted yet' }}</span>
+      @if (state.fnd.stateFound) {
+        <small>{{ state.fnd.distance }} miles · {{ getCorrectAnswers(state) }} trivia correct</small>
+      } @else {
+        <button type="button" class="atlas-detail__action" (click)="requestSpot(state.ID)">Spot this plate</button>
+      }
+    </aside>
+  }
+</section>

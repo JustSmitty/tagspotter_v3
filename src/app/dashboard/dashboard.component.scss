@@ -159,7 +159,7 @@
   .stamp-code {
     font-family: 'Special Elite', cursive;
     font-size: 0.6rem;
-    color: rgba(0,0,0,0.2);
+    color: var(--app-ink-muted);
     font-weight: bold;
   }
 
@@ -324,5 +324,225 @@
     height: 45px;
     border: 1px solid rgba(217, 84, 28, 0.2);
     border-radius: 50%;
+  }
+}
+
+.trip-history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.trip-history-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--app-surface-card);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+}
+
+.trip-history-main,
+.trip-history-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.trip-history-score {
+  font-family: 'Special Elite', cursive;
+  font-size: 1rem;
+  color: var(--app-ink-deep);
+}
+
+.trip-history-date,
+.trip-history-meta {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(47, 54, 64, 0.58);
+}
+
+.trip-history-meta {
+  flex-wrap: wrap;
+}
+
+/* Travel Log Timeline */
+.timeline {
+  padding: 0 20px 0 28px;
+}
+
+.timeline-entry {
+  display: flex;
+  gap: 14px;
+  position: relative;
+}
+
+.timeline-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 14px;
+  padding-top: 14px;
+}
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #396754, #2d5243);
+  border: 2px solid rgba(57, 103, 84, 0.3);
+  box-shadow: 0 0 0 3px rgba(57, 103, 84, 0.08);
+  flex-shrink: 0;
+}
+
+.timeline-line {
+  width: 2px;
+  flex: 1;
+  background: linear-gradient(to bottom, rgba(57, 103, 84, 0.28), rgba(57, 103, 84, 0.08));
+  margin-top: 4px;
+}
+
+.timeline-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.timeline-flag {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.timeline-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.timeline-name {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--app-ink-deep);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-meta {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(47, 54, 64, 0.52);
+  text-transform: uppercase;
+}
+
+.timeline-index {
+  font-family: 'Special Elite', cursive;
+  font-size: 0.72rem;
+  color: rgba(57, 103, 84, 0.55);
+  flex-shrink: 0;
+}
+
+/*
+ * Trip comparison (audit F-14). A clipped index card above the trip list: the
+ * archive already existed, this is what makes it mean something.
+ */
+.trip-compare {
+  margin: 0 20px 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--card-border);
+  border-top: 4px solid var(--ion-color-secondary);
+  border-radius: 6px;
+  background: var(--app-surface-card);
+
+  &--best {
+    border-top-color: var(--ion-color-tertiary);
+  }
+}
+
+.trip-compare__headline {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.trip-compare__badge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--ion-color-secondary);
+  color: #fff;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  .trip-compare--best & {
+    background: var(--ion-color-tertiary);
+    color: #4a3b12;
+  }
+}
+
+.trip-compare__lede {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--app-ink-deep);
+}
+
+.trip-compare__rows {
+  display: grid;
+  gap: 5px;
+}
+
+.trip-compare__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.trip-compare__key {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--app-ink-muted);
+}
+
+.trip-compare__val {
+  font-family: 'Special Elite', cursive;
+  font-size: 0.95rem;
+  color: var(--app-ink-deep);
+}
+
+.trip-compare__delta {
+  margin-left: 6px;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--ion-color-danger);
+
+  &--up {
+    color: var(--ion-color-success);
   }
 }

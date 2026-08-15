@@ -34,6 +34,50 @@ The palette uses desaturated, "sun-faded" versions of classic Americana colors.
 | **UI / Data** | *Work Sans* | Clean, geometric sans-serif for readability |
 | **The Tag** | *Special Elite* | Stamped Typewriter / Die-cast Mono |
 
+### Text Colour
+
+The sun-faded look is achieved with **warm greys**, never black at low alpha. `--app-ink-deep` for
+primary text, `--app-ink-muted` for secondary and hints, `--app-ink-subtle` for large display text
+only. Every one of these clears 4.5:1 on cream, paper, card and the folder-tan surfaces.
+
+`color: rgba(0, 0, 0, α)` with α below 0.55 is a build failure (`guardrail:low-alpha-text`). If a
+faded effect needs to go lighter than the tokens allow, it is decoration, not text — draw it as a
+background, the way the ticket-edge perforation in `global.scss` is drawn.
+
+---
+
+## 2b. Voice
+
+**One product, one voice: the 1950s golden age of American travel.** Warm, plainspoken, slightly
+nostalgic — a well-made roadside sign or the back of a postcard. Never a marketing deck, never a
+sports broadcast.
+
+| Write this | Not this |
+| :--- | :--- |
+| Spotted · Logged · Collected | Birdied, carded a par |
+| Traveler's Handbook | Caddie Guide |
+| SPOT / QUIZ | LAYUP / ATTACK |
+| Start a new trip | Tee off from scratch |
+| Finish the quiz? | Resume the hole? |
+| Leave the quiz? | Walk off the green? |
+| Spotting range | Miles traveled, odometer |
+
+**Banned outright**, enforced by `guardrail:copy-lexicon` and `guardrail:ai-capability-claims`:
+
+1. **The golf lexicon.** Caddie, tee off, fairway, green in regulation, layup, birdie, clubhouse,
+   pinseeker, shot tracker, "the green", "hole". It reads as a different product wearing this one's
+   clothes.
+2. **Any AI claim.** There is no AI in this app.
+3. **"Miles traveled" / "odometer" / "distance driven."** The number is the distance between the
+   player and a state's centroid, summed — a measure of reach, not travel. Call it **spotting
+   range**.
+
+**Screen-reader text is copy.** An `aria-label` or `title` that contradicts the visible label is
+worse than none, and is subject to every rule above.
+
+**Verify before you claim.** If copy describes behaviour, check the behaviour first. Three separate
+audit findings (F-02, F-03, F-07) were copy that had outrun the code.
+
 ---
 
 ## 3. Component Hierarchy

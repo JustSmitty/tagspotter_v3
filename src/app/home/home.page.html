@@ -10,7 +10,7 @@
         <div class="postcard-main-layout">
           <div class="postcard-content">
             <div class="brand-marquee">
-              <span class="brand-kicker">Collector's Club</span>
+              <span class="brand-kicker">The Open Road</span>
               <h1 class="brand-logotype">TAG SPOTTER</h1>
             </div>
 
@@ -29,11 +29,11 @@
 
           <div class="postcard-stats-ledger">
             <div class="ledger-row">
-              <span class="l-key">STATES</span>
+              <span class="l-key">PLATES</span>
               <span class="l-val">{{ viewModel().points.states }}</span>
             </div>
             <div class="ledger-row">
-              <span class="l-key">MILES</span>
+              <span class="l-key">RANGE</span>
               <span class="l-val">{{ viewModel().points.miles | number:'1.0-0' }}</span>
             </div>
             <div class="ledger-row">
@@ -41,18 +41,18 @@
               <span class="l-val">{{ viewModel().points.quiz }}</span>
             </div>
 
-            <div class="ledger-footer">ROAD LOG &middot; 1950</div>
+            <div class="ledger-footer">SCORECARD &middot; 1950</div>
           </div>
         </div>
 
         <div class="top-actions">
-          <button class="action-pin help-pin" (click)='openOnboarding()' aria-label='Open traveler handbook' title='Traveler Handbook'>
+          <button class="action-pin help-pin" (click)='openOnboarding()' aria-label="Open traveler's handbook" title="Traveler's Handbook">
             <ion-icon name="help-circle-outline"></ion-icon>
           </button>
           <button class="action-pin star-pin" (click)='openDashboard()' aria-label='Open road log' title='Road Log'>
             <ion-icon name="ribbon-outline"></ion-icon>
           </button>
-          <button class="action-pin reset-pin" (click)='onRefresh()' aria-label='Reset trip' title='Reset Game'>
+          <button class="action-pin reset-pin" (click)='onRefresh()' [disabled]="viewModel().isBusy" aria-label='Start a new trip' title='New Trip'>
             <ion-icon name="refresh-outline"></ion-icon>
           </button>
         </div>
@@ -61,97 +61,249 @@
   </div>
 </ion-header>
 
-<ion-content class="road-content paper-texture">
+<ion-content class="road-content paper-texture" [attr.aria-busy]="viewModel().isBusy">
   <div class="content-inner">
+    @if (viewModel().error) {
+      <section class="game-error cardstock-layer" role="alert" aria-live="assertive">
+        <div>
+          <strong>Road log needs attention</strong>
+          <p>{{ viewModel().error }}</p>
+        </div>
+        @if (!viewModel().isLoaded) {
+          <button type="button" (click)="retryLoad()" [disabled]="viewModel().isBusy">Retry loading</button>
+        } @else {
+          <button type="button" (click)="dismissError()">Dismiss</button>
+        }
+      </section>
+    }
     <div class="section-header">
       <div class="section-rule"></div>
       <span class="section-label">The Collection</span>
       <div class="section-rule"></div>
     </div>
 
-    <div class="toggle-container" style="display: flex; justify-content: center; align-items: center; flex-direction: column; margin-bottom: 32px;">
-      <div class="brass-switch-wrapper" (click)="onToggleGameMode($event)">
-        <span class="switch-label left">COLLECT</span>
+    <div class="toggle-container">
+      <button
+        type="button"
+        class="brass-switch-wrapper"
+        role="switch"
+        [class.trivia-active]="gameMode() === 'trivia'"
+        [class.collect-active]="gameMode() === 'classic'"
+        [attr.aria-checked]="gameMode() === 'trivia'"
+        aria-label="Toggle trivia mode"
+        [disabled]="viewModel().isBusy"
+        (click)="onToggleGameMode()">
+        <span class="switch-label left">SPOT</span>
         <div class="brass-knob" [class.on]="gameMode() === 'trivia'">
           <div class="knob-face">
             <div class="knob-dot"></div>
           </div>
         </div>
-        <span class="switch-label right">TRIVIA</span>
-      </div>
+        <span class="switch-label right">QUIZ</span>
+      </button>
 
-      <div class="ticket-stub-segments" *ngIf="gameMode() === 'trivia'">
-        <button 
-          class="stub-btn" 
-          [class.active]="difficulty() === 'easy'"
-          (click)="onDifficultyChange({ detail: { value: 'easy' } })">
-          <span class="stub-edge"></span>
-          <span class="stub-label">EASY</span>
-          <span class="stub-edge"></span>
-        </button>
-        <button 
-          class="stub-btn" 
-          [class.active]="difficulty() === 'medium'"
-          (click)="onDifficultyChange({ detail: { value: 'medium' } })">
-          <span class="stub-edge"></span>
-          <span class="stub-label">MED</span>
-          <span class="stub-edge"></span>
-        </button>
-        <button 
-          class="stub-btn" 
-          [class.active]="difficulty() === 'hard'"
-          (click)="onDifficultyChange({ detail: { value: 'hard' } })">
-          <span class="stub-edge"></span>
-          <span class="stub-label">HARD</span>
-          <span class="stub-edge"></span>
-        </button>
-      </div>
+      @if (gameMode() === 'trivia') {
+        <div class="ticket-stub-segments">
+          <button 
+            class="stub-btn" 
+            [class.active]="difficulty() === 'easy'"
+            [attr.aria-pressed]="difficulty() === 'easy'"
+            [disabled]="viewModel().isBusy"
+            (click)="onDifficultyChange('easy')">
+            <span class="stub-edge"></span>
+            <span class="stub-label">EASY</span>
+            <span class="stub-edge"></span>
+          </button>
+          <button 
+            class="stub-btn" 
+            [class.active]="difficulty() === 'medium'"
+            [attr.aria-pressed]="difficulty() === 'medium'"
+            [disabled]="viewModel().isBusy"
+            (click)="onDifficultyChange('medium')">
+            <span class="stub-edge"></span>
+            <span class="stub-label">MED</span>
+            <span class="stub-edge"></span>
+          </button>
+          <button 
+            class="stub-btn" 
+            [class.active]="difficulty() === 'hard'"
+            [attr.aria-pressed]="difficulty() === 'hard'"
+            [disabled]="viewModel().isBusy"
+            (click)="onDifficultyChange('hard')">
+            <span class="stub-edge"></span>
+            <span class="stub-label">HARD</span>
+            <span class="stub-edge"></span>
+          </button>
+        </div>
+      }
     </div>
     
-    <app-road-atlas></app-road-atlas>
+    @defer (on idle) {
+      <app-road-atlas (spotRequested)="onMapSpot($event)"></app-road-atlas>
+    } @placeholder {
+      <div class="map-placeholder" style="height: 380px; display: flex; align-items: center; justify-content: center; background: var(--app-surface-card); border-radius: 8px; margin: 16px 20px; border: 1px solid var(--app-border-soft); box-shadow: inset 1px 1px 2px rgba(0,0,0,0.2), 0 1px 3px rgba(0,0,0,0.1);">
+        <span style="font-family: 'Newsreader', serif; font-style: italic; color: var(--app-ink-muted); font-size: 0.95rem; letter-spacing: 1px;">Loading Road Atlas…</span>
+      </div>
+    }
+    @if (viewModel().isLoaded) {
+      <div class="search-filter-bar cardstock-layer">
+        <div class="search-input-wrapper">
+          <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+          <input
+            type="search"
+            placeholder="Search by state name or plate code…"
+            class="retro-search-input"
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+            spellcheck="false"
+            aria-label="Search states" />
+          @if (searchQuery()) {
+            <button type="button" class="search-clear" (click)="clearSearch()" aria-label="Clear search">
+              <ion-icon name="close-circle" aria-hidden="true"></ion-icon>
+            </button>
+          }
+        </div>
+        
+        <div class="filter-chips">
+          <button 
+            class="filter-chip" 
+            [class.active]="selectedRegion() === 'all'"
+            [attr.aria-pressed]="selectedRegion() === 'all'"
+            (click)="onSelectRegion('all')">
+            All Regions
+          </button>
+          <button 
+            class="filter-chip" 
+            [class.active]="selectedRegion() === 'northeast'"
+            [attr.aria-pressed]="selectedRegion() === 'northeast'"
+            (click)="onSelectRegion('northeast')">
+            Northeast
+          </button>
+          <button 
+            class="filter-chip" 
+            [class.active]="selectedRegion() === 'south'"
+            [attr.aria-pressed]="selectedRegion() === 'south'"
+            (click)="onSelectRegion('south')">
+            South
+          </button>
+          <button 
+            class="filter-chip" 
+            [class.active]="selectedRegion() === 'midwest'"
+            [attr.aria-pressed]="selectedRegion() === 'midwest'"
+            (click)="onSelectRegion('midwest')">
+            Midwest
+          </button>
+          <button 
+            class="filter-chip" 
+            [class.active]="selectedRegion() === 'west'"
+            [attr.aria-pressed]="selectedRegion() === 'west'"
+            (click)="onSelectRegion('west')">
+            West
+          </button>
+        </div>
+      </div>
+    }
 
     <div class="plate-grid">
-      <button
-        *ngFor="let state of viewModel().states; trackBy: trackByStateId"
-        class="plate-wrapper"
-        [class.plate-found]="state.isFound"
-        [attr.data-region]="state.region"
-        [attr.aria-label]="state.name + (state.isFound ? ', spotted' : ', not spotted')"
-        [attr.aria-pressed]="state.isFound"
-        (click)="onRecord(state)">
-        <div class="plate-body stamped-effect">
-          <div class="plate-flag-stamp travel-stamp" *ngIf="state.isFound">
-            <img
-              class="travel-stamp__image"
-              [src]="state.flagUrl"
-              [alt]="state.name + ' state flag'"
-              loading="lazy" />
-            <span class="travel-stamp__label">{{ state.code }}</span>
+      @for (state of filteredStates(); track state.id) {
+        <button
+          [id]="'state-btn-' + state.id"
+          class="plate-wrapper"
+          [class.plate-found]="state.isFound"
+          [attr.data-region]="state.region"
+          [attr.aria-label]="state.name + (state.isFound ? ', spotted' : ', not spotted')"
+          [attr.aria-pressed]="state.isFound"
+          [disabled]="viewModel().isBusy"
+          (click)="onRecord(state)">
+          <div class="plate-body stamped-effect">
+            @if (state.isFound) {
+              <div class="plate-flag-stamp travel-stamp">
+                <img
+                  class="travel-stamp__image"
+                  [src]="state.flagUrl"
+                  [alt]="state.name + ' state flag'"
+                  width="56"
+                  height="56"
+                  loading="lazy" />
+                <span class="travel-stamp__label">{{ state.code }}</span>
+              </div>
+            }
+
+            <div class="plate-top-row">
+              <span class="plate-state-name">{{ state.name | uppercase }}</span>
+            </div>
+
+            <div class="plate-tag-center">
+              <span class="plate-tag-text">{{ state.code }}</span>
+            </div>
+
+            <div class="plate-bottom-row">
+              @if (!state.isFound) {
+                <span class="plate-motto">Historic issue &middot; road atlas</span>
+              } @else {
+                <span class="plate-found-text">
+                  {{ state.triviaPoints }} pts trivia &middot; {{ state.distanceFound }} mi
+                </span>
+              }
+            </div>
+
+            <div class="plate-bolt bl"></div>
+            <div class="plate-bolt br"></div>
+            <div class="plate-bolt tl"></div>
+            <div class="plate-bolt tr"></div>
+
+            @if (state.isFound) {
+              <div class="found-stamp">Spotted</div>
+            }
           </div>
-
-          <div class="plate-top-row">
-            <span class="plate-state-name">{{ state.name | uppercase }}</span>
-          </div>
-
-          <div class="plate-tag-center">
-            <span class="plate-tag-text">{{ state.code }}</span>
-          </div>
-
-          <div class="plate-bottom-row">
-            <span class="plate-motto" *ngIf="!state.isFound">Historic issue &middot; road atlas</span>
-            <span class="plate-found-text" *ngIf="state.isFound">
-              {{ state.questionsCorrect }} pts trivia &middot; {{ state.distanceFound }} mi
-            </span>
-          </div>
-
-          <div class="plate-bolt bl"></div>
-          <div class="plate-bolt br"></div>
-          <div class="plate-bolt tl"></div>
-          <div class="plate-bolt tr"></div>
-
-          <div class="found-stamp" *ngIf="state.isFound">Spotted</div>
+        </button>
+      } @empty {
+        <div class="plate-empty" role="status">
+          <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+          <p class="plate-empty__title">No plates on this route</p>
+          <p class="plate-empty__hint">
+            @if (searchQuery()) {
+              Nothing matched &ldquo;{{ searchQuery() }}&rdquo;. Try a state name or its 2-letter code.
+            } @else {
+              No plates in this region. Try another filter.
+            }
+          </p>
+          <button type="button" class="plate-empty__reset" (click)="clearFilters()">Show all plates</button>
         </div>
-      </button>
+      }
+    </div>
+
+    <div class="location-precision cardstock-layer">
+      <span class="location-precision__label">Distance Accuracy</span>
+      <div class="precision-segments" role="radiogroup" aria-label="Location accuracy">
+        <button
+          type="button"
+          class="precision-btn"
+          role="radio"
+          [class.active]="locationPrecision() === 'coarse'"
+          [attr.aria-checked]="locationPrecision() === 'coarse'"
+          [disabled]="viewModel().isBusy"
+          (click)="onSetLocationPrecision('coarse')">
+          Approximate
+        </button>
+        <button
+          type="button"
+          class="precision-btn"
+          role="radio"
+          [class.active]="locationPrecision() === 'fine'"
+          [attr.aria-checked]="locationPrecision() === 'fine'"
+          [disabled]="viewModel().isBusy"
+          (click)="onSetLocationPrecision('fine')">
+          Precise
+        </button>
+      </div>
+      <span class="location-precision__hint">
+        @if (locationPrecision() === 'fine') {
+          Uses GPS for exact mileage. Your device may ask for precise location.
+        } @else {
+          Approximate location &mdash; easier on privacy and battery.
+        }
+      </span>
     </div>
 
     <div class="footer-note">

@@ -2,7 +2,7 @@ import { signal, WritableSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { DashboardViewModel, StateCardViewModel } from '../models/game-state.model';
+import { DashboardViewModel, StateCardViewModel, TripComparisonViewModel } from '../models/game-state.model';
 import { GameStateStore } from '../services/game-state.store';
 import { DashboardComponent } from './dashboard.component';
 
@@ -12,6 +12,7 @@ describe('DashboardComponent', () => {
   let gameStateStore: jasmine.SpyObj<GameStateStore> & {
     dashboardViewModel: WritableSignal<DashboardViewModel>;
     dashboardSouvenirFlags: WritableSignal<StateCardViewModel[]>;
+    tripComparison: WritableSignal<TripComparisonViewModel>;
   };
 
   beforeEach(async () => {
@@ -64,6 +65,33 @@ describe('DashboardComponent', () => {
               unlocked: true,
             },
           ],
+          tripHistory: [
+            {
+              id: 'trip-1',
+              completedAt: '2026-07-05T12:00:00.000Z',
+              foundCount: 2,
+              totalStates: 50,
+              finalScore: 6,
+              miles: 432,
+              triviaCorrect: 3,
+            },
+          ],
+          travelLog: [
+            {
+              id: 1,
+              code: 'AL',
+              name: 'Alabama',
+              isFound: true,
+              distanceFound: 210,
+              questionsCorrect: 2,
+              flagUrl: '/assets/stateflags/Alabama.svg',
+              region: 'south' as const,
+            },
+          ],
+        }),
+        tripComparison: signal<TripComparisonViewModel>({
+          hasHistory: false, bestScore: null, bestFoundCount: null, previousScore: null,
+          scoreDelta: null, isPersonalBest: false, pointsToBeat: null, tripsCompleted: 0,
         }),
         dashboardSouvenirFlags: signal<StateCardViewModel[]>([
           {
@@ -105,5 +133,6 @@ describe('DashboardComponent', () => {
     expect(compiled.querySelectorAll('.stamp-slot').length).toBe(2);
     expect(compiled.querySelector('.stamp-slot.stamped')?.textContent?.trim()).toBe('AL');
     expect(compiled.querySelector('.souvenir-title')?.textContent).toContain('The Pioneer');
+    expect(compiled.querySelector('.trip-history-card')?.textContent).toContain('6 pts');
   });
 });

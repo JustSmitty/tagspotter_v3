@@ -13,6 +13,36 @@ ion-content.road-content {
   --padding-bottom: var(--content-inner-padding);
 }
 
+.game-error {
+  margin: 12px 20px 20px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 2px solid #a54016;
+  border-radius: 8px;
+  background: var(--app-surface-alert);
+  color: var(--app-ink-deep);
+
+  strong { font-family: 'Newsreader', serif; }
+  p { margin: 4px 0 0; font: 0.78rem/1.4 'Work Sans', sans-serif; }
+  button {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    border: 1px solid #8d2707;
+    border-radius: 999px;
+    background: #a54016;
+    color: #fff;
+    font-weight: 700;
+  }
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
 .digital-ephemera-header {
   overflow: visible;
   z-index: 1000;
@@ -201,7 +231,8 @@ ion-content.road-content {
   font-family: 'Special Elite', cursive;
   font-size: 2rem;
   line-height: 1;
-  color: var(--app-ink-deep);
+  /* Printed on the postcard, which stays cream in both themes (dec-0012). */
+  color: var(--app-ink-on-ephemera);
 }
 
 .points-label {
@@ -302,16 +333,30 @@ ion-content.road-content {
 }
 
 /* Brass Toggle Switch */
+.toggle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-bottom: 32px;
+}
+
 .brass-switch-wrapper {
   display: flex;
   align-items: center;
   gap: 16px;
   cursor: pointer;
   padding: 8px 16px;
+  font: inherit;
   background: rgba(79, 93, 90, 0.05);
   border-radius: 50px;
   border: 1px solid rgba(79, 93, 90, 0.1);
   margin-bottom: 24px;
+
+  &:focus-visible {
+    outline: 3px solid rgba(57, 103, 84, 0.45);
+    outline-offset: 4px;
+  }
 }
 
 .switch-label {
@@ -321,8 +366,14 @@ ion-content.road-content {
   letter-spacing: 0.15em;
   color: rgba(79, 93, 90, 0.4);
   transition: color 0.3s ease;
+}
 
-  &.left { color: var(--app-ink-deep); }
+.brass-switch-wrapper.collect-active .switch-label.left {
+  color: var(--app-ink-deep);
+}
+
+.brass-switch-wrapper.trivia-active .switch-label.right {
+  color: #d35400;
 }
 
 
@@ -366,14 +417,6 @@ ion-content.road-content {
   }
 }
 
-.brass-knob.on + .switch-label.right {
-  color: #d35400;
-}
-
-.brass-knob:not(.on) ~ .switch-label.left {
-  color: #2980b9;
-}
-
 /* Ticket Stub Segments */
 .ticket-stub-segments {
   display: flex;
@@ -387,8 +430,8 @@ ion-content.road-content {
   position: relative;
   display: flex;
   align-items: center;
-  background: #fdfae9;
-  border: 1px solid #d2cbba;
+  background: var(--app-surface-card);
+  border: 1px solid var(--card-border);
   padding: 6px 12px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -407,7 +450,7 @@ ion-content.road-content {
     height: 8px;
     background: rgba(79, 93, 90, 0.08);
     border-radius: 50%;
-    border: 1px solid #d2cbba;
+    border: 1px solid var(--card-border);
     
     &:first-child { left: -5px; }
     &:last-child { right: -5px; }
@@ -422,7 +465,7 @@ ion-content.road-content {
     box-shadow: 0 4px 8px rgba(57, 103, 84, 0.24);
 
     .stub-label { color: #ffffff; }
-    .stub-edge { background: #fdfae9; border-color: #2d5243; }
+    .stub-edge { background: var(--app-surface-card); border-color: #2d5243; }
   }
 }
 
@@ -477,5 +520,188 @@ ion-content.road-content {
 
   .brand-logotype {
     font-size: clamp(0.95rem, 5.2vw, 1.32rem);
+  }
+}
+
+/* Search & Filter Bar Styles */
+.search-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 20px 24px;
+  padding: 16px;
+  background: linear-gradient(145deg, rgba(255, 247, 236, 0.98) 0%, rgba(247, 239, 219, 0.94) 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(79, 93, 90, 0.15);
+  box-shadow: 0 4px 12px rgba(71, 51, 28, 0.08);
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--app-surface-card);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 0 12px;
+
+  ion-icon {
+    font-size: 1.2rem;
+    color: rgba(79, 93, 90, 0.52);
+    margin-right: 8px;
+  }
+}
+
+.retro-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 10px 0;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.85rem;
+  color: var(--app-ink-deep);
+  outline: none;
+
+  &::placeholder {
+    color: rgba(79, 93, 90, 0.44);
+    font-style: italic;
+  }
+
+  /* Hide the browser's native search clear control; we render our own. */
+  &::-webkit-search-cancel-button {
+    appearance: none;
+  }
+}
+
+.search-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  margin-left: 4px;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: rgba(79, 93, 90, 0.55);
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.15s ease;
+
+  ion-icon {
+    font-size: 1.15rem;
+    margin: 0;
+  }
+
+  &:hover {
+    color: var(--ion-color-primary);
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.plate-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  margin: 8px 4px;
+  padding: 32px 24px;
+  background: linear-gradient(145deg, rgba(255, 247, 236, 0.9) 0%, rgba(247, 239, 219, 0.86) 100%);
+  border: 1px dashed rgba(79, 93, 90, 0.4);
+  border-radius: 10px;
+
+  ion-icon {
+    font-size: 2rem;
+    color: rgba(79, 93, 90, 0.5);
+    margin-bottom: 4px;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: 'Newsreader', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--app-ink-deep);
+  }
+
+  &__hint {
+    margin: 0;
+    max-width: 34ch;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: rgba(79, 93, 90, 0.75);
+  }
+
+  &__reset {
+    margin-top: 12px;
+    padding: 8px 18px;
+    background: #396754;
+    border: 1px solid #2d5243;
+    border-radius: 50px;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(57, 103, 84, 0.2);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 3px rgba(57, 103, 84, 0.2);
+    }
+  }
+}
+
+.filter-chip {
+  background: var(--app-surface-card);
+  border: 1px solid var(--card-border);
+  border-radius: 50px;
+  padding: 6px 14px;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(79, 93, 90, 0.64);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f7f1e3;
+    color: var(--app-ink-deep);
+  }
+
+  &.active {
+    background: #396754;
+    border-color: #2d5243;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(57, 103, 84, 0.2);
+  }
+}
+
+/*
+ * Reduced motion (audit F-31). Deliberately a blanket rule rather than a list of
+ * named animations: an allowlist goes stale the moment someone adds an effect
+ * and forgets to update it, and the failure mode of forgetting is motion shown
+ * to a user who asked for none. Nothing in this file animates information — the
+ * state a movement communicates is always also carried by colour, label or
+ * position.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

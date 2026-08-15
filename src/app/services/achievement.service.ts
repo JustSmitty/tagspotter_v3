@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { AchievementViewModel, GameSnapshot, GoalProgressViewModel } from '../models/game-state.model';
+import { getStateRegion, EAST_COAST_STATE_CODES, WEST_COAST_STATE_CODES } from '../constants/us-states';
+import { AchievementViewModel, GameSnapshot, GoalProgressViewModel, RotatingChallengeViewModel } from '../models/game-state.model';
 
 export type Achievement = AchievementViewModel;
 
@@ -8,12 +9,19 @@ interface AchievementDef extends Omit<AchievementViewModel, 'unlocked'> {
   getProgress: (snapshot: GameSnapshot) => { currentValue: number; targetValue: number; label: string; statusText?: string };
 }
 
+interface ChallengeDef {
+  id: string;
+  title: string;
+  description: string;
+  getProgress: (snapshot: GameSnapshot) => { currentValue: number; targetValue: number; label: string };
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AchievementService {
-  private readonly eastCoastStateCodes = new Set(['CT', 'DE', 'FL', 'GA', 'MA', 'MD', 'ME', 'NC', 'NH', 'NJ', 'NY', 'RI', 'SC', 'VA']);
-  private readonly westCoastStateCodes = new Set(['AK', 'CA', 'HI', 'OR', 'WA']);
+  private readonly eastCoastStateCodes = EAST_COAST_STATE_CODES;
+  private readonly westCoastStateCodes = WEST_COAST_STATE_CODES;
 
   private readonly ACHIEVEMENT_DEFINITIONS: AchievementDef[] = [
     {
@@ -33,7 +41,7 @@ export class AchievementService {
     {
       id: 'road-warrior',
       title: 'Road Warrior',
-      description: 'Travel over 5,000 cumulative miles.',
+      description: 'Build up 5,000 miles of total spotting range.',
       icon: 'car-outline',
       color: 'success',
       predicate: (s) => s.totalDistanceMiles >= 5000,
@@ -43,7 +51,7 @@ export class AchievementService {
         label: `${s.totalDistanceMiles.toLocaleString()} / 5,000 miles`,
         statusText: s.totalDistanceMiles >= 5000 
           ? 'Stamped and collected.' 
-          : `${(5000 - s.totalDistanceMiles).toLocaleString()} miles left on the odometer.`
+          : `${(5000 - s.totalDistanceMiles).toLocaleString()} more miles of range to go.`
       })
     },
     {
@@ -101,6 +109,56 @@ export class AchievementService {
     }
   ];
 
+  private readonly CHALLENGE_DEFINITIONS: ChallengeDef[] = [
+    {
+      id: 'midwest-run',
+      title: 'Midwest Run',
+      description: 'Spot three Midwest plates on this route.',
+      getProgress: (s) => {
+        const currentValue = s.states.filter((state) => state.fnd.stateFound && getStateRegion(state.Abbrv) === 'midwest').length;
+        return {
+          currentValue,
+          targetValue: 3,
+          label: `${Math.min(currentValue, 3)} / 3 Midwest plates`,
+        };
+      },
+    },
+    {
+      id: 'trivia-tune-up',
+      title: 'Trivia Tune-Up',
+      description: 'Bank six correct trivia answers.',
+      getProgress: (s) => ({
+        currentValue: s.totalCorrect,
+        targetValue: 6,
+        label: `${Math.min(s.totalCorrect, 6)} / 6 answers`,
+      }),
+    },
+    {
+      id: 'long-haul',
+      title: 'Long Haul',
+      description: 'Reach 1,000 miles of spotting range.',
+      getProgress: (s) => ({
+        currentValue: s.totalDistanceMiles,
+        targetValue: 1000,
+        label: `${Math.min(s.totalDistanceMiles, 1000).toLocaleString()} / 1,000 miles`,
+      }),
+    },
+    {
+      id: 'coastal-color',
+      title: 'Coastal Color',
+      description: 'Collect one plate from either coast.',
+      getProgress: (s) => {
+        const currentValue = s.states.some((state) => state.fnd.stateFound
+          && (this.eastCoastStateCodes.has(state.Abbrv) || this.westCoastStateCodes.has(state.Abbrv))) ? 1 : 0;
+        return {
+          currentValue,
+          targetValue: 1,
+          label: `${currentValue} / 1 coast plate`,
+        };
+      },
+    },
+  ];
+
   getAchievements(snapshot: GameSnapshot): Achievement[] {
     return this.ACHIEVEMENT_DEFINITIONS.map((def) => ({
       id: def.id,
@@ -131,6 +189,30 @@ export class AchievementService {
     });
   }
 
+  getRotatingChallenges(snapshot: GameSnapshot, today = new Date()): RotatingChallengeViewModel[] {
+    const startIndex = this.getDayOfYear(today) % this.CHALLENGE_DEFINITIONS.length;
+    const rotated = [
+      ...this.CHALLENGE_DEFINITIONS.slice(startIndex),
+      ...this.CHALLENGE_DEFINITIONS.slice(0, startIndex),
+    ];
+
+    return rotated.slice(0, 3).map((def) => {
+      const progress = def.getProgress(snapshot);
+      const cappedCurrent = Math.min(progress.currentValue, progress.targetValue);
+
+      return {
+        id: def.id,
+        title: def.title,
+        description: def.description,
+        currentValue: progress.currentValue,
+        targetValue: progress.targetValue,
+        progressPercent: (cappedCurrent / progress.targetValue) * 100,
+        progressLabel: progress.label,
+        unlocked: progress.currentValue >= progress.targetValue,
+      };
+    });
+  }
+
   private hasBothCoasts(s: GameSnapshot): boolean {
     const east = s.states.some(st => st.fnd.stateFound && this.eastCoastStateCodes.has(st.Abbrv));
     const west = s.states.some(st => st.fnd.stateFound && this.westCoastStateCodes.has(st.Abbrv));
@@ -147,5 +229,12 @@ export class AchievementService {
     }
 
     return 'One West Coast plate will finish this route.';
+  }
+
+  private getDayOfYear(date: Date): number {
+    const start = Date.UTC(date.getUTCFullYear(), 0, 0);
+    const current = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+
+    return Math.floor((current - start) / 86_400_000);
   }
 }

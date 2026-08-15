@@ -105,7 +105,7 @@
         "Bird": "California Valley Quail",
         "Flower": "Golden Poppy",
         "Nickname": "Golden State",
-        "flagURL": "/assets/stateflags/California.svg",
+        "flagURL": "/assets/stateflags/California.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -153,7 +153,7 @@
         "Bird": "Robin",
         "Flower": "Mountain Laurel",
         "Nickname": "Constitution State",
-        "flagURL": "/assets/stateflags/Connecticut.svg",
+        "flagURL": "/assets/stateflags/Connecticut.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -177,7 +177,7 @@
         "Bird": "Blue Hen Chicken",
         "Flower": "Peach Blossom",
         "Nickname": "Diamond State; First State",
-        "flagURL": "/assets/stateflags/Delaware.svg",
+        "flagURL": "/assets/stateflags/Delaware.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -225,7 +225,7 @@
         "Bird": "Mockingbird",
         "Flower": "Orange Blossom",
         "Nickname": "Sunshine State",
-        "flagURL": "/assets/stateflags/Florida.svg",
+        "flagURL": "/assets/stateflags/Florida.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -297,7 +297,7 @@
         "Bird": "Mountain Bluebird",
         "Flower": "Syringa",
         "Nickname": "Gem State",
-        "flagURL": "/assets/stateflags/Idaho.svg",
+        "flagURL": "/assets/stateflags/Idaho.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -321,7 +321,7 @@
         "Bird": "Cardinal",
         "Flower": "Violet",
         "Nickname": "Prairie State",
-        "flagURL": "/assets/stateflags/Illinois.svg",
+        "flagURL": "/assets/stateflags/Illinois.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -369,7 +369,7 @@
         "Bird": "Eastern Goldfinch",
         "Flower": "Wild Rose",
         "Nickname": "Hawkeye State",
-        "flagURL": "/assets/stateflags/Iowa.svg",
+        "flagURL": "/assets/stateflags/Iowa.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -393,7 +393,7 @@
         "Bird": "Western Meadowlark",
         "Flower": "Sunflower",
         "Nickname": "Sunflower State; Jayhawk State",
-        "flagURL": "/assets/stateflags/Kansas.svg",
+        "flagURL": "/assets/stateflags/Kansas.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -417,7 +417,7 @@
         "Bird": "Cardinal",
         "Flower": "Goldenrod",
         "Nickname": "Bluegrass State",
-        "flagURL": "/assets/stateflags/Kentucky.svg",
+        "flagURL": "/assets/stateflags/Kentucky.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -441,7 +441,7 @@
         "Bird": "Eastern Brown Pelican",
         "Flower": "Magnolia",
         "Nickname": "Pelican State",
-        "flagURL": "/assets/stateflags/Louisiana.svg",
+        "flagURL": "/assets/stateflags/Louisiana.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -465,7 +465,7 @@
         "Bird": "Chickadee",
         "Flower": "White Pine Cone and Tassel",
         "Nickname": "Pine Tree State",
-        "flagURL": "/assets/stateflags/Maine.svg",
+        "flagURL": "/assets/stateflags/Maine.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -513,7 +513,7 @@
         "Bird": "Chickadee",
         "Flower": "Mayflower",
         "Nickname": "Bay State; Old Colony State",
-        "flagURL": "/assets/stateflags/Massachusetts.svg",
+        "flagURL": "/assets/stateflags/Massachusetts.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -537,7 +537,7 @@
         "Bird": "American Robin",
         "Flower": "Apple Blossom",
         "Nickname": "Wolverine State",
-        "flagURL": "/assets/stateflags/Michigan.svg",
+        "flagURL": "/assets/stateflags/Michigan.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -561,7 +561,7 @@
         "Bird": "Common Loon",
         "Flower": "Lady Slipper",
         "Nickname": "North Star State; Gopher State;  Land of 10,000 Lakes",
-        "flagURL": "/assets/stateflags/Minnesota.svg",
+        "flagURL": "/assets/stateflags/Minnesota.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -609,7 +609,7 @@
         "Bird": "Bluebird",
         "Flower": "Hawthorn",
         "Nickname": "Show-me State",
-        "flagURL": "/assets/stateflags/Missouri.svg",
+        "flagURL": "/assets/stateflags/Missouri.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -633,7 +633,7 @@
         "Bird": "Western Meadowlark",
         "Flower": "Bitterroot",
         "Nickname": "Treasure State",
-        "flagURL": "/assets/stateflags/Montana.svg",
+        "flagURL": "/assets/stateflags/Montana.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -657,7 +657,7 @@
         "Bird": "Western Meadowlark",
         "Flower": "Goldenrod",
         "Nickname": "Cornhusker State; Beef State",
-        "flagURL": "/assets/stateflags/Nebraska.svg",
+        "flagURL": "/assets/stateflags/Nebraska.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -681,7 +681,7 @@
         "Bird": "Mountain Bluebird",
         "Flower": "Sagebrush",
         "Nickname": "Sagebrush State; Silver State; Battle Born State",
-        "flagURL": "/assets/stateflags/Nevada.svg",
+        "flagURL": "/assets/stateflags/Nevada.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -705,7 +705,7 @@
         "Bird": "Purple Finch",
         "Flower": "Purple Lilac",
         "Nickname": "Granite State",
-        "flagURL": "/assets/stateflags/New Hampshire.svg",
+        "flagURL": "/assets/stateflags/New Hampshire.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -729,7 +729,7 @@
         "Bird": "Eastern Goldfinch",
         "Flower": "Purple Violet",
         "Nickname": "Garden State",
-        "flagURL": "/assets/stateflags/New Jersey.svg",
+        "flagURL": "/assets/stateflags/New Jersey.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -777,7 +777,7 @@
         "Bird": "Bluebird",
         "Flower": "Rose",
         "Nickname": "Empire State",
-        "flagURL": "/assets/stateflags/New York.svg",
+        "flagURL": "/assets/stateflags/New York.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -825,7 +825,7 @@
         "Bird": "Western Meadowlark",
         "Flower": "Wild Prairie Rose",
         "Nickname": "Sioux State; Flickertail State; Peace Garden State; Rough Rider State",
-        "flagURL": "/assets/stateflags/North Dakota.svg",
+        "flagURL": "/assets/stateflags/North Dakota.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -873,7 +873,7 @@
         "Bird": "Scissor-tailed Flycatcher",
         "Flower": "Mistletoe",
         "Nickname": "Sooner State",
-        "flagURL": "/assets/stateflags/Oklahoma.svg",
+        "flagURL": "/assets/stateflags/Oklahoma.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -921,7 +921,7 @@
         "Bird": "Ruffed Grouse",
         "Flower": "Mountain Laurel",
         "Nickname": "Keystone State",
-        "flagURL": "/assets/stateflags/Pennsylvania.svg",
+        "flagURL": "/assets/stateflags/Pennsylvania.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -993,7 +993,7 @@
         "Bird": "Ring-Necked Pheasant",
         "Flower": "American Pasqueflower",
         "Nickname": "Mount Rushmore State; Coyote State",
-        "flagURL": "/assets/stateflags/South Dakota.svg",
+        "flagURL": "/assets/stateflags/South Dakota.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -1065,7 +1065,7 @@
         "Bird": "Common American Gull",
         "Flower": "Sego Lily",
         "Nickname": "Beehive State",
-        "flagURL": "/assets/stateflags/Utah.svg",
+        "flagURL": "/assets/stateflags/Utah.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -1089,7 +1089,7 @@
         "Bird": "Hermit Thrush",
         "Flower": "Red Clover",
         "Nickname": "Green Mountain State",
-        "flagURL": "/assets/stateflags/Vermont.svg",
+        "flagURL": "/assets/stateflags/Vermont.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -1113,7 +1113,7 @@
         "Bird": "Cardinal",
         "Flower": "American Dogwood",
         "Nickname": "The Old Dominion; Mother of Presidents",
-        "flagURL": "/assets/stateflags/Virginia.svg",
+        "flagURL": "/assets/stateflags/Virginia.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -1137,7 +1137,7 @@
         "Bird": "Willow Goldfinch",
         "Flower": "Coast Rhododendron",
         "Nickname": "Evergreen State",
-        "flagURL": "/assets/stateflags/Washington.svg",
+        "flagURL": "/assets/stateflags/Washington.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -1161,7 +1161,7 @@
         "Bird": "Cardinal",
         "Flower": "Rhododendron",
         "Nickname": "Mountain State",
-        "flagURL": "/assets/stateflags/West Virginia.svg",
+        "flagURL": "/assets/stateflags/West Virginia.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,
@@ -1185,7 +1185,7 @@
         "Bird": "Robin",
         "Flower": "Wood Violet",
         "Nickname": "Badger State",
-        "flagURL": "/assets/stateflags/Wisconsin.svg",
+        "flagURL": "/assets/stateflags/Wisconsin.webp",
         "fnd": {
             "distance": 0,
             "stateFound": false,

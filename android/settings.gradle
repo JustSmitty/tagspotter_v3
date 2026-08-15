@@ -1,3 +1,10 @@
+// Auto-provisions the exact JDK toolchains required by the build (e.g. the
+// JDK 21 that @capacitor/geolocation requests). Lets the build succeed on any
+// machine or CI without a matching JDK pre-installed. Must precede other config.
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
 include ':app'
 include ':capacitor-cordova-android-plugins'
 project(':capacitor-cordova-android-plugins').projectDir = new File('./capacitor-cordova-android-plugins/')
