@@ -268,8 +268,37 @@ function runGuardrail(guardrail) {
 
 // ----------------------------------------------------------------- suites
 
+/**
+ * Which skills are vendored, decided from skills-lock.json and .agents/skills
+ * rather than from a filesystem symlink check.
+ *
+ * The vendored skills are symlinks in a local Windows checkout, but git stored
+ * them as regular files (mode 100644), so `isSymbolicLink()` answered true on
+ * the author's machine and false in CI — where the four unrouted vendored
+ * skills were then treated as project-owned and failed the "registered" check.
+ * The lockfile is the actual definition of vendored and is the same everywhere.
+ */
+function vendoredSkillNames() {
+  const names = new Set();
+
+  const lockPath = join(ROOT, 'skills-lock.json');
+  if (existsSync(lockPath)) {
+    const lock = JSON.parse(readFileSync(lockPath, 'utf8'));
+    for (const name of Object.keys(lock.skills ?? {})) names.add(name);
+  }
+
+  const vendoredDir = join(ROOT, '.agents', 'skills');
+  if (existsSync(vendoredDir)) {
+    for (const entry of readdirSync(vendoredDir)) names.add(entry);
+  }
+
+  return names;
+}
+
 function loadSkills() {
   if (!existsSync(SKILLS_DIR)) return [];
+  const vendored = vendoredSkillNames();
+
   return readdirSync(SKILLS_DIR)
     .map((entry) => {
       const skillPath = join(SKILLS_DIR, entry, 'SKILL.md');
@@ -278,7 +307,7 @@ function loadSkills() {
       const head = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw)?.[1] ?? '';
       return {
         dir: entry,
-        vendored: lstatSync(join(SKILLS_DIR, entry)).isSymbolicLink(),
+        vendored: vendored.has(entry),
         name: /^name:\s*(.+)$/m.exec(head)?.[1]?.trim(),
         description: /^description:\s*([\s\S]+?)(?:\n[a-z_-]+:|$)/m.exec(head)?.[1]?.trim(),
         body: raw,
