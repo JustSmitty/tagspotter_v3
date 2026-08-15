@@ -1,5 +1,12 @@
 :host {
-  --page-header-gradient: linear-gradient(180deg, rgba(253, 250, 233, 0.98) 0%, rgba(253, 250, 233, 0.92) 75%, rgba(253, 250, 233, 0) 100%);
+  /* Built from the RGB component so the header scrim fades into whichever page
+     colour is current, instead of always fading into daylight cream. */
+  --page-header-gradient: linear-gradient(
+    180deg,
+    rgba(var(--app-bg-cream-rgb), 0.98) 0%,
+    rgba(var(--app-bg-cream-rgb), 0.92) 75%,
+    rgba(var(--app-bg-cream-rgb), 0) 100%
+  );
   --section-header-padding: 16px 20px 10px;
   --section-label-font: 'Newsreader', serif;
   --section-label-style: italic;
@@ -530,10 +537,14 @@ button:disabled {
   gap: 12px;
   margin: 16px 20px 24px;
   padding: 16px;
-  background: linear-gradient(145deg, rgba(255, 247, 236, 0.98) 0%, rgba(247, 239, 219, 0.94) 100%);
+  /* Chrome, not ephemera: this holds the search field and the region filters, so
+     it inverts with the theme. The cream literal it used to carry left a bright
+     slab across the foot of the dark page — which is most of why the tabs read
+     as heavy in dark mode. */
+  background: linear-gradient(145deg, var(--app-surface-card) 0%, var(--app-surface-paper) 100%);
   border-radius: 8px;
-  border: 1px solid rgba(79, 93, 90, 0.15);
-  box-shadow: 0 4px 12px rgba(71, 51, 28, 0.08);
+  border: 1px solid var(--app-border-soft);
+  box-shadow: var(--app-shadow-paper);
 }
 
 .search-input-wrapper {
@@ -615,8 +626,8 @@ button:disabled {
   gap: 6px;
   margin: 8px 4px;
   padding: 32px 24px;
-  background: linear-gradient(145deg, rgba(255, 247, 236, 0.9) 0%, rgba(247, 239, 219, 0.86) 100%);
-  border: 1px dashed rgba(79, 93, 90, 0.4);
+  background: linear-gradient(145deg, var(--app-surface-card) 0%, var(--app-surface-paper) 100%);
+  border: 1px dashed var(--app-border-soft);
   border-radius: 10px;
 
   ion-icon {

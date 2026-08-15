@@ -86,7 +86,11 @@
   /** chrome accents that must invert with the theme **/
   --app-nav-ink: #396754;
   --app-thread: #5d4037;
-  --app-tag-hole: #2c3e50;
+  /* The punched hole in each luggage tag. Was #2c3e50 — a cold slate navy, and
+     the only colour in the bottom nav that came from outside the Americana
+     palette, which made four small dark dots read as heavier than they are.
+     Warm brown sits in the same family as --app-thread just above it. */
+  --app-tag-hole: #6f5b45;
   --app-texture-line: rgba(150, 110, 60, 0.08);
   --app-texture-opacity: 0.12;
 
