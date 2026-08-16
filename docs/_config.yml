@@ -15,6 +15,7 @@ description: Spot state plates, answer trivia, and collect all 50 states plus D.
 theme: jekyll-theme-minimal
 
 exclude:
+  - ads-rewarded-hint-plan.md
   - app-store-release.md
   - design_principles.md
   - remediation-plan.md
