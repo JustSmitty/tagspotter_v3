@@ -89,13 +89,17 @@ jobs:
           # the target ships nothing and still fails review, so assert it landed
           # inside the built .app rather than trusting the pbxproj edit.
           PRODUCTS="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos"
-          APP="$PRODUCTS/App.app"
 
-          if [ ! -d "$APP" ]; then
-            echo "::error::No App.app at $APP — the build layout changed."
+          # The bundle is "Tag Spotter.app", not "App.app": the Xcode TARGET is
+          # named App but PRODUCT_NAME is the display name. Match on the
+          # extension rather than a guessed filename, and mind the space — every
+          # expansion below has to stay quoted.
+          APP=$(find "$PRODUCTS" -maxdepth 1 -name '*.app' | head -1)
+
+          if [ -z "$APP" ] || [ ! -d "$APP" ]; then
+            echo "::error::No .app in $PRODUCTS — the build layout changed."
             echo "Contents of $PRODUCTS:"
             ls -la "$PRODUCTS" 2>/dev/null || echo "  (missing)"
-            find "$RUNNER_TEMP/DerivedData" -name '*.app' -maxdepth 6 2>/dev/null || true
             exit 1
           fi
 
