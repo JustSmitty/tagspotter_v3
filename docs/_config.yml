@@ -1,0 +1,24 @@
+# GitHub Pages config for the public Tag Spotter site.
+#
+# Serving from /docs publishes EVERYTHING in this folder by default, and most of
+# what lives here is internal: the remediation plan, release runbooks, design
+# principles, and the store metadata with its draft listing copy. A Pages site is
+# public even when the repository is private, so those are excluded explicitly
+# rather than left to chance.
+#
+# Only index.md and privacy-policy.md are meant to be reachable. Anything new
+# added to docs/ is published unless it is listed below — check this file when
+# adding docs.
+
+title: Tag Spotter
+description: Spot state plates, answer trivia, and collect all 50 states plus D.C.
+theme: jekyll-theme-minimal
+
+exclude:
+  - app-store-release.md
+  - design_principles.md
+  - remediation-plan.md
+  - store-assets-checklist.md
+  - store-submission.md
+  - store-metadata.app-store-connect.json
+  - store-metadata.google-play.json

@@ -300,7 +300,7 @@
     },
     {
       "id": "store-placeholder-urls",
-      "title": "Store metadata still points at example.com",
+      "title": "Store metadata still contains example.com placeholders",
       "finding": "F-44",
       "phase": 6,
       "owner": "tagspotter-release",
@@ -308,10 +308,10 @@
       "include": [
         "docs/store-metadata.*.json"
       ],
-      "pattern": "https?://(www\\.)?example\\.(com|org)",
-      "baseline": 5,
-      "measuredAt": "2026-08-15",
-      "note": "Google Play and App Store Connect both reject a listing whose privacy policy URL does not resolve. Replace all five, then drop this baseline to 0."
+      "pattern": "example\\.(com|org)",
+      "baseline": 1,
+      "measuredAt": "2026-08-16",
+      "note": "Five URLs now point at GitHub Pages and the issue tracker. The one remaining is contactEmail, which Google Play shows publicly on the store listing. Drop this baseline to 0 once a real address is set."
     },
     {
       "id": "debug-keystore-in-release",
