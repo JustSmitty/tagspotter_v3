@@ -300,18 +300,19 @@
     },
     {
       "id": "store-placeholder-urls",
-      "title": "Store metadata still contains example.com placeholders",
+      "title": "No example.com placeholders in anything published to a store",
       "finding": "F-44",
       "phase": 6,
       "owner": "tagspotter-release",
       "type": "regex-scan",
       "include": [
-        "docs/store-metadata.*.json"
+        "docs/store-metadata.*.json",
+        "docs/privacy-policy.md"
       ],
       "pattern": "example\\.(com|org)",
-      "baseline": 1,
+      "baseline": 0,
       "measuredAt": "2026-08-16",
-      "note": "Five URLs now point at GitHub Pages and the issue tracker. The one remaining is contactEmail, which Google Play shows publicly on the store listing. Drop this baseline to 0 once a real address is set."
+      "note": "All URLs and the contact address are real and live. The privacy policy is served at https://justsmitty.github.io/tagspotter_v3/privacy-policy.html, which is the URL in both store metadata files, so a placeholder reappearing here is publicly visible immediately."
     },
     {
       "id": "debug-keystore-in-release",
