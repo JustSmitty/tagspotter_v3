@@ -69,6 +69,12 @@ testem.log
 /android/app/release
 *.jks
 *.keystore
+# The keystore binary was already ignored, but the properties file beside it
+# holds storePassword and keyPassword in plaintext and was not. Committing it
+# leaks the signing credentials for every release the app will ever publish,
+# and a leaked upload key cannot be rotated without Google's intervention.
+/android/keystore.properties
+/secrets/
 /ios/App/build
 /ios/App/DerivedData
 **/xcuserdata/
