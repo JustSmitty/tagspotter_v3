@@ -1,5 +1,5 @@
 :host {
-  --page-header-gradient: linear-gradient(180deg, var(--app-surface-paper) 0%, rgba(253, 250, 233, 0.88) 85%, rgba(253, 250, 233, 0) 100%);
+  --page-header-gradient: linear-gradient(180deg, var(--app-surface-paper) 0%, rgba(var(--app-bg-cream-rgb), 0.88) 85%, rgba(var(--app-bg-cream-rgb), 0) 100%);
   --section-header-padding: 24px 4px 12px;
   --section-rule-opacity: 0.15;
   --section-label-font: 'Work Sans', sans-serif;
