@@ -4,15 +4,24 @@ name: CI
 # plan self-enforcing: guardrail counts may fall, never rise.
 
 on:
+  # Each commit on a PR branch used to match BOTH of these — push on '**' and
+  # pull_request — so every PR built twice. Harmless on Linux, but the same
+  # pattern on the macOS runner in ios.yml would burn minutes at 10x.
+  #
+  # Narrowed to master: pull_request covers the branch while it is in review,
+  # push covers the merge commit. The trade is that pushing a branch with no PR
+  # open gets no CI — acceptable here, where everything lands through one.
   push:
-    branches: ['**']
+    branches: [master]
   pull_request:
     # master, not main: the default branch was renamed and this trigger was left
-    # pointing at a branch that no longer exists, so no pull_request run has
-    # fired since. Only the push trigger above was keeping CI honest.
+    # pointing at a branch that no longer existed, so no pull_request run fired
+    # for weeks. Only the push trigger was keeping CI honest.
     branches: [master]
 
 concurrency:
+  # github.ref is refs/pull/N/merge for pull_request events and refs/heads/master
+  # for pushes, so a PR's own runs still supersede each other as commits land.
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
