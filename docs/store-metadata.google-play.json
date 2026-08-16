@@ -7,8 +7,8 @@
   "category": "GAME_TRIVIA",
   "contentRatingDraft": "Everyone",
   "contactEmail": "support@example.com",
-  "privacyPolicyUrl": "https://example.com/tagspotter/privacy-policy",
-  "website": "https://example.com/tagspotter",
+  "privacyPolicyUrl": "https://justsmitty.github.io/tagspotter_v3/privacy-policy.html",
+  "website": "https://justsmitty.github.io/tagspotter_v3/",
   "dataSafety": {
     "locationCollected": false,
     "locationProcessedOnDevice": true,

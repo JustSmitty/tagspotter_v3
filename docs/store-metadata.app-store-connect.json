@@ -14,7 +14,7 @@
     "trivia",
     "states"
   ],
-  "supportUrl": "https://example.com/tagspotter/support",
-  "marketingUrl": "https://example.com/tagspotter",
-  "privacyPolicyUrl": "https://example.com/tagspotter/privacy-policy"
+  "supportUrl": "https://github.com/JustSmitty/tagspotter_v3/issues",
+  "marketingUrl": "https://justsmitty.github.io/tagspotter_v3/",
+  "privacyPolicyUrl": "https://justsmitty.github.io/tagspotter_v3/privacy-policy.html"
 }

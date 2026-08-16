@@ -1,6 +1,10 @@
+---
+title: Tag Spotter Privacy Policy
+---
+
 # Tag Spotter Privacy Policy
 
-Last updated: March 25, 2026
+Last updated: August 16, 2026
 
 ## Overview
 
