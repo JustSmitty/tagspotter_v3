@@ -60,37 +60,53 @@ jobs:
       - name: Compile for device, no signing
         run: |
           set -o pipefail
+          # Pin DerivedData rather than letting Xcode pick a hashed path under
+          # ~/Library. The next step has to find the built .app, and searching
+          # for it found nothing on the first real run even though the build
+          # succeeded — guessing at Xcode's output location is not worth it when
+          # the flag exists.
+          #
+          # xcpretty is preinstalled on GitHub's macOS images, but fall back to
+          # cat rather than re-running the whole build if it ever is not:
+          # a second xcodebuild is a slow way to fail on a 10x-billed runner.
+          FORMAT=cat
+          command -v xcpretty >/dev/null 2>&1 && FORMAT=xcpretty
           xcodebuild build \
             -project "$PROJECT" \
             -scheme "$SCHEME" \
             -configuration Release \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            | xcpretty || xcodebuild build \
-              -project "$PROJECT" \
-              -scheme "$SCHEME" \
-              -configuration Release \
-              -sdk iphoneos \
-              -destination 'generic/platform=iOS' \
-              CODE_SIGNING_ALLOWED=NO \
-              CODE_SIGNING_REQUIRED=NO \
-              CODE_SIGN_IDENTITY=""
+            | "$FORMAT"
 
       - name: Confirm the privacy manifest is in the bundle
         run: |
           # A PrivacyInfo.xcprivacy that exists in the repo but was never added to
           # the target ships nothing and still fails review, so assert it landed
           # inside the built .app rather than trusting the pbxproj edit.
-          APP=$(find ~/Library/Developer/Xcode/DerivedData -name 'App.app' -type d | head -1)
+          PRODUCTS="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos"
+          APP="$PRODUCTS/App.app"
+
+          if [ ! -d "$APP" ]; then
+            echo "::error::No App.app at $APP — the build layout changed."
+            echo "Contents of $PRODUCTS:"
+            ls -la "$PRODUCTS" 2>/dev/null || echo "  (missing)"
+            find "$RUNNER_TEMP/DerivedData" -name '*.app' -maxdepth 6 2>/dev/null || true
+            exit 1
+          fi
+
           echo "built app: $APP"
           if [ -f "$APP/PrivacyInfo.xcprivacy" ]; then
-            echo "PrivacyInfo.xcprivacy present"
+            echo "PrivacyInfo.xcprivacy present in the bundle"
             plutil -p "$APP/PrivacyInfo.xcprivacy"
           else
             echo "::error::PrivacyInfo.xcprivacy missing from the built bundle — check the App target's Copy Bundle Resources phase"
+            echo "Bundle contents:"
+            ls -la "$APP"
             exit 1
           fi
 
