@@ -24,7 +24,8 @@
     "version:sync": "node scripts/bump-version.mjs --sync",
     "version:bump": "node scripts/bump-version.mjs",
     "release:aab": "npm.cmd run build:mobile && cd android && gradlew.bat bundleRelease",
-    "release:apk": "npm.cmd run build:mobile && cd android && gradlew.bat assembleRelease"
+    "release:apk": "npm.cmd run build:mobile && cd android && gradlew.bat assembleRelease",
+    "assets:store": "node scripts/make-store-graphics.mjs"
   },
   "private": true,
   "dependencies": {
