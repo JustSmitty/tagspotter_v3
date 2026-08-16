@@ -30,11 +30,68 @@
 - Use version code increments for every Play upload.
 - Upload an `.aab`, not an `.apk`, to Google Play.
 
+## Versioning
+
+Never hand-edit the three places a version lives. Use the script:
+
+```bash
+npm run version:check     # report package.json / android / ios, non-zero on drift
+npm run version:sync      # align ios to the current version without bumping
+npm run version:bump -- minor   # or major / patch / build; always bumps versionCode
+```
+
+`guardrail:version-parity` enforces all three agreeing. iOS sat at `1.0.0 / 1` while Android was at
+`1.1.0 / 3` precisely because the guardrail used to check only two of them.
+
 ## iOS signing notes
 
 - Use the `com.tagspotter.app` bundle identifier for the App Store record.
-- Increment `MARKETING_VERSION` for customer-visible releases and `CURRENT_PROJECT_VERSION` for each archive.
-- Verify the archive uses Release configuration and automatic or explicit signing before upload.
+- `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` are maintained by `npm run version:bump`.
+- Verify the archive uses Release configuration and explicit signing before upload.
+
+### Building iOS without a Mac
+
+Development happens on Windows, so `.github/workflows/ios.yml` is the build machine. It runs on
+`macos-latest` and is **not** triggered by ordinary pushes — GitHub bills macOS runners at 10x, which
+would drain a private repo's free minutes in days. Trigger it from the Actions tab, or by pushing a
+`v*` tag.
+
+Two jobs:
+
+| Job | Needs secrets | What it does |
+| --- | --- | --- |
+| `compile` | no | Builds for device with signing disabled, then asserts `PrivacyInfo.xcprivacy` is actually inside the built `.app` |
+| `archive` | yes | Signed archive, exports an `.ipa`, uploads it as a build artifact |
+
+The App Store Connect upload is a separate step gated on the `upload` input, so a tag push alone
+never sends a build to Apple.
+
+**Required repository secrets** (Settings → Secrets and variables → Actions). Create these yourself —
+they are signing credentials and must never be committed or pasted into a chat:
+
+| Secret | What it is |
+| --- | --- |
+| `IOS_DIST_CERT_P12_BASE64` | Apple Distribution certificate, exported as .p12, base64-encoded |
+| `IOS_DIST_CERT_PASSWORD` | The password set when exporting that .p12 |
+| `IOS_PROVISIONING_PROFILE_BASE64` | App Store provisioning profile for `com.tagspotter.app`, base64-encoded |
+| `IOS_TEAM_ID` | 10-character Apple Developer Team ID |
+| `APPSTORE_API_KEY_ID` | App Store Connect API key id (upload step only) |
+| `APPSTORE_API_ISSUER_ID` | App Store Connect API issuer id (upload step only) |
+| `APPSTORE_API_PRIVATE_KEY_BASE64` | The `.p8` private key, base64-encoded (upload step only) |
+
+Base64 on macOS: `base64 -i cert.p12 | pbcopy`. On Windows:
+`[Convert]::ToBase64String([IO.File]::ReadAllBytes("cert.p12")) | Set-Clipboard`.
+
+> The workflow has never executed — it was written from a Windows machine with no way to run Xcode.
+> Expect the first run to need adjustment, and run it with `signed=false` first so the unsigned
+> compile job proves the project builds before signing is in the picture.
+
+## The shared scheme
+
+`ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme` is committed deliberately. Xcode writes
+schemes into `xcuserdata`, which is gitignored, so without a shared copy `xcodebuild -scheme App`
+fails on a clean checkout before compiling anything. If the Xcode project is ever regenerated, check
+that the scheme's `BlueprintIdentifier` still matches the App target.
 
 ## Release verification
 

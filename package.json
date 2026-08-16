@@ -19,7 +19,12 @@
     "assets:flags": "node scripts/optimize-flags.mjs",
     "cap:sync": "npx cap sync",
     "android:open": "npx cap open android",
-    "ios:open": "npx cap open ios"
+    "ios:open": "npx cap open ios",
+    "version:check": "node scripts/bump-version.mjs --check",
+    "version:sync": "node scripts/bump-version.mjs --sync",
+    "version:bump": "node scripts/bump-version.mjs",
+    "release:aab": "npm.cmd run build:mobile && cd android && gradlew.bat bundleRelease",
+    "release:apk": "npm.cmd run build:mobile && cd android && gradlew.bat assembleRelease"
   },
   "private": true,
   "dependencies": {

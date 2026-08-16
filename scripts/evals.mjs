@@ -169,6 +169,27 @@ const CUSTOM_CHECKS = {
       violations.push(`versionName '${versionName}' != package.json version '${pkg.version}'`);
     }
     if (!versionCode) violations.push('android/app/build.gradle: versionCode not found');
+
+    // iOS too. This check used to stop at Android, and iOS quietly sat at
+    // MARKETING_VERSION 1.0.0 / CURRENT_PROJECT_VERSION 1 while Android reached
+    // 1.1.0 / 3 — a guardrail covering two of the three places a version lives
+    // reports green while the third drifts.
+    const pbxproj = 'ios/App/App.xcodeproj/project.pbxproj';
+    if (existsSync(join(ROOT, pbxproj))) {
+      const pbx = readText(pbxproj);
+      const marketing = [...new Set([...pbx.matchAll(/MARKETING_VERSION = ([^;]+);/g)].map((m) => m[1].trim()))];
+      const build = [...new Set([...pbx.matchAll(/CURRENT_PROJECT_VERSION = ([^;]+);/g)].map((m) => m[1].trim()))];
+
+      for (const value of marketing) {
+        if (value !== pkg.version) {
+          violations.push(`ios MARKETING_VERSION '${value}' != package.json version '${pkg.version}'`);
+        }
+      }
+      if (versionCode && build.some((value) => value !== versionCode)) {
+        violations.push(`ios CURRENT_PROJECT_VERSION [${build.join(', ')}] != android versionCode '${versionCode}'`);
+      }
+    }
+
     return violations;
   },
 

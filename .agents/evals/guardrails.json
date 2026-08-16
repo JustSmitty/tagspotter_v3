@@ -297,6 +297,38 @@
       "type": "custom",
       "baseline": 0,
       "measuredAt": "2026-08-15"
+    },
+    {
+      "id": "store-placeholder-urls",
+      "title": "Store metadata still points at example.com",
+      "finding": "F-44",
+      "phase": 6,
+      "owner": "tagspotter-release",
+      "type": "regex-scan",
+      "include": [
+        "docs/store-metadata.*.json"
+      ],
+      "pattern": "https?://(www\\.)?example\\.(com|org)",
+      "baseline": 5,
+      "measuredAt": "2026-08-15",
+      "note": "Google Play and App Store Connect both reject a listing whose privacy policy URL does not resolve. Replace all five, then drop this baseline to 0."
+    },
+    {
+      "id": "debug-keystore-in-release",
+      "title": "Release signing must not reference the debug keystore",
+      "finding": "F-44",
+      "phase": 6,
+      "owner": "tagspotter-release",
+      "type": "regex-scan",
+      "include": [
+        "android/**/*.gradle",
+        "android/keystore.properties",
+        "fastlane/**/*"
+      ],
+      "pattern": "debug\\.keystore|androiddebugkey",
+      "baseline": 0,
+      "measuredAt": "2026-08-15",
+      "note": "Every build so far was signed with the debug keystore for on-device smoke tests, done by invoking apksigner directly and never by committing it. This keeps it that way: a debug key committed into the release signing path would produce an APK that installs fine and can never be updated on Play."
     }
   ]
 }

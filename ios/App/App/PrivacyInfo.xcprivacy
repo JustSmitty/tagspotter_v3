@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Tag Spotter — App Privacy Manifest
+
+  Required by App Store review. Two things are declared here, and both are
+  deliberately narrow:
+
+  1. NSPrivacyAccessedAPITypes — "required reason" APIs.
+
+     @capacitor/preferences stores the save file in UserDefaults and ships no
+     privacy manifest of its own (Capacitor core ships one, but it is empty), so
+     the declaration has to live at the app level or review will flag it.
+     Reason CA92.1 = access only to values written by this app itself, which is
+     exactly what the save file is.
+
+     Nothing else is declared, because nothing else is used. Capacitor's own
+     manifest asserts no required-reason APIs, and Geolocation, Haptics,
+     Keyboard, StatusBar and App do not touch the file-timestamp, disk-space or
+     active-keyboard categories. Over-declaring is not free: it invites questions
+     about APIs the app never calls.
+
+  2. NSPrivacyCollectedDataTypes — deliberately EMPTY.
+
+     Apple defines "collect" as transmitting data off the device. Tag Spotter
+     reads a single coarse location when a plate is marked as found, converts it
+     to a distance bonus, and discards it — the coordinates never enter app state
+     and there is no backend to send them to (see docs/privacy-policy.md and
+     dec-0009 on plain-JSON local saves). Location is *used*, not *collected*.
+
+     If a leaderboard or any sync is ever added, this array stops being empty and
+     the Play Data Safety answers change with it.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
