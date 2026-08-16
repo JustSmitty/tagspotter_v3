@@ -7,7 +7,10 @@ on:
   push:
     branches: ['**']
   pull_request:
-    branches: [main]
+    # master, not main: the default branch was renamed and this trigger was left
+    # pointing at a branch that no longer exists, so no pull_request run has
+    # fired since. Only the push trigger above was keeping CI honest.
+    branches: [master]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
