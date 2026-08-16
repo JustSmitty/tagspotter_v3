@@ -37,7 +37,7 @@ Tag Spotter is not designed to collect sensitive personal information. Parents a
 
 ## Contact
 
-Before publishing, replace this section with a real support email or support site.
+Questions about this policy, or about the app, are welcome.
 
-- Support email: `support@example.com`
-- Support website: `https://example.com/tagspotter`
+- Support email: [smittyapps@gmail.com](mailto:smittyapps@gmail.com)
+- Support site: [github.com/JustSmitty/tagspotter_v3/issues](https://github.com/JustSmitty/tagspotter_v3/issues)
