@@ -77,11 +77,16 @@
    * #e8703a in dark because it usually sits on the themed page, but the postcard
    * stays cream, so the brightened rust lands at 2.79:1 on it.
    *
-   * Same fixed value as the light-mode rust ink, which measures 5.01:1 on the
-   * postcard's paper. Third time this rule has been learned in one palette: a
-   * surface that does not change needs ink that does not change.
+   * Third time this rule has been learned in one palette: a surface that does
+   * not change needs ink that does not change.
+   *
+   * Slightly darker than --app-rust-ink, because the postcard is a *gradient*.
+   * Against its light end this measures 5.3:1, and #b34513 looked fine there —
+   * but the paper ramps down to rgb(233, 226, 207), where the same ink is
+   * 4.29:1. The checker only sampled the first colour stop until it was taught
+   * to walk all of them.
    */
-  --app-rust-on-ephemera: #b34513;
+  --app-rust-on-ephemera: #a63f11;
 
   /** chrome accents that must invert with the theme **/
   --app-nav-ink: #396754;

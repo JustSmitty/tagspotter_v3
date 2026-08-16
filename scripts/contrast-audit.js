@@ -54,14 +54,22 @@
 
   const rootBg = parse(getComputedStyle(document.body).backgroundColor) ?? { r: 253, g: 250, b: 233, a: 1 };
 
-  const layerOf = (node) => {
+  // Every colour stop in a gradient, not just the first. A card whose ramp runs
+  // from a themed dark surface to a hardcoded cream is legible at one end and
+  // blank at the other, and sampling stop one reports the readable end. That is
+  // how the Goals badge cards passed while "Find plates from both the East and
+  // West coasts" faded to nothing halfway across.
+  const gradientStops = (image) =>
+    (image.match(/rgba?\([^)]+\)/g) ?? []).map(parse).filter((c) => c && c.a > 0);
+
+  const layerOf = (node, stopIndex = 0) => {
     const cs = getComputedStyle(node);
     const solid = parse(cs.backgroundColor);
     if (solid && solid.a > 0) return solid;
     const image = cs.backgroundImage;
     if (image && image !== 'none' && /gradient/.test(image)) {
-      const firstStop = parse(image);
-      if (firstStop && firstStop.a > 0) return firstStop;
+      const stops = gradientStops(image);
+      if (stops.length) return stops[Math.min(stopIndex, stops.length - 1)];
     }
     // Ionic paints ion-button's fill on .button-native inside the shadow root,
     // so the host measures transparent and the climb sails past it to the page.
@@ -76,11 +84,11 @@
     return null;
   };
 
-  const backgroundOf = (el) => {
+  const backgroundOf = (el, stopIndex = 0) => {
     let node = el;
     let acc = null;
     while (node && node !== document.documentElement) {
-      const layer = layerOf(node);
+      const layer = layerOf(node, stopIndex);
       if (layer) {
         acc = acc ? over(acc, layer) : layer;
         if (acc.a >= 0.999) return acc;
@@ -94,6 +102,22 @@
     return acc ? over(acc, rootBg) : rootBg;
   };
 
+  /**
+   * The worst ground this text sits on.
+   *
+   * Text spans the width of its container, so it has to clear AA against every
+   * part of the gradient underneath it, not just wherever stop one happens to
+   * be. Four stops is plenty of resolution for the ramps in this app.
+   */
+  const groundsFor = (el) => {
+    const seen = new Map();
+    for (let i = 0; i < 4; i++) {
+      const bg = backgroundOf(el, i);
+      seen.set(`${Math.round(bg.r)},${Math.round(bg.g)},${Math.round(bg.b)}`, bg);
+    }
+    return [...seen.values()];
+  };
+
   const failures = [];
   document.querySelectorAll('body *').forEach((el) => {
     const ownText = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent.trim()).join('');
@@ -105,10 +129,17 @@
     const rawColor = parse(cs.color);
     if (!rawColor) return;
 
-    const bg = backgroundOf(el);
-    const fg = rawColor.a < 1 ? over(rawColor, bg) : rawColor;
-    const ratio = (Math.max(lum(fg.r, fg.g, fg.b), lum(bg.r, bg.g, bg.b)) + 0.05)
-      / (Math.min(lum(fg.r, fg.g, fg.b), lum(bg.r, bg.g, bg.b)) + 0.05);
+    let bg = null;
+    let ratio = Infinity;
+    for (const ground of groundsFor(el)) {
+      const fg = rawColor.a < 1 ? over(rawColor, ground) : rawColor;
+      const candidate = (Math.max(lum(fg.r, fg.g, fg.b), lum(ground.r, ground.g, ground.b)) + 0.05)
+        / (Math.min(lum(fg.r, fg.g, fg.b), lum(ground.r, ground.g, ground.b)) + 0.05);
+      if (candidate < ratio) {
+        ratio = candidate;
+        bg = ground;
+      }
+    }
 
     const px = parseFloat(cs.fontSize);
     const isLarge = px >= 24 || (+cs.fontWeight >= 700 && px >= 18.66);
