@@ -1,5 +1,5 @@
 {
-  "count": 26,
+  "count": 28,
   "records": [
     {
       "id": "audit-2026-08-15",
@@ -574,6 +574,56 @@
       ],
       "file": ".agents/brain/decisions/dec-0015-ink-follows-its-ground.md",
       "review_by": "2027-02-28"
+    },
+    {
+      "id": "dec-0016-iphone-only-ios",
+      "type": "decision",
+      "title": "The iOS app ships iPhone-only; iPad is not a target",
+      "status": "accepted",
+      "date": "2026-08-24",
+      "source": "file:ios/App/App.xcodeproj/project.pbxproj:316",
+      "confidence": "high",
+      "tags": [
+        "ios",
+        "release",
+        "store",
+        "capacitor"
+      ],
+      "claims": {
+        "ios-device-family": "iphone"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0005-portrait-only",
+        "dec-0017-manual-signing-in-ci"
+      ],
+      "file": ".agents/brain/decisions/dec-0016-iphone-only-ios.md",
+      "review_by": "2027-08-24"
+    },
+    {
+      "id": "dec-0017-manual-signing-in-ci",
+      "type": "decision",
+      "title": "The iOS archive signs manually with an installed profile, never automatically",
+      "status": "accepted",
+      "date": "2026-08-24",
+      "source": "file:.github/workflows/ios.yml:228",
+      "confidence": "medium",
+      "tags": [
+        "ios",
+        "ci",
+        "signing",
+        "release"
+      ],
+      "claims": {
+        "ios-ci-signing": "manual-explicit"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0003-windows-dev-commands",
+        "dec-0016-iphone-only-ios"
+      ],
+      "file": ".agents/brain/decisions/dec-0017-manual-signing-in-ci.md",
+      "review_by": "2027-02-24"
     },
     {
       "id": "f-042-contrast-debt",

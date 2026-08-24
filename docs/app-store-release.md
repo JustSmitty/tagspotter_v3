@@ -4,11 +4,13 @@
 
 - Node.js and npm
 - Android Studio with the Android SDK
-- A macOS machine with Xcode for iOS archives and App Store uploads
+- A macOS machine with Xcode for iOS archives and App Store uploads — or none, and the iOS workflow
+  below does it (development here is Windows-only)
 - A Google Play Console app and Apple Developer app record created with the bundle ID `com.tagspotter.app`
 - Release signing material kept outside the repo:
   - Android upload keystore and passwords
-  - Apple signing certificate and provisioning profile or automatic signing access
+  - Apple distribution certificate and an App Store provisioning profile for `com.tagspotter.app`
+    (CI signs manually — `dec-0017` — so automatic signing access is not a substitute)
 - Store metadata source files in this repo:
   - `docs/store-metadata.google-play.json`
   - `docs/store-metadata.app-store-connect.json`
@@ -26,7 +28,14 @@
 ## Android signing notes
 
 - Keep the upload keystore outside the repo and configure it locally in Android Studio or Gradle properties.
-- Copy `android/keystore.properties.example` to `keystore.properties` at the repo root and replace the placeholder values before building a signed release locally.
+- Copy `android/keystore.properties.example` to `android/keystore.properties` — **not** the repo
+  root. Gradle reads it with `rootProject.file()` from the `:app` subproject, where `rootProject` is
+  `android/`, so paths inside it resolve relative to `android/` too.
+- **Back the upload keystore up somewhere off this machine before the first Play upload.** Both
+  `secrets/` and `android/keystore.properties` are gitignored, by design, which means the only copy
+  of the signing key is on one Windows box. Lose it before that first upload enrols the app in Play
+  App Signing and `com.tagspotter.app` is unusable forever; lose it after, and it takes an upload-key
+  reset request to Google.
 - Use version code increments for every Play upload.
 - Upload an `.aab`, not an `.apk`, to Google Play.
 
@@ -48,6 +57,17 @@ npm run version:bump -- minor   # or major / patch / build; always bumps version
 - Use the `com.tagspotter.app` bundle identifier for the App Store record.
 - `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` are maintained by `npm run version:bump`.
 - Verify the archive uses Release configuration and explicit signing before upload.
+- The target is **iPhone-only** (`TARGETED_DEVICE_FAMILY = "1"`, `dec-0016`), so App Store Connect
+  wants an iPhone screenshot set and no iPad set at all. `guardrail:ios-ipad-target` fails the build
+  if a regenerated Xcode project quietly restores Capacitor's universal default.
+- `Info.plist` answers export compliance up front (`ITSAppUsesNonExemptEncryption = false`), so
+  builds do not sit in "Missing Compliance" waiting for a human. Adding encryption to the app means
+  revisiting that key, not deleting it.
+- CI signs **manually** against the installed profile, overriding the project's
+  `CODE_SIGN_STYLE = Automatic` on the `xcodebuild` command line — `dec-0017` explains why automatic
+  signing cannot work on a runner. `IOS_PROVISIONING_PROFILE_BASE64` must therefore be an **App
+  Store distribution** profile for `com.tagspotter.app`; the workflow reads the profile's own name
+  and UUID out of it and stops early if the bundle id does not match.
 
 ### Building iOS without a Mac
 
@@ -82,9 +102,12 @@ they are signing credentials and must never be committed or pasted into a chat:
 Base64 on macOS: `base64 -i cert.p12 | pbcopy`. On Windows:
 `[Convert]::ToBase64String([IO.File]::ReadAllBytes("cert.p12")) | Set-Clipboard`.
 
-> The workflow has never executed — it was written from a Windows machine with no way to run Xcode.
-> Expect the first run to need adjustment, and run it with `signed=false` first so the unsigned
-> compile job proves the project builds before signing is in the picture.
+> **Status.** The unsigned `compile` job has run green on `macos-latest`, so the Xcode project
+> itself builds. The `archive` job has **never run** — it is skipped when the signing secrets are
+> absent, and the repository has none yet. Everything about the signed path is reasoned from a
+> Windows machine rather than observed, so expect the first signed dispatch to need adjustment.
+> Order of dispatch: `signed=false` first whenever the project changed, then `signed=true` with
+> `upload=false`, and only then `upload=true`.
 
 ## The shared scheme
 
