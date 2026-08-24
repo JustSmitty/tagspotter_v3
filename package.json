@@ -1,6 +1,6 @@
 {
   "name": "tagspotter",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "Tag Spotter",
   "scripts": {
     "ng": "ng",

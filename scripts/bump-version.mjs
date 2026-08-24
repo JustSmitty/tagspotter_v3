@@ -9,10 +9,12 @@
  *   node scripts/bump-version.mjs --sync     align iOS to the current version, no bump
  *   node scripts/bump-version.mjs --check    report only, change nothing
  *
- * Three files have to move together or the build is wrong in a way nobody
+ * Four files have to move together or the build is wrong in a way nobody
  * notices until Play rejects the upload:
  *
  *   package.json            version          (the source of truth)
+ *   package-lock.json       version x2       (npm rewrites it on the next install
+ *                                             otherwise, as drift in an unrelated diff)
  *   android/app/build.gradle versionName     (must equal it — guardrail:version-parity)
  *   android/app/build.gradle versionCode     (must be strictly greater than the
  *                                             last upload, forever, per Play)
@@ -26,6 +28,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 const GRADLE = 'android/app/build.gradle';
 const PKG = 'package.json';
 const PBXPROJ = 'ios/App/App.xcodeproj/project.pbxproj';
+const LOCK = 'package-lock.json';
 
 const mode = process.argv[2] ?? '--check';
 const check = mode === '--check';
@@ -51,8 +54,10 @@ const bumpName = (version, part) => {
 };
 
 if (check) {
-  const parity = current.name === current.gradleName;
+  const lockVersion = JSON.parse(readFileSync(LOCK, 'utf8')).version;
+  const parity = current.name === current.gradleName && current.name === lockVersion;
   console.log(`package.json      ${current.name}`);
+  console.log(`package-lock.json ${lockVersion}  ${lockVersion === current.name ? 'OK' : 'MISMATCH'}`);
   console.log(`android versionName ${current.gradleName}  ${parity ? 'OK' : 'MISMATCH'}`);
   console.log(`android versionCode ${current.code}`);
   if (existsSync(PBXPROJ)) {
@@ -80,6 +85,17 @@ const nextCode = sync ? current.code : current.code + 1;
 
 pkg.version = nextName;
 writeFileSync(PKG, JSON.stringify(pkg, null, 2) + '\n');
+
+// The lock file carries the root version twice, and npm rewrites both on the
+// next install whether or not anyone asked. Left alone, the bump shows up later
+// as two unexplained lines in someone else's dependency PR. Rewriting the parsed
+// object is safe here: npm already writes 2-space JSON, so this round-trips
+// byte-identically, and a blind string replace would risk matching a dependency
+// that happens to share the version.
+const lock = JSON.parse(readFileSync(LOCK, 'utf8'));
+lock.version = nextName;
+if (lock.packages?.['']) lock.packages[''].version = nextName;
+writeFileSync(LOCK, JSON.stringify(lock, null, 2) + '\n');
 
 writeFileSync(
   GRADLE,
