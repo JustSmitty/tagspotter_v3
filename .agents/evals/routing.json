@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "$comment": "Trigger evals for the resolver. Each case asserts that a realistic request still reaches the skill that owns it. These are the org chart's regression tests — when a route is edited, these say whether the edit broke someone else's inbox.",
+  "$comment": "Trigger evals for the resolver. Each case asserts that a realistic request still reaches the skill that owns it. These are the org chart's regression tests — when a route is edited, these say whether the edit broke someone else's inbox. The no-collision cases below are the other half: requests that CONTAIN a keyword inside an ordinary English word and must not route to it (audit F-45). Every case above was phrased in the vocabulary the keyword lists were written from, so none of them could ever have caught de-ci-sion matching 'ci'.",
   "cases": [
     {
       "id": "symptom-routes-to-triage",
@@ -88,6 +88,70 @@
       "id": "seed-data-escalates-on-migration",
       "request": "change the state id ordering in states.json",
       "expectEscalation": ["data-migration"]
+    },
+    {
+      "id": "decision-is-not-ci",
+      "request": "make the decision explicit in the docs",
+      "expectPrimary": "tagspotter-feature",
+      "expectNoEscalation": true
+    },
+    {
+      "id": "efficiency-is-not-ci",
+      "request": "improve efficiency of the scoring math",
+      "expectPrimary": "tagspotter-feature",
+      "expectNoEscalation": true
+    },
+    {
+      "id": "city-is-not-ci",
+      "request": "show the city name under the plate",
+      "expectPrimary": "tagspotter-feature",
+      "expectNoEscalation": true
+    },
+    {
+      "id": "invariants-is-not-aria",
+      "request": "describe the invariants this module holds",
+      "expectPrimary": "tagspotter-feature",
+      "expectNoEscalation": true
+    },
+    {
+      "id": "asynchronous-is-not-sync",
+      "request": "make the storage call asynchronous",
+      "expectNoEscalation": true
+    },
+    {
+      "id": "accountable-is-not-account",
+      "request": "who is accountable for the trip archive",
+      "expectNoEscalation": true
+    },
+    {
+      "id": "publishing-still-escalates",
+      "request": "publishing this build to the play store",
+      "expectPrimary": "tagspotter-release",
+      "expectEscalation": [
+        "publishing"
+      ]
+    },
+    {
+      "id": "deployment-still-escalates",
+      "request": "deployment of the signed bundle",
+      "expectEscalation": [
+        "publishing"
+      ]
+    },
+    {
+      "id": "plural-svgs-route-to-pipeline",
+      "request": "the state flag svgs are enormous",
+      "expectPrimary": "tagspotter-asset-pipeline"
+    },
+    {
+      "id": "plural-fonts-route-to-pipeline",
+      "request": "the fonts are loading from a cdn",
+      "expectPrimary": "tagspotter-asset-pipeline"
+    },
+    {
+      "id": "ci-as-a-word-still-routes-to-release",
+      "request": "the ci pipeline is red on master",
+      "expectPrimary": "tagspotter-release"
     }
   ]
 }

@@ -102,7 +102,7 @@
     {
       "id": "publishing",
       "reason": "Sends something outward or is hard to reverse. Confirm with the maintainer in chat before acting.",
-      "keywords": ["publish", "submit to store", "push to main", "release build", "store build", "upload", "deploy", "app store", "play console", "git push", "force push"]
+      "keywords": ["publish", "submit to store", "push to main", "release build", "store build", "upload", "deploy", "deployment", "app store", "play console", "git push", "force push"]
     },
     {
       "id": "constraint-collision",
