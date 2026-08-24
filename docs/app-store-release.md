@@ -41,7 +41,8 @@
 
 ## Versioning
 
-Never hand-edit the three places a version lives. Use the script:
+Never hand-edit the places a version lives — `package.json`, `package-lock.json` (twice),
+`versionName` and `versionCode` in Gradle, and the two iOS build settings. Use the script:
 
 ```bash
 npm run version:check     # report package.json / android / ios, non-zero on drift
@@ -49,8 +50,11 @@ npm run version:sync      # align ios to the current version without bumping
 npm run version:bump -- minor   # or major / patch / build; always bumps versionCode
 ```
 
-`guardrail:version-parity` enforces all three agreeing. iOS sat at `1.0.0 / 1` while Android was at
-`1.1.0 / 3` precisely because the guardrail used to check only two of them.
+`guardrail:version-parity` enforces them all agreeing, and has been widened twice for the same
+reason. iOS sat at `1.0.0 / 1` while Android was at `1.1.0 / 3` because the check covered only two
+of the three places a version lived. `package-lock.json` was the fourth, and drifted on the 1.2.0
+bump because the script did not write it — npm would have rewritten it on the next install, landing
+the change in an unrelated diff weeks later. A parity check is only worth what it covers.
 
 ## iOS signing notes
 
