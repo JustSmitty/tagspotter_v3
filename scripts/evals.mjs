@@ -281,38 +281,85 @@ const CUSTOM_CHECKS = {
    * filename stays a violation.
    */
   'backup-exclude-paths'() {
+    // Derived from Preferences.configure, not from any property named `group`.
+    // The first version scanned every src TS file for /groups*:/, so an
+    // unrelated object literal — a form group, a chart config — silently
+    // legalised an invented filename, and a real group named via a constant
+    // was still rejected. Anchor to the call that actually decides the file.
     const groups = new Set(['CapacitorStorage']);
-    for (const file of selectFiles({ include: ['src/**/*.ts'], exclude: ['**/*.spec.ts'] })) {
-      for (const match of readText(file).matchAll(/group\s*:\s*['"`]([^'"`]+)['"`]/g)) {
-        groups.add(match[1]);
+    for (const file of selectFiles({ include: ['src/**/*.ts', '*.ts'], exclude: ['**/*.spec.ts'] })) {
+      const source = readText(file);
+      for (const call of source.matchAll(/Preferences\.configure\s*\(([\s\S]*?)\)/g)) {
+        const group = /group\s*:\s*[\'"`]([^\'"`]+)[\'"`]/.exec(call[1]);
+        if (group) groups.add(group[1]);
       }
     }
     const producible = new Set([...groups].map((group) => `${group}.xml`));
 
+    // Every rules file the build could ship, not two hardcoded paths. A
+    // resource qualifier (res/xml-v31) or a build-type sourceSet
+    // (src/release/res/xml) overrides main and is what actually reaches a
+    // player, so scanning only main left the release build unchecked.
+    const ruleFiles = selectFiles({
+      include: ['android/**/res/xml*/backup_rules.xml', 'android/**/res/xml*/data_extraction_rules.xml'],
+    });
+
     const violations = [];
-    for (const file of [
-      'android/app/src/main/res/xml/backup_rules.xml',
-      'android/app/src/main/res/xml/data_extraction_rules.xml',
-    ]) {
-      const source = readText(file);
-      if (!source) continue;
-      const lines = source.split(/\r?\n/);
-      lines.forEach((line, index) => {
-        // Comments in these files discuss the removed line by name on purpose,
-        // so match the element rather than the string.
-        const tag = /<exclude\b[^>]*>/.exec(line);
-        if (!tag) return;
-        if (!/domain\s*=\s*"sharedpref"/.test(tag[0])) return;
-        const path = /path\s*=\s*"([^"]*)"/.exec(tag[0])?.[1];
-        if (path === undefined) {
-          violations.push(`${file}:${index + 1}  <exclude domain="sharedpref"> with no path`);
-        } else if (!producible.has(path)) {
+
+    // A rules file that has gone missing is the failure this guardrail is
+    // named for: config that silently matches nothing. `if (!source) continue`
+    // reported clean when both files were deleted, so assert they exist.
+    for (const required of ['backup_rules.xml', 'data_extraction_rules.xml']) {
+      if (!ruleFiles.some((file) => file.endsWith(`/${required}`))) {
+        violations.push(`android: no ${required} anywhere under res/ — the manifest points at one`);
+      }
+    }
+
+    for (const file of ruleFiles) {
+      // Strip comments before matching. These files discuss the removed line
+      // by name on purpose, and the previous element-based match only avoided
+      // flagging them because the prose happened to write `<exclude>` bare.
+      const source = readText(file).replace(/<!--[\s\S]*?-->/g, (block) => block.replace(/[^\n]/g, String.fromCharCode(32)));
+
+      // Whole-file scan with matchAll, not line-by-line exec: an <exclude>
+      // whose attributes wrap across lines was invisible, and a second one on
+      // the same line was never examined. Either shape reproduces the exact
+      // defective DOM this check exists to reject.
+      for (const tag of source.matchAll(/<exclude\b[^>]*>/g)) {
+        const line = source.slice(0, tag.index).split(/\r?\n/).length;
+        // Both quote styles. XML treats them identically; requiring double
+        // quotes meant a single-quoted copy of the banned rule passed clean.
+        if (!/domain\s*=\s*[\'"](sharedpref)[\'"]/.test(tag[0])) continue;
+        const found = /path\s*=\s*[\'"]([^\'"]*)[\'"]/.exec(tag[0]);
+        if (!found) {
+          violations.push(`${file}:${line}  <exclude domain="sharedpref"> with no path`);
+        } else if (found[1] === 'CapacitorStorage.xml') {
+          // Producible, and catastrophic. Every Preferences key including the
+          // save blob lives in this one file, so excluding it silently stops
+          // the collection surviving a phone change — unrecoverable under
+          // con-0004-no-backend-no-accounts. It was the ONLY exclusion the
+          // producible test blessed, which made the guardrail a green tick
+          // over the worst edit available to someone still trying to hold
+          // the quiz sidecar back.
           violations.push(
-            `${file}:${index + 1}  excludes '${path}', which the app cannot produce`
+            `${file}:${line}  excludes '${found[1]}', which holds the save —`
+            + ` the collection would not survive a phone change`,
+          );
+        } else if (!producible.has(found[1])) {
+          violations.push(
+            `${file}:${line}  excludes '${found[1]}', which the app cannot produce`
             + ` (sharedpref files: ${[...producible].sort().join(', ')})`,
           );
         }
-      });
+      }
+
+      // The <include> is the half that carries the player's collection, and
+      // nothing checked it. Losing it costs every player their trip on a phone
+      // change, which con-0004-no-backend-no-accounts makes unrecoverable —
+      // strictly worse than the inert exclude that prompted this guardrail.
+      if (!/<include\b[^>]*domain\s*=\s*[\'"]sharedpref[\'"][^>]*path\s*=\s*[\'"]\.[\'"]/.test(source)) {
+        violations.push(`${file}  no <include domain="sharedpref" path="."> — the save would not be backed up`);
+      }
     }
     return violations;
   },
