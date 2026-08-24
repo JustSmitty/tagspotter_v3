@@ -52,20 +52,25 @@ function parseFrontmatter(raw, file) {
   const [, head, body] = match;
   const data = {};
   let currentKey = null;
+  let blockIndent = null;
+  const malformed = [];
 
   for (const line of head.split(/\r?\n/)) {
     if (!line.trim() || line.trim().startsWith('#')) continue;
 
-    const nested = /^\s+(-\s+)?(.+)$/.exec(line);
+    const nested = /^(\s+)(-\s+)?(.+)$/.exec(line);
     const topLevel = /^([A-Za-z_][\w-]*):\s*(.*)$/.exec(line);
 
     if (topLevel) {
       currentKey = topLevel[1];
+      blockIndent = null;
       data[currentKey] = parseScalar(topLevel[2]);
       continue;
     }
     if (nested && currentKey) {
-      const value = nested[2].trim();
+      const indent = nested[1].length;
+      const value = nested[3].trim();
+      if (blockIndent === null) blockIndent = indent;
 
       // A bare `key:` header opens a block collection, and YAML says which kind
       // by the first child: a leading `- ` is a sequence, `child: value` is a
@@ -82,17 +87,32 @@ function parseFrontmatter(raw, file) {
       // that had nothing to do with each other.
       //
       // Dotted keys are allowed because claims use them (`contrast.baseline.light`).
-      const pair = nested[1] ? null : /^([\w.-]+):\s*(.*)$/.exec(value);
+      // The key grammar matches the inline spelling exactly (see parseScalar),
+      // so `claims: {a/b: c}` and its indented form parse identically. They did
+      // not: the block path required [\w.-]+ and dropped anything else on the
+      // floor, which made .agents/brain/README.md's "both parse to the same
+      // mapping" false for any key with a slash or a space.
+      const pair = nested[2] ? null : /^([^:]+):\s*(.*)$/.exec(value);
       if (data[currentKey] === '' || data[currentKey] === null) {
         data[currentKey] = pair ? {} : [];
       }
       if (Array.isArray(data[currentKey])) data[currentKey].push(parseScalar(value));
       else if (data[currentKey] && typeof data[currentKey] === 'object') {
+        // Anything that cannot be a key/value pair here is REPORTED, never
+        // dropped. Silently discarding a child line is what F-048 was filed
+        // about; doing it per-line instead of per-record is the same bug with
+        // a smaller blast radius. Deeper indentation means a nested mapping,
+        // which this parser flattens rather than represents, so it is refused
+        // outright instead of silently producing sibling keys and an empty
+        // parent.
+        if (indent > blockIndent) malformed.push(`${currentKey}: nested mappings are not supported (${value})`);
+        else if (pair) data[currentKey][pair[1].trim()] = parseScalar(pair[2]);
+        else malformed.push(`${currentKey}: not a key/value pair (${value})`);
         if (pair) data[currentKey][pair[1]] = parseScalar(pair[2]);
       }
     }
   }
-  return { data, body: body.trim() };
+  return { data, body: body.trim(), malformed };
 }
 
 function parseScalar(value) {
@@ -150,7 +170,7 @@ function walk(dir) {
 
 export function loadRecords() {
   return walk(BRAIN_DIR).map((file) => {
-    const { data, body } = parseFrontmatter(readFileSync(file, 'utf8'), relative(ROOT, file));
+    const { data, body, malformed } = parseFrontmatter(readFileSync(file, 'utf8'), relative(ROOT, file));
     return {
       ...data,
       tags: toArray(data.tags),
@@ -161,6 +181,9 @@ export function loadRecords() {
       // This catches the ones nobody has written yet: anything that is not a
       // mapping is reported by brainLint rather than quietly coerced, because
       // silent coercion is what let the array form survive in the first place.
+      // Lines the frontmatter parser could not represent, reported rather
+      // than dropped (F-048).
+      malformedLines: malformed,
       malformedClaims: data.claims !== undefined && data.claims !== null
         && data.claims !== '' && !isPlainObject(data.claims),
       body,
@@ -267,6 +290,9 @@ export function lint(records, { strict = false } = {}) {
     // `{key: value}` and an indented block — but a sequence or a bare scalar
     // cannot carry keys, and the contradiction check silently indexed those
     // under '0', '1', '2' instead of saying so (audit F-48).
+    for (const problem of record.malformedLines ?? []) {
+      errors.push(`${at}: ${problem}`);
+    }
     if (record.malformedClaims) {
       errors.push(
         `${at}: 'claims' must be a mapping, not a list or scalar — write `
