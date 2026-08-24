@@ -173,24 +173,62 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security list-keychain -d user -s "$KEYCHAIN" login.keychain-db
 
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp "$RUNNER_TEMP/profile.mobileprovision" ~/Library/MobileDevice/Provisioning\ Profiles/
+          # The archive step signs manually, so it needs the profile's NAME for
+          # PROVISIONING_PROFILE_SPECIFIER, and Xcode needs the file on disk named
+          # by its UUID. Both are read out of the profile itself — hardcoding
+          # either one breaks the first time the profile is regenerated.
+          PROFILE_PLIST="$RUNNER_TEMP/profile.plist"
+          security cms -D -i "$RUNNER_TEMP/profile.mobileprovision" > "$PROFILE_PLIST"
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$PROFILE_PLIST")
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$PROFILE_PLIST")
+          PROFILE_APPID=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$PROFILE_PLIST")
+          echo "profile: $PROFILE_NAME ($PROFILE_UUID) for $PROFILE_APPID"
 
-          rm -f "$RUNNER_TEMP/cert.p12"
+          # Fail here, with a sentence, rather than in codesign with an opaque one.
+          case "$PROFILE_APPID" in
+            *.com.tagspotter.app) ;;
+            *)
+              echo "::error::Provisioning profile is for $PROFILE_APPID, not com.tagspotter.app"
+              exit 1
+              ;;
+          esac
+
+          # Xcode 16 moved where it reads provisioning profiles from. Write both
+          # paths: the old one is inert on a new Xcode, and the new one is the
+          # only place a current runner image looks.
+          for DIR in ~/Library/MobileDevice/Provisioning\ Profiles \
+                     ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles; do
+            mkdir -p "$DIR"
+            cp "$RUNNER_TEMP/profile.mobileprovision" "$DIR/$PROFILE_UUID.mobileprovision"
+          done
+
+          # Consumed by the archive and export steps below.
+          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+
+          rm -f "$RUNNER_TEMP/cert.p12" "$PROFILE_PLIST"
 
       - name: Archive
         env:
           TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
         run: |
           set -o pipefail
+          # Sign explicitly, overriding the project's CODE_SIGN_STYLE = Automatic.
+          # Automatic signing asks the developer portal to create and manage the
+          # profile, and there is nobody on a CI runner to authenticate that
+          # request — the archive fails before it compiles a single file.
+          # -allowProvisioningUpdates is the same trap wearing a helpful name: it
+          # only does anything when Xcode can already talk to the portal. The
+          # profile is installed on disk by the previous step, so name it and go.
           xcodebuild archive \
             -project "$PROJECT" \
             -scheme "$SCHEME" \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/App.xcarchive" \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            -allowProvisioningUpdates
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            DEVELOPMENT_TEAM="$TEAM_ID"
 
       - name: Export .ipa
         env:
@@ -203,6 +241,15 @@ jobs:
           <dict>
             <key>method</key><string>app-store-connect</string>
             <key>teamID</key><string>${TEAM_ID}</string>
+            <!-- Must match the archive. Left unset, exportArchive falls back to
+                 automatic signing and hits the same unauthenticated portal call
+                 the archive step was changed to avoid. -->
+            <key>signingStyle</key><string>manual</string>
+            <key>signingCertificate</key><string>Apple Distribution</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.tagspotter.app</key><string>${PROFILE_NAME}</string>
+            </dict>
             <key>uploadSymbols</key><true/>
             <key>destination</key><string>export</string>
           </dict>
