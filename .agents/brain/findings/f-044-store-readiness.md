@@ -86,13 +86,19 @@ Narrowed by PR #15 and #16 on 2026-08-24, after this record was first written. `
 and `dec-0017-manual-signing-in-ci` carry that work; `docs/store-assets-checklist.md` is the live
 per-asset status and outranks anything restated here.
 
-- **Pages switched on, and both URLs confirmed to load.** Not verifiable from the repo, and a dead
-  privacy policy URL is a store rejection.
 - **iPhone screenshots at 6.9in (1320x2868) or 6.7in (1290x2796).** `store-assets/app-store/iphone`
   holds only `.gitkeep`, and App Store Connect will not take the listing without them.
 - **App Store Connect signing secrets** for the `archive` job. `dec-0017` moved CI to explicit manual
   signing rather than asking a headless runner to negotiate with Apple, but creating the secrets is
   still the maintainer's job.
+
+**Pages is live and the listing URLs resolve** (checked 2026-08-24). The site reports
+`status: built` from `master//docs`; `https://justsmitty.github.io/tagspotter_v3/` and
+`.../privacy-policy.html` both return HTTP 200, and the policy page serves real content rather than a
+200-ing 404. The `docs/_config.yml` exclusion is holding: `remediation-plan`, `store-submission`,
+`app-store-release`, `design_principles`, `ads-rewarded-hint-plan` and both `store-metadata.*.json`
+all return 404. That last check is the one worth repeating whenever anything is added to `docs/`, since
+a Pages site is public even while the repository is private and the exclusion is opt-out, not opt-in.
 
 **No longer open.** iPad screenshots are *not needed* — the target is iPhone-only as of `dec-0016`,
 which is also why `guardrail:ios-ipad-target` now pins `TARGETED_DEVICE_FAMILY = "1"`. Play's tablet

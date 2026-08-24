@@ -50,11 +50,21 @@ A green web build does not prove the native shell works. Anything touching nativ
   `guardrail:untested-services` (F-37) holds every `@Injectable` in `src/app/services` to that.
   Adding a service without a sibling spec fails the build.
 
-## Open work
+## Where the work stands
 
-`docs/remediation-plan.md` holds all 41 audit findings, phased, each with an owning skill and an
-acceptance criterion. Progress is measured by `.agents/evals/guardrails.json`, not by that document —
-a guardrail baseline that has not dropped means the work has not landed.
+All 41 findings from the 2026-08-15 audit are closed (`audit-2026-08-15`), across the five phases in
+`docs/remediation-plan.md`. Phase 6 — store readiness — is the live one, and what remains in it is
+maintainer-only: iPhone screenshots and the App Store Connect signing secrets
+(`f-044-store-readiness`, `docs/store-assets-checklist.md`).
+
+**`docs/remediation-plan.md` is not the source of truth for progress — `.agents/evals/guardrails.json`
+is.** Each guardrail carries a baseline equal to the violation count on the day it was written, and CI
+fails if a count rises above it, so debt can only shrink. Run `npm run evals` to see the standing.
+
+Findings raised since the audit are their own records under `.agents/brain/findings/`. A guardrail at
+baseline 0 means that finding is closed and the skill that owns it should describe the **invariant**,
+not the work — filing rule 6, step 4. Skills going stale that way is `f-049`, and it is why every
+skill now carries a `review_by` that CI enforces.
 
 ## The one rule that keeps this working
 
