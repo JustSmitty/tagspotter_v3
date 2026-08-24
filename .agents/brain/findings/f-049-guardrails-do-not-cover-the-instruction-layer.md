@@ -1,7 +1,7 @@
 ---
-id: f-047-guardrails-do-not-cover-the-instruction-layer
+id: f-049-guardrails-do-not-cover-the-instruction-layer
 type: finding
-title: F-47 — nothing ratcheted the text that instructs agents; skills now carry review_by
+title: F-49 — nothing ratcheted the text that instructs agents; skills now carry review_by
 status: resolved
 date: 2026-08-24
 source: commit:32e4b87
@@ -10,7 +10,7 @@ confidence: high
 tags: [agents, skills, brain, guardrails, process]
 claims: {guardrails.cover-instruction-layer: structural-only}
 supersedes: []
-related: [audit-2026-08-15, f-044-store-readiness, f-045-resolver-substring-keyword-collisions, f-046-block-form-claims-parse-as-a-list]
+related: [audit-2026-08-15, f-044-store-readiness, f-047-resolver-substring-keyword-collisions, f-048-block-form-claims-parse-as-a-list]
 review_by: 2027-02-28
 ---
 
@@ -102,3 +102,22 @@ skill that owns it is rewritten to describe the invariant — and that step is a
 
 The claim on this record is `true` in the sense that the instruction layer now has *a* ratchet, where
 it had none. It is not the sense of "prose can no longer go stale."
+
+**Proved on this record's own branch.** While these three checks were being built, PR #15 and #16
+landed on `master` and claimed **F-45** and **F-46** for `ios-ipad-target` and
+`ios-export-compliance`. This work had already filed F-45, F-46 and F-47 for entirely different
+findings, so two numbers were double-booked in the namespace both the corpus and `guardrails.json`
+key off. These records are now F-47, F-48 and F-49.
+
+Nobody's check caught that. `review_by` could not — these were dated months out. What caught it was
+`skill:tagspotter-release:owns-its-guardrails` going red on the merge, because the two new guardrails
+were owned by a skill that did not name them; the number collision was found by reading the diff that
+followed. So one of the three checks earned its place immediately, and the gap next to it is real:
+**finding numbers are allocated by scanning the tree at one moment**, which is the same
+"scoped to what you already know about" mistake `f-044-store-readiness` catalogues four instances of.
+This is the fifth.
+
+It is deliberately not fixed with a sixth check. Deciding whether two uses of `F-45` mean the same
+finding needs semantics, not a scan — the same wall the prose scanner hit above. The durable fix is
+that finding numbers should come from one allocator rather than from whoever looked last, and that is
+a change to how findings are minted, not a check to bolt on.

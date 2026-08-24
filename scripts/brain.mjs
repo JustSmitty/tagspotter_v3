@@ -69,7 +69,7 @@ function parseFrontmatter(raw, file) {
 
       // A bare `key:` header opens a block collection, and YAML says which kind
       // by the first child: a leading `- ` is a sequence, `child: value` is a
-      // mapping (audit F-46). This used to assume sequence unconditionally, so
+      // mapping (audit F-48). This used to assume sequence unconditionally, so
       //
       //   claims:
       //     nav-icons.paint-method: mask-image
@@ -157,7 +157,7 @@ export function loadRecords() {
       related: toArray(data.related),
       supersedes: toArray(data.supersedes),
       claims: isPlainObject(data.claims) ? data.claims : {},
-      // Supporting the block form (F-46) fixes the shape people actually write.
+      // Supporting the block form (F-48) fixes the shape people actually write.
       // This catches the ones nobody has written yet: anything that is not a
       // mapping is reported by brainLint rather than quietly coerced, because
       // silent coercion is what let the array form survive in the first place.
@@ -266,7 +266,7 @@ export function lint(records, { strict = false } = {}) {
     // `claims:` must be a mapping. Both spellings work — inline
     // `{key: value}` and an indented block — but a sequence or a bare scalar
     // cannot carry keys, and the contradiction check silently indexed those
-    // under '0', '1', '2' instead of saying so (audit F-46).
+    // under '0', '1', '2' instead of saying so (audit F-48).
     if (record.malformedClaims) {
       errors.push(
         `${at}: 'claims' must be a mapping, not a list or scalar — write `

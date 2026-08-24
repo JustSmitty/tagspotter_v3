@@ -40,7 +40,7 @@ function patternToRegExp(pattern) {
 }
 
 /**
- * Match a keyword against a request as a WORD, not a substring (audit F-45).
+ * Match a keyword against a request as a WORD, not a substring (audit F-47).
  *
  * `haystack.includes(keyword)` was the original test, and it matched inside
  * unrelated words. `ci` fired on de-ci-sion, spe-ci-fic and effi-ci-ency, so

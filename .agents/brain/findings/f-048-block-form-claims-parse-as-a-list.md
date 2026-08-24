@@ -1,7 +1,7 @@
 ---
-id: f-046-block-form-claims-parse-as-a-list
+id: f-048-block-form-claims-parse-as-a-list
 type: finding
-title: F-46 — multi-line `claims:` parsed as a list; the parser now reads block mappings
+title: F-48 — multi-line `claims:` parsed as a list; the parser now reads block mappings
 status: resolved
 date: 2026-08-24
 source: file:scripts/brain.mjs:141
@@ -10,7 +10,7 @@ confidence: high
 tags: [brain, librarian, claims, tooling]
 claims: {brain.claims-form: inline-or-block-mapping}
 supersedes: []
-related: [f-045-resolver-substring-keyword-collisions, f-044-store-readiness, f-047-guardrails-do-not-cover-the-instruction-layer]
+related: [f-047-resolver-substring-keyword-collisions, f-044-store-readiness, f-049-guardrails-do-not-cover-the-instruction-layer]
 review_by: 2027-02-28
 ---
 

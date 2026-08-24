@@ -23,11 +23,12 @@ permission problem, **not** a code defect. Never "fix" code in response to it.
 
 ## Version parity — `guardrail:version-parity`
 
-Three files, five fields, one source of truth:
+Four files, seven fields, one source of truth:
 
 | Where | Field | Must equal |
 |---|---|---|
 | `package.json` | `version` | — this is the source of truth |
+| `package-lock.json` | `version` and `packages[""].version` | `package.json` `version` |
 | `android/app/build.gradle` | `versionName` | `package.json` `version` |
 | `android/app/build.gradle` | `versionCode` | a monotonic integer, never reused |
 | `ios/App/App.xcodeproj/project.pbxproj` | `MARKETING_VERSION` | `package.json` `version` |
@@ -45,9 +46,12 @@ npm.cmd run version:bump -- patch  # or minor / major / build (build = versionCo
 npm.cmd run version:sync           # align iOS to the current version, no bump
 ```
 
-`guardrail:version-parity` checks all five. It did not always: it stopped at Android, and iOS sat
-at `1.0.0` / `1` while Android reached `1.1.0` / `3` — green the whole time (F-44). Repair drift with
-`version:sync`, not a bump; bumping burns a version number to fix a bookkeeping error.
+`guardrail:version-parity` checks all seven. It has been widened twice for the same reason, and the
+reason is the point: **a parity check that covers some of the places a version lives reports green
+while the one it misses drifts.** First it stopped at Android, and iOS sat at `1.0.0` / `1` while
+Android reached `1.1.0` / `3`. Then it ignored `package-lock.json`, which carries the version twice
+and which npm rewrites on the next install. Repair drift with `version:sync`, not a bump — bumping
+burns a version number to fix a bookkeeping error.
 
 ## Release build hardening
 
@@ -85,6 +89,19 @@ here is holding the line, not doing the work again.
 
 - **Release signing never references the debug keystore** (`guardrail:debug-keystore-in-release`).
   A debug-signed APK installs perfectly and can then never be updated on Play.
+
+- **The iOS target stays iPhone-only** — `TARGETED_DEVICE_FAMILY = "1"`
+  (`guardrail:ios-ipad-target`, `dec-0016`). Capacitor scaffolds every iOS target as universal
+  (`"1,2"`), and regenerating the Xcode project restores that silently. Universal is a promise:
+  Apple reviews on iPad and rejects layouts that break there, and App Store Connect will not take
+  the listing without 13-inch iPad screenshots. None of that work exists, and Android is
+  portrait-locked anyway (`con-0005`).
+
+- **`Info.plist` answers export compliance up front** — `ITSAppUsesNonExemptEncryption`
+  (`guardrail:ios-export-compliance`). Without it, App Store Connect asks on *every* upload and the
+  build sits in "Missing Compliance" until someone answers by hand. The app ships no encryption of
+  its own (`dec-0009`), so the answer is `false` and never changes. Note this guardrail fires on
+  **absence**, so it is a `paired-pattern` keyed on a plist key that is always present.
 
 ## Toolchain — settled, do not migrate again
 

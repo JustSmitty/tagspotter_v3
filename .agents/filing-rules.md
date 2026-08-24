@@ -94,7 +94,7 @@ Promotion path:
    `.agents/evals/guardrails.json` with today's violation count as its `baseline`.
 4. **Ratcheted to 0?** — then go back and rewrite the skill that owns it. A guardrail reaching 0
    means the finding is closed, and the skill must now describe the **invariant to hold**, not the
-   work to do. This step is the one that gets skipped (F-47): `tagspotter-release` spent months
+   work to do. This step is the one that gets skipped (F-49): `tagspotter-release` spent months
    telling agents to turn on R8 that was already on, while every guardrail read 0 and the suite
    passed green. A skill file is not documentation about the project — it is the prompt an agent
    executes once the resolver routes to it, so stale text there is a green build shipping wrong
@@ -104,7 +104,7 @@ Promotion path:
 also fails if a skill does not name a guardrail it owns, references a guardrail that does not exist,
 or has passed its `review_by`. Skillification is enforced structurally, not remembered.
 
-What no check can decide is whether the *prose* is still true — see F-47 for why a scanner for
+What no check can decide is whether the *prose* is still true — see F-49 for why a scanner for
 pending-work wording was measured and rejected. That is what `review_by` on each skill is for: the
 same commitment Rule 3 puts on records, applied to the layer that instructs agents.
 

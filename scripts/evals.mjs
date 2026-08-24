@@ -170,6 +170,22 @@ const CUSTOM_CHECKS = {
     }
     if (!versionCode) violations.push('android/app/build.gradle: versionCode not found');
 
+    // package-lock.json is the fourth place the version lives — twice, and npm
+    // rewrites both on the next install. F-40 was exactly this shape: a parity
+    // check covering some of the places a version lives reports green while the
+    // one it does not cover drifts. `npm run version:bump` moves it now, so a
+    // mismatch here means someone hand-edited a version again.
+    const lock = JSON.parse(readText('package-lock.json') || '{}');
+    const lockVersions = [
+      ['version', lock.version],
+      ['packages[""].version', lock.packages?.['']?.version],
+    ];
+    for (const [where, value] of lockVersions) {
+      if (value !== undefined && value !== pkg.version) {
+        violations.push(`package-lock.json ${where} '${value}' != package.json version '${pkg.version}'`);
+      }
+    }
+
     // iOS too. This check used to stop at Android, and iOS quietly sat at
     // MARKETING_VERSION 1.0.0 / CURRENT_PROJECT_VERSION 1 while Android reached
     // 1.1.0 / 3 — a guardrail covering two of the three places a version lives
@@ -370,7 +386,7 @@ function structuralSuite() {
         detail: routedSkills.has(skill.dir) ? '' : 'not present in .agents/resolver.json routes',
       });
 
-      // F-47. A skill file is not documentation about the project, it is the
+      // F-49. A skill file is not documentation about the project, it is the
       // prompt an agent executes once the resolver picks it. Guardrails ratchet
       // the code and nothing ratcheted this, so tagspotter-release spent months
       // telling agents to turn on R8 that was already on, with every guardrail

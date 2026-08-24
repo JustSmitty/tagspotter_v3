@@ -10,7 +10,7 @@ confidence: high
 tags: [release, store, ios, android, privacy, ci]
 claims: {ios.privacy-collected-data: none, store.android-artifact: aab}
 supersedes: []
-related: [audit-2026-08-15, con-0004-no-backend-no-accounts, dec-0007-coarse-location-default, f-047-guardrails-do-not-cover-the-instruction-layer]
+related: [audit-2026-08-15, con-0004-no-backend-no-accounts, dec-0007-coarse-location-default, f-049-guardrails-do-not-cover-the-instruction-layer]
 review_by: 2027-02-28
 ---
 
@@ -82,16 +82,31 @@ repo. See `f-045` and `f-046` for two more instances in the agent tooling itself
 
 ## Still open
 
-Nothing here is blocked on code — all of it is maintainer-only:
+Narrowed by PR #15 and #16 on 2026-08-24, after this record was first written. `dec-0016-iphone-only-ios`
+and `dec-0017-manual-signing-in-ci` carry that work; `docs/store-assets-checklist.md` is the live
+per-asset status and outranks anything restated here.
 
 - **Pages switched on, and both URLs confirmed to load.** Not verifiable from the repo, and a dead
   privacy policy URL is a store rejection.
-- **iPhone and iPad screenshots.** `store-assets/app-store/iphone` and `.../ipad` hold only
-  `.gitkeep`. Play's `seven-inch` slot is empty too; `feature-graphic.png` exists.
-- **1024×1024 marketing icon review signoff** (`docs/store-assets-checklist.md`).
-- **App Store Connect signing secrets** for the `archive` job — documented in
-  `docs/app-store-release.md`, but creating them is the maintainer's job.
+- **iPhone screenshots at 6.9in (1320x2868) or 6.7in (1290x2796).** `store-assets/app-store/iphone`
+  holds only `.gitkeep`, and App Store Connect will not take the listing without them.
+- **App Store Connect signing secrets** for the `archive` job. `dec-0017` moved CI to explicit manual
+  signing rather than asking a headless runner to negotiate with Apple, but creating the secrets is
+  still the maintainer's job.
+
+**No longer open.** iPad screenshots are *not needed* — the target is iPhone-only as of `dec-0016`,
+which is also why `guardrail:ios-ipad-target` now pins `TARGETED_DEVICE_FAMILY = "1"`. Play's tablet
+slots stay empty on purpose: the listing is accepted without them and the app is portrait, phone-first
+(`con-0005-portrait-only`). The 1024x1024 marketing icon is present, in the app bundle.
 
 The iOS workflow's `compile` job has run and passes: the build succeeded on the first attempt, which
 was the genuinely uncertain part, and both follow-up commits (`32ba12d`, `fec62a4`) fixed the
-*assertion* step rather than the build. Nothing in the repo records `archive` having run.
+*assertion* step rather than the build.
+
+## This record went stale within hours of being written
+
+Filed 2026-08-24 against a tree that was already moving: PR #15 landed the same day and closed the
+iPad question outright. That is `f-049-guardrails-do-not-cover-the-instruction-layer` happening to
+the record that documents the problem, and neither `review_by` nor any check caught it — a human
+reading the diff did. Worth knowing before trusting any "still open" list here: check
+`docs/store-assets-checklist.md` and `npm run evals` first.

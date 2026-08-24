@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "$comment": "Trigger evals for the resolver. Each case asserts that a realistic request still reaches the skill that owns it. These are the org chart's regression tests — when a route is edited, these say whether the edit broke someone else's inbox. The no-collision cases below are the other half: requests that CONTAIN a keyword inside an ordinary English word and must not route to it (audit F-45). Every case above was phrased in the vocabulary the keyword lists were written from, so none of them could ever have caught de-ci-sion matching 'ci'.",
+  "$comment": "Trigger evals for the resolver. Each case asserts that a realistic request still reaches the skill that owns it. These are the org chart's regression tests — when a route is edited, these say whether the edit broke someone else's inbox. The no-collision cases below are the other half: requests that CONTAIN a keyword inside an ordinary English word and must not route to it (audit F-47). Every case above was phrased in the vocabulary the keyword lists were written from, so none of them could ever have caught de-ci-sion matching 'ci'.",
   "cases": [
     {
       "id": "symptom-routes-to-triage",

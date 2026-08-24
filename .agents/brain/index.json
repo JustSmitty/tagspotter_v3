@@ -1,5 +1,5 @@
 {
-  "count": 30,
+  "count": 32,
   "records": [
     {
       "id": "audit-2026-08-15",
@@ -27,8 +27,8 @@
         "f-042-contrast-debt",
         "f-043-nav-icons-were-black",
         "f-044-store-readiness",
-        "f-045-resolver-substring-keyword-collisions",
-        "f-046-block-form-claims-parse-as-a-list"
+        "f-047-resolver-substring-keyword-collisions",
+        "f-048-block-form-claims-parse-as-a-list"
       ],
       "file": ".agents/brain/findings/audit-2026-08-15.md",
       "review_by": "2027-08-31"
@@ -581,6 +581,56 @@
       "review_by": "2027-02-28"
     },
     {
+      "id": "dec-0016-iphone-only-ios",
+      "type": "decision",
+      "title": "The iOS app ships iPhone-only; iPad is not a target",
+      "status": "accepted",
+      "date": "2026-08-24",
+      "source": "file:ios/App/App.xcodeproj/project.pbxproj:316",
+      "confidence": "high",
+      "tags": [
+        "ios",
+        "release",
+        "store",
+        "capacitor"
+      ],
+      "claims": {
+        "ios-device-family": "iphone"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0005-portrait-only",
+        "dec-0017-manual-signing-in-ci"
+      ],
+      "file": ".agents/brain/decisions/dec-0016-iphone-only-ios.md",
+      "review_by": "2027-08-24"
+    },
+    {
+      "id": "dec-0017-manual-signing-in-ci",
+      "type": "decision",
+      "title": "The iOS archive signs manually with an installed profile, never automatically",
+      "status": "accepted",
+      "date": "2026-08-24",
+      "source": "file:.github/workflows/ios.yml:228",
+      "confidence": "medium",
+      "tags": [
+        "ios",
+        "ci",
+        "signing",
+        "release"
+      ],
+      "claims": {
+        "ios-ci-signing": "manual-explicit"
+      },
+      "supersedes": [],
+      "related": [
+        "con-0003-windows-dev-commands",
+        "dec-0016-iphone-only-ios"
+      ],
+      "file": ".agents/brain/decisions/dec-0017-manual-signing-in-ci.md",
+      "review_by": "2027-02-24"
+    },
+    {
       "id": "f-042-contrast-debt",
       "type": "finding",
       "title": "F-42 — WCAG AA contrast debt, cleared to zero in both themes",
@@ -661,15 +711,15 @@
         "audit-2026-08-15",
         "con-0004-no-backend-no-accounts",
         "dec-0007-coarse-location-default",
-        "f-047-guardrails-do-not-cover-the-instruction-layer"
+        "f-049-guardrails-do-not-cover-the-instruction-layer"
       ],
       "file": ".agents/brain/findings/f-044-store-readiness.md",
       "review_by": "2027-02-28"
     },
     {
-      "id": "f-045-resolver-substring-keyword-collisions",
+      "id": "f-047-resolver-substring-keyword-collisions",
       "type": "finding",
-      "title": "F-45 — the resolver matched keywords as bare substrings; now word-boundary with inflections",
+      "title": "F-47 — the resolver matched keywords as bare substrings; now word-boundary with inflections",
       "status": "resolved",
       "date": "2026-08-24",
       "source": "file:scripts/resolve.mjs:44",
@@ -687,16 +737,16 @@
       "related": [
         "audit-2026-08-15",
         "f-044-store-readiness",
-        "f-046-block-form-claims-parse-as-a-list",
-        "f-047-guardrails-do-not-cover-the-instruction-layer"
+        "f-048-block-form-claims-parse-as-a-list",
+        "f-049-guardrails-do-not-cover-the-instruction-layer"
       ],
-      "file": ".agents/brain/findings/f-045-resolver-substring-keyword-collisions.md",
+      "file": ".agents/brain/findings/f-047-resolver-substring-keyword-collisions.md",
       "review_by": "2027-02-28"
     },
     {
-      "id": "f-046-block-form-claims-parse-as-a-list",
+      "id": "f-048-block-form-claims-parse-as-a-list",
       "type": "finding",
-      "title": "F-46 — multi-line `claims:` parsed as a list; the parser now reads block mappings",
+      "title": "F-48 — multi-line `claims:` parsed as a list; the parser now reads block mappings",
       "status": "resolved",
       "date": "2026-08-24",
       "source": "file:scripts/brain.mjs:141",
@@ -712,17 +762,17 @@
       },
       "supersedes": [],
       "related": [
-        "f-045-resolver-substring-keyword-collisions",
+        "f-047-resolver-substring-keyword-collisions",
         "f-044-store-readiness",
-        "f-047-guardrails-do-not-cover-the-instruction-layer"
+        "f-049-guardrails-do-not-cover-the-instruction-layer"
       ],
-      "file": ".agents/brain/findings/f-046-block-form-claims-parse-as-a-list.md",
+      "file": ".agents/brain/findings/f-048-block-form-claims-parse-as-a-list.md",
       "review_by": "2027-02-28"
     },
     {
-      "id": "f-047-guardrails-do-not-cover-the-instruction-layer",
+      "id": "f-049-guardrails-do-not-cover-the-instruction-layer",
       "type": "finding",
-      "title": "F-47 — nothing ratcheted the text that instructs agents; skills now carry review_by",
+      "title": "F-49 — nothing ratcheted the text that instructs agents; skills now carry review_by",
       "status": "resolved",
       "date": "2026-08-24",
       "source": "commit:32e4b87",
@@ -741,10 +791,10 @@
       "related": [
         "audit-2026-08-15",
         "f-044-store-readiness",
-        "f-045-resolver-substring-keyword-collisions",
-        "f-046-block-form-claims-parse-as-a-list"
+        "f-047-resolver-substring-keyword-collisions",
+        "f-048-block-form-claims-parse-as-a-list"
       ],
-      "file": ".agents/brain/findings/f-047-guardrails-do-not-cover-the-instruction-layer.md",
+      "file": ".agents/brain/findings/f-049-guardrails-do-not-cover-the-instruction-layer.md",
       "review_by": "2027-02-28"
     },
     {

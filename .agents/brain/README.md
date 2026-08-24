@@ -83,7 +83,7 @@ claims:                                 # block, easier to read past two
 
 Anything else — a `- ` list, a bare string — is a lint error. It used to be accepted silently and
 indexed under the positional keys `'0'`, `'1'`, so the record looked like it was participating in the
-contradiction check while contributing nothing to it (audit F-46).
+contradiction check while contributing nothing to it (audit F-48).
 
 When you supersede a fact, don't edit history — set the old record's `status: superseded` and point
 the new one at it via `supersedes: [old-id]`. Lint enforces the back-reference in both directions:

@@ -1,7 +1,7 @@
 ---
-id: f-045-resolver-substring-keyword-collisions
+id: f-047-resolver-substring-keyword-collisions
 type: finding
-title: F-45 — the resolver matched keywords as bare substrings; now word-boundary with inflections
+title: F-47 — the resolver matched keywords as bare substrings; now word-boundary with inflections
 status: resolved
 date: 2026-08-24
 source: file:scripts/resolve.mjs:44
@@ -10,7 +10,7 @@ confidence: high
 tags: [resolver, routing, tooling, agents]
 claims: {resolver.keyword-matching: word-boundary-with-inflections}
 supersedes: []
-related: [audit-2026-08-15, f-044-store-readiness, f-046-block-form-claims-parse-as-a-list, f-047-guardrails-do-not-cover-the-instruction-layer]
+related: [audit-2026-08-15, f-044-store-readiness, f-048-block-form-claims-parse-as-a-list, f-049-guardrails-do-not-cover-the-instruction-layer]
 review_by: 2027-02-28
 ---
 
