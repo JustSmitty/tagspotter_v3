@@ -8,9 +8,19 @@
   - cloud-backup and device-transfer both carry the trip, because losing a
     collection on a phone upgrade would be unrecoverable — there is no account
     to restore from (con-0004-no-backend-no-accounts).
-  - the in-flight quiz sidecar is excluded from both. Restoring one alongside a
-    save from a different moment is exactly pm-0001-stale-quiz-session: a resumed
-    quiz awarding points to a state the restored save does not have spotted.
+
+  Both blocks previously carried an <exclude> for
+  "CapacitorStorage.temp_quiz_session.xml", meaning to hold back the in-flight
+  quiz sidecar. No such file has ever existed and the line matched nothing
+  (pm-0002). `temp_quiz_session` is a *key* inside Capacitor Preferences, and
+  every key the app writes — the save blob included — lives in the single file
+  CapacitorStorage.xml. `domain="sharedpref"` selects files, so per-key
+  exclusion is not expressible here at all and no rewording of this file can
+  make it so. Do not add the line back.
+
+  The invariant it was reaching for now lives where both halves are visible at
+  once: HomeWorkflowService.checkAndResumeQuiz refuses to resume a session
+  whose state the hydrated save does not have spotted, whatever paired them.
 
   Nothing sensitive is stored — no account, no credentials, no location history
   (dec-0007-coarse-location-default). Location is read for one calculation and
@@ -19,10 +29,8 @@
 <data-extraction-rules>
     <cloud-backup>
         <include domain="sharedpref" path="." />
-        <exclude domain="sharedpref" path="CapacitorStorage.temp_quiz_session.xml" />
     </cloud-backup>
     <device-transfer>
         <include domain="sharedpref" path="." />
-        <exclude domain="sharedpref" path="CapacitorStorage.temp_quiz_session.xml" />
     </device-transfer>
 </data-extraction-rules>

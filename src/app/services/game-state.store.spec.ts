@@ -335,6 +335,31 @@ describe('GameStateStore', () => {
     expect(stateService.clearTempQuizSession).toHaveBeenCalled();
   });
 
+  /**
+   * pm-0002. The clear and the save are two Preferences writes and cannot be
+   * made one — the plugin has no transaction and each call is its own
+   * edit()/apply(). So the window is unavoidable and only its ORDER decides
+   * what an Android backup can snapshot: clearing first leaves `old save + no
+   * session`, which is harmless, while the reverse leaves `fresh save + stale
+   * session`, which is pm-0001's hazard written to disk.
+   *
+   * Nothing about the observable result distinguishes the two orders, so
+   * without this assertion a refactor can swap them back and stay green.
+   */
+  it('clears the sidecar before rebuilding the save, never after', async () => {
+    const calls: string[] = [];
+    stateService.clearTempQuizSession.and.callFake(async () => { calls.push('clear'); });
+    stateService.resetSnapshot.and.callFake(async () => {
+      calls.push('save');
+      return buildSnapshot({ states: [buildState(1, 'AL')], points: createEmptyPoints() });
+    });
+
+    await store.hydrate();
+    await store.resetProgress();
+
+    expect(calls).toEqual(['clear', 'save']);
+  });
+
   it('archives the current trip when resetting progress', async () => {
     stateService.loadSnapshot.and.resolveTo(buildSnapshot({
       states: [

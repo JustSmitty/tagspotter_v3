@@ -203,9 +203,30 @@ export class HomeWorkflowService {
     return (await alert.onDidDismiss()).role === 'confirm';
   }
 
+  /**
+   * A stored session is only resumable if the state it belongs to is still
+   * spotted in the save that just hydrated.
+   *
+   * pm-0001 fixed the one *producer* of a mismatch it knew about (trip reset
+   * leaving the sidecar behind) and left the resume path trusting whatever it
+   * loaded. That is the wrong place for the invariant, because the session and
+   * the save are separate writes and anything that lands between them
+   * reproduces the hazard: Android Auto Backup restoring the pair mid-reset
+   * (pm-0002), the two un-batched commits in `resetProgress` itself, or a save
+   * edited by hand. The consumer can check the pairing directly and does not
+   * have to know which of those happened.
+   */
   private async checkAndResumeQuiz(): Promise<void> {
     const saved = await this.quizSessions.load();
     if (!saved) return;
+
+    if (!this.isSpottedInCurrentSave(saved.stateId)) {
+      // Silent on purpose. The player did not leave this quiz behind on this
+      // trip, so asking them about it would be asking about a state they have
+      // no memory of spotting.
+      await this.quizSessions.clear();
+      return;
+    }
 
     const alert = await this.alertController.create({
       header: 'Finish the Quiz?',
@@ -282,6 +303,12 @@ export class HomeWorkflowService {
 
     await this.quizSessions.clear();
     await this.store.completeQuiz(quizSession.stateId, totalCorrect);
+  }
+
+  private isSpottedInCurrentSave(stateId: number): boolean {
+    return this.store.snapshot().states.some(
+      (state) => state.ID === stateId && state.fnd.stateFound,
+    );
   }
 
   private async confirmQuitQuiz(): Promise<boolean> {

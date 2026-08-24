@@ -186,5 +186,27 @@ describe('GameCommandService', () => {
 
       expect(result.points.question).toBe(0);
     });
+
+    /**
+     * pm-0001's hazard, asserted at the layer that actually refuses it. This
+     * guard was load-bearing and untested for two releases — pm-0002 found it
+     * by reading, not by a red test. A quiz can only be paired with an
+     * unspotted state through a bug, so the answer is to bank nothing.
+     */
+    it('refuses a state the save does not have spotted', () => {
+      const untouched = [buildState(1, 'AL')];
+
+      const result = service.completeQuiz(untouched, createEmptyPoints(), 1, 3);
+
+      expect(result).toBeNull();
+    });
+
+    it('refuses a state id the save does not contain at all', () => {
+      const spotted = service.recordFoundState([buildState(1, 'AL')], createEmptyPoints(), 1, 'trivia', 'easy')!;
+
+      const result = service.completeQuiz(spotted.states, spotted.points, 99, 3);
+
+      expect(result).toBeNull();
+    });
   });
 });

@@ -262,6 +262,61 @@ const CUSTOM_CHECKS = {
     return violations;
   },
 
+  /**
+   * Every <exclude domain="sharedpref"> in the Android backup rules must name a
+   * SharedPreferences file the app can actually produce.
+   *
+   * pm-0002. Both rule files excluded "CapacitorStorage.temp_quiz_session.xml"
+   * for two releases. No such file has ever existed — `temp_quiz_session` is a
+   * *key* inside Capacitor Preferences, and `domain="sharedpref"` selects
+   * files, not keys. Android does not warn on an exclude that matches nothing,
+   * the manifest parsed, the build was green, and every reader of those files
+   * came away believing the sidecar was held back when it was being backed up
+   * and restored in full.
+   *
+   * The producible set is derived, not listed. The Capacitor Preferences plugin
+   * writes to one file named for its group, `CapacitorStorage` unless
+   * `Preferences.configure({group})` says otherwise — so adding a real second
+   * group makes a matching exclude legal automatically, and inventing a
+   * filename stays a violation.
+   */
+  'backup-exclude-paths'() {
+    const groups = new Set(['CapacitorStorage']);
+    for (const file of selectFiles({ include: ['src/**/*.ts'], exclude: ['**/*.spec.ts'] })) {
+      for (const match of readText(file).matchAll(/group\s*:\s*['"`]([^'"`]+)['"`]/g)) {
+        groups.add(match[1]);
+      }
+    }
+    const producible = new Set([...groups].map((group) => `${group}.xml`));
+
+    const violations = [];
+    for (const file of [
+      'android/app/src/main/res/xml/backup_rules.xml',
+      'android/app/src/main/res/xml/data_extraction_rules.xml',
+    ]) {
+      const source = readText(file);
+      if (!source) continue;
+      const lines = source.split(/\r?\n/);
+      lines.forEach((line, index) => {
+        // Comments in these files discuss the removed line by name on purpose,
+        // so match the element rather than the string.
+        const tag = /<exclude\b[^>]*>/.exec(line);
+        if (!tag) return;
+        if (!/domain\s*=\s*"sharedpref"/.test(tag[0])) return;
+        const path = /path\s*=\s*"([^"]*)"/.exec(tag[0])?.[1];
+        if (path === undefined) {
+          violations.push(`${file}:${index + 1}  <exclude domain="sharedpref"> with no path`);
+        } else if (!producible.has(path)) {
+          violations.push(
+            `${file}:${index + 1}  excludes '${path}', which the app cannot produce`
+            + ` (sharedpref files: ${[...producible].sort().join(', ')})`,
+          );
+        }
+      });
+    }
+    return violations;
+  },
+
   /** Docs naming a dependency the project no longer has. */
   'stale-tech-claims'() {
     const pkg = JSON.parse(readText('package.json'));
