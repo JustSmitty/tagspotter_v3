@@ -10,7 +10,7 @@ confidence: high
 tags: [quiz, state, reset, bug]
 claims: {}
 supersedes: []
-related: [dec-0006-standalone-onboarding-flag]
+related: [dec-0006-standalone-onboarding-flag, pm-0002-inert-backup-exclude]
 review_by: 2027-02-28
 ---
 
@@ -41,3 +41,11 @@ deliberately have *different* reset behaviour: the quiz session is cleared, the 
 
 Any agent adding a fourth standalone preference key must state, in the same commit, what happens to
 it on trip reset and on save corruption, and add a store spec that asserts it.
+
+## Amended by pm-0002
+
+Declaring the lifetime was necessary and not sufficient. This fix cleared the sidecar at the one
+*producer* of a mismatch known at the time — trip reset — and left the resume path trusting whatever
+it loaded, so the next unanticipated producer reopened the same hazard. Read
+[[pm-0002-inert-backup-exclude]] with this: where two persistence surfaces must agree, check the
+agreement at the point of use, because the producers are an open set and the consumer is one place.

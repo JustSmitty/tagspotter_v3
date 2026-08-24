@@ -85,14 +85,21 @@ here is holding the line, not doing the work again.
   `android/app/src/main/res/xml/` include sharedprefs so a player changing phones keeps their
   collection — there is no server to restore it from (`con-0004-no-backend-no-accounts`).
 
-  Both files also carry `<exclude ... path="CapacitorStorage.temp_quiz_session.xml"/>`, and **that
-  line matches nothing.** `temp_quiz_session` is a *key* inside Capacitor Preferences
-  (`src/app/models/quiz.model.ts`), and with no `Preferences.configure` group anywhere in `src/`
-  every key lives in the single file `CapacitorStorage.xml`. Per-key exclusion is not expressible in
-  these XML files at all, so an in-flight quiz **is** backed up and restored today, and a restore can
-  still land `pm-0001-stale-quiz-session` by arriving alongside a save from a different moment.
-  Closing it needs an in-app decision — clear the temp key on first launch after a restore, or move
-  it out of Preferences — not another exclude line. Do not describe this as handled until it is.
+  **Per-key exclusion is not expressible in these files, and `guardrail:backup-exclude-paths` now
+  enforces that.** Both files used to carry `<exclude ... path="CapacitorStorage.temp_quiz_session.xml"/>`,
+  which matched nothing for two releases (`pm-0002`): `temp_quiz_session` is a *key* inside Capacitor
+  Preferences (`src/app/models/quiz.model.ts`), `domain="sharedpref"` selects *files*, and with no
+  `Preferences.configure` group anywhere in `src/` every key — the save blob included — lives in the
+  single file `CapacitorStorage.xml`. The guardrail derives the producible filenames from the
+  Preferences group rather than listing them, so a real second group legalises a matching exclude on
+  its own. An in-flight quiz **is** backed up and restored, and that is now accepted rather than
+  papered over.
+
+  What holds the invariant is in the app, not here: `HomeWorkflowService.checkAndResumeQuiz` refuses
+  to resume a session whose state the hydrated save does not have spotted. **Do not try to solve a
+  key-level problem with a file-level rule.** If a future sidecar genuinely must not cross a restore,
+  either give it its own Preferences group (a real file, excludable, and a `data-migration`
+  escalation) or check the pairing at the point of use, as the quiz does.
 
 - **Release signing never references the debug keystore** (`guardrail:debug-keystore-in-release`).
   A debug-signed APK installs perfectly and can then never be updated on Play.

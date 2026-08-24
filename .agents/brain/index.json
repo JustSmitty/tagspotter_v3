@@ -1,5 +1,5 @@
 {
-  "count": 32,
+  "count": 33,
   "records": [
     {
       "id": "audit-2026-08-15",
@@ -814,9 +814,39 @@
       "claims": {},
       "supersedes": [],
       "related": [
-        "dec-0006-standalone-onboarding-flag"
+        "dec-0006-standalone-onboarding-flag",
+        "pm-0002-inert-backup-exclude"
       ],
       "file": ".agents/brain/postmortems/pm-0001-stale-quiz-session.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "pm-0002-inert-backup-exclude",
+      "type": "postmortem",
+      "title": "The backup rule that held back the quiz sidecar excluded a file that never existed",
+      "status": "resolved",
+      "date": "2026-08-24",
+      "source": "commit:1a0b5b2",
+      "confidence": "high",
+      "tags": [
+        "android",
+        "backup",
+        "quiz",
+        "state",
+        "persistence",
+        "guardrails",
+        "bug"
+      ],
+      "claims": {
+        "quiz-session.stale-guard": "resume-path"
+      },
+      "supersedes": [],
+      "related": [
+        "pm-0001-stale-quiz-session",
+        "con-0004-no-backend-no-accounts",
+        "f-049-guardrails-do-not-cover-the-instruction-layer"
+      ],
+      "file": ".agents/brain/postmortems/pm-0002-inert-backup-exclude.md",
       "review_by": "2027-02-28"
     }
   ]

@@ -362,6 +362,17 @@
       "requires": "ITSAppUsesNonExemptEncryption",
       "baseline": 0,
       "measuredAt": "2026-08-24"
+    },
+    {
+      "id": "backup-exclude-paths",
+      "title": "Every sharedpref <exclude> in the backup rules names a file the app can produce",
+      "finding": "PM-0002",
+      "phase": 6,
+      "owner": "tagspotter-release",
+      "type": "custom",
+      "$note": "pm-0002. Both rule files excluded 'CapacitorStorage.temp_quiz_session.xml' for two releases; no such file has ever existed, because temp_quiz_session is a KEY inside Capacitor Preferences and domain=\"sharedpref\" selects files. Android does not warn on an exclude that matches nothing, so the build stayed green while every reader believed the sidecar was held back. The producible set is DERIVED from the Preferences group (default CapacitorStorage, plus any Preferences.configure group in src), not listed here — a real second group makes a matching exclude legal on its own, and an invented filename stays a violation. This guardrail cannot tell you the exclusion is the RIGHT one, only that it is not inert; the resume-path guard in HomeWorkflowService is what actually holds the invariant.",
+      "baseline": 0,
+      "measuredAt": "2026-08-24"
     }
   ]
 }

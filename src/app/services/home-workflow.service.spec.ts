@@ -21,7 +21,7 @@ describe('HomeWorkflowService', () => {
     homeViewModel: ReturnType<typeof signal<HomeViewModel>>;
     gameMode: ReturnType<typeof signal<'classic' | 'trivia'>>;
     hasSeenOnboarding: ReturnType<typeof signal<boolean>>;
-    snapshot: ReturnType<typeof signal<{ states: unknown[]; foundCount: number }>>;
+    snapshot: ReturnType<typeof signal<{ states: SavedStateStub[]; foundCount: number }>>;
   };
   let modalController: jasmine.SpyObj<ModalController>;
   let alertController: jasmine.SpyObj<AlertController>;
@@ -34,6 +34,17 @@ describe('HomeWorkflowService', () => {
   let alertRoles: string[];
   /** Data the next quiz modals will dismiss with, in order. */
   let modalData: unknown[];
+
+  /**
+   * Only the two fields `checkAndResumeQuiz` reads off the save. The real
+   * StoredStateRecord carries the whole seed row, and spelling it out here
+   * would tie every resume test to fields it does not care about.
+   */
+  type SavedStateStub = { ID: number; fnd: { stateFound: boolean } };
+
+  function savedStates(spottedIds: number[] = []): SavedStateStub[] {
+    return [1, 2].map((id) => ({ ID: id, fnd: { stateFound: spottedIds.includes(id) } }));
+  }
 
   const unspottedState: StateCardViewModel = {
     id: 1, code: 'AL', name: 'Alabama', isFound: false,
@@ -64,7 +75,7 @@ describe('HomeWorkflowService', () => {
         homeViewModel: signal({ isBusy: false, states: [unspottedState] } as unknown as HomeViewModel),
         gameMode: signal<'classic' | 'trivia'>('classic'),
         hasSeenOnboarding: signal(true),
-        snapshot: signal({ states: [{}, {}], foundCount: 0 }),
+        snapshot: signal({ states: savedStates(), foundCount: 0 }),
       },
     );
     store.hydrate.and.resolveTo();
@@ -164,7 +175,7 @@ describe('HomeWorkflowService', () => {
     });
 
     it('navigates to the summary once every plate is spotted', async () => {
-      store.snapshot.set({ states: [{}, {}], foundCount: 2 });
+      store.snapshot.set({ states: savedStates([1, 2]), foundCount: 2 });
 
       await workflow.recordState(unspottedState);
 
@@ -255,6 +266,7 @@ describe('HomeWorkflowService', () => {
     });
 
     it('offers to resume a saved session on start-up', async () => {
+      store.snapshot.set({ states: savedStates([1]), foundCount: 1 });
       quizSessions.load.and.resolveTo({ ...buildSession(2), currentIndex: 1, totalCorrect: 1 } as StoredQuizSession);
       alertRoles = ['confirm'];
       modalData = [{ kind: 'answered', score: 1 }];
@@ -268,6 +280,7 @@ describe('HomeWorkflowService', () => {
     });
 
     it('discards a saved session when the player declines', async () => {
+      store.snapshot.set({ states: savedStates([1]), foundCount: 1 });
       quizSessions.load.and.resolveTo({ ...buildSession(2), currentIndex: 1, totalCorrect: 1 } as StoredQuizSession);
       alertRoles = ['cancel'];
 
@@ -275,6 +288,50 @@ describe('HomeWorkflowService', () => {
 
       expect(quizSessions.clear).toHaveBeenCalled();
       expect(modalController.create).not.toHaveBeenCalled();
+    });
+
+    /**
+     * pm-0002. The session and the save are separate writes, so a restore, a
+     * reset caught between its two commits, or a hand-edited save can pair a
+     * live session with a save that never spotted its state. The resume path
+     * is the one place that sees both, so it is the one place that can refuse.
+     */
+    describe('a session whose state the current save has not spotted', () => {
+      beforeEach(() => {
+        store.snapshot.set({ states: savedStates(), foundCount: 0 });
+        quizSessions.load.and.resolveTo(
+          { ...buildSession(2), currentIndex: 1, totalCorrect: 1 } as StoredQuizSession,
+        );
+      });
+
+      it('is dropped without prompting', async () => {
+        await workflow.initialize();
+
+        expect(alertController.create).not.toHaveBeenCalled();
+        expect(modalController.create).not.toHaveBeenCalled();
+        expect(quizSessions.clear).toHaveBeenCalled();
+      });
+
+      it('cannot reach completeQuiz, so it can score nothing', async () => {
+        // The hazard pm-0001 recorded, arriving by a route its fix did not
+        // cover: finishing the resumed quiz banks trivia points against a
+        // state the save does not have spotted.
+        await workflow.initialize();
+
+        expect(store.completeQuiz).not.toHaveBeenCalled();
+      });
+
+      it('does not strand the session — a later spot can still resume it', async () => {
+        // Clearing is not merely cosmetic: leaving the key would re-prompt on
+        // every launch. Once the state is genuinely spotted again the normal
+        // resume path is unaffected.
+        store.snapshot.set({ states: savedStates([1]), foundCount: 1 });
+        alertRoles = ['cancel'];
+
+        await workflow.initialize();
+
+        expect(alertController.create).toHaveBeenCalled();
+      });
     });
   });
 

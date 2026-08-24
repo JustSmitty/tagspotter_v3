@@ -5,12 +5,19 @@
   The trip is worth backing up: a player who changes phones should not lose their
   collection, and there is no server to restore it from (con-0004-no-backend-no-accounts).
 
-  What is deliberately excluded is the in-flight quiz sidecar. Restoring a
-  half-finished quiz onto a device whose save came from a different point in time
-  is the same hazard as pm-0001-stale-quiz-session: a resumed quiz scoring points
-  against a state that is not spotted in the restored save.
+  This file previously carried an <exclude> for
+  "CapacitorStorage.temp_quiz_session.xml", meaning to hold back the in-flight
+  quiz sidecar. No such file has ever existed and the line matched nothing
+  (pm-0002). `temp_quiz_session` is a *key* inside Capacitor Preferences, and
+  every key the app writes — the save blob included — lives in the single file
+  CapacitorStorage.xml. `domain="sharedpref"` selects files, so per-key
+  exclusion is not expressible here at all and no rewording of this file can
+  make it so. Do not add the line back.
+
+  The invariant it was reaching for now lives where both halves are visible at
+  once: HomeWorkflowService.checkAndResumeQuiz refuses to resume a session
+  whose state the hydrated save does not have spotted, whatever paired them.
 -->
 <full-backup-content>
     <include domain="sharedpref" path="." />
-    <exclude domain="sharedpref" path="CapacitorStorage.temp_quiz_session.xml" />
 </full-backup-content>
