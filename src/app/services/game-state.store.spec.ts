@@ -336,9 +336,9 @@ describe('GameStateStore', () => {
   });
 
   /**
-   * pm-0002. The clear and the save are two Preferences writes and cannot be
-   * made one — the plugin has no transaction and each call is its own
-   * edit()/apply(). So the window is unavoidable and only its ORDER decides
+   * pm-0002. The clear and the save are two Preferences KEYS and the plugin
+   * has no cross-key transaction, so while the session stays its own key the
+   * window is unavoidable and only its ORDER decides
    * what an Android backup can snapshot: clearing first leaves `old save + no
    * session`, which is harmless, while the reverse leaves `fresh save + stale
    * session`, which is pm-0001's hazard written to disk.
