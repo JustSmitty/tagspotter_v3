@@ -70,8 +70,34 @@ confident-looking.
 
 ## What was built instead
 
-Three checks in `structuralSuite()`, all decidable, no word lists. Each was verified by sabotaging
-`tagspotter-feature` and watching the right one go red:
+Three checks in `structuralSuite()`, all decidable, no word lists.
+
+**Two of the three shipped broken, and the sabotage that "verified" them did not catch it.** Each
+was tested by removing a guardrail id from `tagspotter-feature` and watching the right check go red.
+That passes, and it proves almost nothing: deleting the id outright is the one failure mode a
+substring match still detects.
+
+- `owns-its-guardrails` tested `skill.body.includes(guardrail.id)` — a bare substring match, in the
+  same branch whose headline fix was that substring matching is the wrong mechanism one file over.
+  `reduced-motion` is contained in `prefers-reduced-motion`, which any accessibility skill must be
+  free to write, so deleting the only sentence in `tagspotter-a11y-gate` that cites
+  `guardrail:reduced-motion` still reported "6 named", green. Now keyed on the unambiguous
+  `guardrail:<id>` citation form the sibling check already extracted.
+- `review-fresh` compared `review_by` as a raw string. Letters sort above digits, so `never`, `tbd`
+  and `n/a` all read as fresh — permanently, with an empty detail line indistinguishable from a real
+  date. The only ratchet this record adds could be switched off by typing a three-character
+  placeholder. It failed the other way too: `review_by: "2027-02-28"` is valid YAML six months out,
+  and the quote sorts below digits, so a correctly dated skill read as stale — while `brain.mjs`'s
+  `parseScalar` strips quotes, so the two layers this record calls "the same mechanism" disagreed on
+  the same input. Now the value must match `YYYY-MM-DD` to count, quotes and trailing comments are
+  tolerated, and a malformed date says so by name.
+
+The lesson is the one this record already argues one paragraph up, turned back on itself: a check
+built from the failure you have in mind tests that failure and nothing else. Both holes were found
+by someone else re-deriving what the checks *should* reject, not by the author sabotaging what he
+had just written.
+
+What the three checks do, once fixed:
 
 - **`skill:<name>:owns-its-guardrails`** — a guardrail's `owner` skill must name it. This found
   **seven** live gaps: `tagspotter-copy` never mentioned `ai-capability-claims` or
