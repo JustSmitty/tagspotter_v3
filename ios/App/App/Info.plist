@@ -22,6 +22,13 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<!-- Declared here so App Store Connect stops asking the export-compliance
+	     question on every single build upload. Tag Spotter ships no encryption of
+	     its own: the save file is plain JSON (dec-0009) and the only cryptography
+	     in the app is the HTTPS the platform provides, which is exempt. Adding
+	     encryption beyond that means revisiting this key, not deleting it. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -34,14 +41,12 @@
 	<array>
 		<string>armv7</string>
 	</array>
+	<!-- iPhone only (TARGETED_DEVICE_FAMILY = 1), so there is deliberately no
+	     ~ipad variant of this key: on an iPad the app runs in iPhone
+	     compatibility mode and uses the list below. -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>

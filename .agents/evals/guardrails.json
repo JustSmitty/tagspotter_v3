@@ -330,6 +330,38 @@
       "baseline": 0,
       "measuredAt": "2026-08-15",
       "note": "Every build so far was signed with the debug keystore for on-device smoke tests, done by invoking apksigner directly and never by committing it. This keeps it that way: a debug key committed into the release signing path would produce an APK that installs fine and can never be updated on Play."
+    },
+    {
+      "id": "ios-ipad-target",
+      "title": "The iOS target stays iPhone-only",
+      "finding": "F-45",
+      "phase": 6,
+      "owner": "tagspotter-release",
+      "type": "regex-scan",
+      "include": [
+        "ios/App/App.xcodeproj/project.pbxproj"
+      ],
+      "$note": "Capacitor scaffolds every iOS target as universal (\"1,2\"), and the project sat that way with no iPad layout, no iPad testing and no iPad screenshots — a universal binary obliges Apple to review it on iPad and obliges the listing to carry 13-inch screenshots. Portrait-only (con-0005) is the Android position and iPad was never the second half of a plan. Regenerating the Xcode project restores the default silently, which is exactly the kind of regression a baseline catches. See dec-0016.",
+      "caseSensitive": true,
+      "pattern": "TARGETED_DEVICE_FAMILY = \"1,2\"",
+      "baseline": 0,
+      "measuredAt": "2026-08-24"
+    },
+    {
+      "id": "ios-export-compliance",
+      "title": "Info.plist answers the export-compliance question up front",
+      "finding": "F-46",
+      "phase": 6,
+      "owner": "tagspotter-release",
+      "type": "paired-pattern",
+      "include": [
+        "ios/App/App/Info.plist"
+      ],
+      "$note": "Without ITSAppUsesNonExemptEncryption, App Store Connect asks the export-compliance question on every single build upload and the build sits in \"Missing Compliance\" until someone answers it by hand. The app ships no encryption of its own (dec-0009 — plain JSON saves), so the answer is false and never changes. Paired-pattern rather than regex-scan: this guardrail fires on ABSENCE, so the trigger is a key the file always has.",
+      "pattern": "CFBundleIdentifier",
+      "requires": "ITSAppUsesNonExemptEncryption",
+      "baseline": 0,
+      "measuredAt": "2026-08-24"
     }
   ]
 }
