@@ -1,6 +1,7 @@
 ---
 name: tagspotter-copy
 description: Owns every user-facing string in Tag Spotter — templates, alerts, toasts, onboarding, README and store metadata. Use when the request involves copy, wording, microcopy, voice, tone, brand, labels, renaming user-visible things, or writing/fixing documentation claims. Enforces the single Americana voice and blocks the golf metaphor, the false "AI Caddie" claim, and unverifiable tech claims.
+review_by: 2027-02-28
 ---
 
 # Tag Spotter — Copy & Voice
@@ -32,11 +33,12 @@ disagree, the doc wins.
 1. **The golf lexicon** — caddie, tee off, fairway, green in regulation, layup, birdie, 18th, on the
    bag, walk off the green, hole. It is a different product wearing this one's clothes
    (`dec-0008-americana-brand-voice`).
-2. **"AI Caddie" and any AI claim.** There is no AI in this app. The onboarding modal currently says
-   there is (audit F-02). That is false, and false capability claims are an app-store review risk.
-3. **"Miles traveled" / "odometer" / "distance driven."** The number is the distance from the player
-   to a state's centroid, summed — not travel (audit F-07). Either call it what it is, or build the
-   thing the words promise. Do not keep the words.
+2. **"AI Caddie" and any AI claim** (`guardrail:ai-capability-claims`). There is no AI in this app.
+   The onboarding modal said there was until F-02 closed it. False capability claims are an
+   app-store review risk, which is why this one is scanned in store metadata as well as in the app.
+3. **"Miles traveled" / "odometer" / "distance driven"** (`guardrail:distance-mislabelled`). The
+   number is the distance from the player to a state's centroid, summed — not travel (audit F-07).
+   Either call it what it is, or build the thing the words promise. Do not keep the words.
 
 ## Rules for any string you write
 

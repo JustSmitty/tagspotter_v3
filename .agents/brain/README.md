@@ -71,6 +71,20 @@ said the map was "powered by MapLibre GL" in one section and "inline SVG generat
 GeoJSON" in another, and both had been true at different times. A claims collision would have caught
 it the day the second one landed.
 
+Write `claims:` either way — both parse to the same mapping:
+
+```yaml
+claims: {map-renderer: inline-svg}      # inline, good for one or two
+
+claims:                                 # block, easier to read past two
+  contrast.baseline.light: 0
+  contrast.baseline.dark: 0
+```
+
+Anything else — a `- ` list, a bare string — is a lint error. It used to be accepted silently and
+indexed under the positional keys `'0'`, `'1'`, so the record looked like it was participating in the
+contradiction check while contributing nothing to it (audit F-48).
+
 When you supersede a fact, don't edit history — set the old record's `status: superseded` and point
 the new one at it via `supersedes: [old-id]`. Lint enforces the back-reference in both directions:
 an orphaned `superseded` record is an error, because retrieval would keep surfacing it forever with

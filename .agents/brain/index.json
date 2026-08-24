@@ -1,11 +1,11 @@
 {
-  "count": 28,
+  "count": 32,
   "records": [
     {
       "id": "audit-2026-08-15",
       "type": "finding",
       "title": "Full-repo audit — 41 findings across product, correctness, perf, a11y and process",
-      "status": "open",
+      "status": "resolved",
       "date": "2026-08-15",
       "source": "audit:full-scan-2026-08-15",
       "confidence": "high",
@@ -23,10 +23,15 @@
       "related": [
         "dec-0005-retire-save-encryption",
         "dec-0008-americana-brand-voice",
-        "con-0002-csp-no-remote-hosts"
+        "con-0002-csp-no-remote-hosts",
+        "f-042-contrast-debt",
+        "f-043-nav-icons-were-black",
+        "f-044-store-readiness",
+        "f-047-resolver-substring-keyword-collisions",
+        "f-048-block-form-claims-parse-as-a-list"
       ],
       "file": ".agents/brain/findings/audit-2026-08-15.md",
-      "review_by": "2026-11-30"
+      "review_by": "2027-08-31"
     },
     {
       "id": "con-0001-offline-first",
@@ -639,11 +644,11 @@
         "design-system",
         "dark-mode"
       ],
-      "claims": [
-        "contrast.baseline.light: 0",
-        "contrast.baseline.dark: 0",
-        "contrast.scope: all-five-routes-populated"
-      ],
+      "claims": {
+        "contrast.baseline.light": "0",
+        "contrast.baseline.dark": "0",
+        "contrast.scope": "all-five-routes-populated"
+      },
       "supersedes": [],
       "related": [
         "dec-0012-dark-mode-instrument-cluster",
@@ -668,10 +673,10 @@
         "icons",
         "navigation"
       ],
-      "claims": [
-        "nav-icons.paint-method: mask-image",
-        "nav-icons.currentcolor-works: true"
-      ],
+      "claims": {
+        "nav-icons.paint-method": "mask-image",
+        "nav-icons.currentcolor-works": true
+      },
       "supersedes": [],
       "related": [
         "dec-0015-ink-follows-its-ground",
@@ -679,6 +684,117 @@
         "f-042-contrast-debt"
       ],
       "file": ".agents/brain/findings/f-043-nav-icons-were-black.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "f-044-store-readiness",
+      "type": "finding",
+      "title": "F-44 — store readiness: what both stores require, and what is still missing",
+      "status": "open",
+      "date": "2026-08-15",
+      "source": "commit:51960d8",
+      "confidence": "high",
+      "tags": [
+        "release",
+        "store",
+        "ios",
+        "android",
+        "privacy",
+        "ci"
+      ],
+      "claims": {
+        "ios.privacy-collected-data": "none",
+        "store.android-artifact": "aab"
+      },
+      "supersedes": [],
+      "related": [
+        "audit-2026-08-15",
+        "con-0004-no-backend-no-accounts",
+        "dec-0007-coarse-location-default",
+        "f-049-guardrails-do-not-cover-the-instruction-layer"
+      ],
+      "file": ".agents/brain/findings/f-044-store-readiness.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "f-047-resolver-substring-keyword-collisions",
+      "type": "finding",
+      "title": "F-47 — the resolver matched keywords as bare substrings; now word-boundary with inflections",
+      "status": "resolved",
+      "date": "2026-08-24",
+      "source": "file:scripts/resolve.mjs:44",
+      "confidence": "high",
+      "tags": [
+        "resolver",
+        "routing",
+        "tooling",
+        "agents"
+      ],
+      "claims": {
+        "resolver.keyword-matching": "word-boundary-with-inflections"
+      },
+      "supersedes": [],
+      "related": [
+        "audit-2026-08-15",
+        "f-044-store-readiness",
+        "f-048-block-form-claims-parse-as-a-list",
+        "f-049-guardrails-do-not-cover-the-instruction-layer"
+      ],
+      "file": ".agents/brain/findings/f-047-resolver-substring-keyword-collisions.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "f-048-block-form-claims-parse-as-a-list",
+      "type": "finding",
+      "title": "F-48 — multi-line `claims:` parsed as a list; the parser now reads block mappings",
+      "status": "resolved",
+      "date": "2026-08-24",
+      "source": "file:scripts/brain.mjs:141",
+      "confidence": "high",
+      "tags": [
+        "brain",
+        "librarian",
+        "claims",
+        "tooling"
+      ],
+      "claims": {
+        "brain.claims-form": "inline-or-block-mapping"
+      },
+      "supersedes": [],
+      "related": [
+        "f-047-resolver-substring-keyword-collisions",
+        "f-044-store-readiness",
+        "f-049-guardrails-do-not-cover-the-instruction-layer"
+      ],
+      "file": ".agents/brain/findings/f-048-block-form-claims-parse-as-a-list.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "f-049-guardrails-do-not-cover-the-instruction-layer",
+      "type": "finding",
+      "title": "F-49 — nothing ratcheted the text that instructs agents; skills now carry review_by",
+      "status": "resolved",
+      "date": "2026-08-24",
+      "source": "commit:32e4b87",
+      "confidence": "high",
+      "tags": [
+        "agents",
+        "skills",
+        "brain",
+        "guardrails",
+        "process"
+      ],
+      "claims": {
+        "guardrails.cover-instruction-layer": "structural-only"
+      },
+      "supersedes": [],
+      "related": [
+        "audit-2026-08-15",
+        "f-044-store-readiness",
+        "f-047-resolver-substring-keyword-collisions",
+        "f-048-block-form-claims-parse-as-a-list"
+      ],
+      "file": ".agents/brain/findings/f-049-guardrails-do-not-cover-the-instruction-layer.md",
       "review_by": "2027-02-28"
     },
     {

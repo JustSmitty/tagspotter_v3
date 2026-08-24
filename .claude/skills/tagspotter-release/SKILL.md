@@ -1,6 +1,7 @@
 ---
 name: tagspotter-release
 description: Owns Tag Spotter's build configuration, CI, versioning, native Android/iOS config, and store submission. Use when the request involves release, publishing, versioning, CI pipelines, Gradle, APK/AAB, the Capacitor config, the Android manifest, tsconfig, ESLint or Karma configuration, or the Angular builder. Enforces version parity, release-build hardening, and the escalation rule for anything that ships outward.
+review_by: 2027-02-28
 ---
 
 # Tag Spotter — Release Engineering
@@ -22,48 +23,119 @@ permission problem, **not** a code defect. Never "fix" code in response to it.
 
 ## Version parity — `guardrail:version-parity`
 
-Three numbers must agree, and today they are synced by hand (audit F-40):
+Four files, seven fields, one source of truth:
 
-| Where | Field |
-|---|---|
-| `package.json` | `version` |
-| `android/app/build.gradle` | `versionName` |
-| `android/app/build.gradle` | `versionCode` (monotonic integer, never reused) |
+| Where | Field | Must equal |
+|---|---|---|
+| `package.json` | `version` | — this is the source of truth |
+| `package-lock.json` | `version` and `packages[""].version` | `package.json` `version` |
+| `android/app/build.gradle` | `versionName` | `package.json` `version` |
+| `android/app/build.gradle` | `versionCode` | a monotonic integer, never reused |
+| `ios/App/App.xcodeproj/project.pbxproj` | `MARKETING_VERSION` | `package.json` `version` |
+| `ios/App/App.xcodeproj/project.pbxproj` | `CURRENT_PROJECT_VERSION` | Android `versionCode` |
 
-`versionName` must equal `package.json` `version`. `versionCode` increments on every store build and
-never goes backwards — Play rejects a reused code, and there is no way to undo a published one.
+`versionCode` increments on every store build and never goes backwards — Play rejects a reused code,
+and there is no way to undo a published one.
+
+They are no longer hand-synced (F-40). `scripts/bump-version.mjs` moves all of them together — use
+it rather than editing three files and hoping:
+
+```
+npm.cmd run version:check          # report only, changes nothing
+npm.cmd run version:bump -- patch  # or minor / major / build (build = versionCode only)
+npm.cmd run version:sync           # align iOS to the current version, no bump
+```
+
+`guardrail:version-parity` checks all seven. It has been widened twice for the same reason, and the
+reason is the point: **a parity check that covers some of the places a version lives reports green
+while the one it misses drifts.** First it stopped at Android, and iOS sat at `1.0.0` / `1` while
+Android reached `1.1.0` / `3`. Then it ignored `package-lock.json`, which carries the version twice
+and which npm rewrites on the next install. Repair drift with `version:sync`, not a bump — bumping
+burns a version number to fix a bookkeeping error.
 
 ## Release build hardening
 
-Open items from the audit; each has a guardrail:
+Every item below is **done and guarded**; all of these guardrails read 0 in `npm run evals`. The job
+here is holding the line, not doing the work again.
 
-- **`guardrail:r8-disabled`** — `minifyEnabled false` on the release buildType (F-34). Turn on R8,
-  then **smoke-test the release APK**, not just the debug one. `AppSettingsPlugin` is reached
-  reflectively through Capacitor's plugin registry, so it needs a keep rule in
-  `proguard-rules.pro` or the "Calibrate GPS" button silently dies in release.
-- **`guardrail:cli-analytics`** — `angular.json` has a committed CLI analytics UUID (F-41). Set it
-  to `false`; every contributor's builds currently report under the maintainer's ID.
-- **`guardrail:csp-unsafe-eval`** — `script-src 'unsafe-eval'` for a MapLibre dependency that no
-  longer exists (F-21, `con-0002`). Remove the directive *and* its stale comment together.
-- **Data extraction rules** (F-22) — `allowBackup="true"` with nothing declared for API 31+.
+- **R8 is on.** `minifyEnabled true` + `shrinkResources true` on the release buildType (F-34).
+  `guardrail:r8-disabled` scans `android/app/build.gradle` for `minifyEnabled false`.
 
-## Toolchain migrations, in this order
+  What makes R8 survivable is `android/app/proguard-rules.pro`. Capacitor resolves plugin methods
+  **by name** through the bridge, so R8 sees no caller and strips them. Without those keep rules the
+  "Open settings" button in the location-permission alert silently does nothing — *in release only*.
+  So: do not trim the keep rules, and when a plugin or any other reflective entry point is added,
+  smoke-test the **release** APK. A green debug build proves nothing about R8.
 
-Each is independently shippable. Do not batch them — when a build breaks you want one suspect.
+  R8 also means the shipped stack traces are obfuscated. Upload `mapping.txt` alongside the AAB or
+  every Play crash report comes back unreadable.
 
-1. **Karma → headless by default** (F-36). `npm test` must be single-run headless with no extra
-   flags. Today the config defaults to `browsers: ['Chrome'], singleRun: false`.
-2. **ESLint flat config** (F-38). `.eslintrc.json` is legacy under ESLint 9; it works via compat and
-   will stop.
-3. **tsconfig alignment** (F-39). `target: es2022` with `lib: ["es2018","dom"]`, plus
-   `useDefineForClassFields: false`.
-4. **`browser` → `application` builder** (F-25). Deprecated webpack builder → esbuild. Changes output
-   layout; run it *after* the asset cleanup so you are validating against a small `www/`.
-5. **Zoneless** (F-26). Every component is OnPush with signals and no manual `markForCheck`, so
-   `provideZonelessChangeDetection()` should be a config change. Full suite must stay green.
+- **CLI analytics is off.** `angular.json` has `"analytics": false` (F-41). Note the limit of the
+  guardrail: `guardrail:cli-analytics` matches a committed *UUID*, so it will not catch the flag
+  being flipped back to `true`. The setting is the invariant; the guardrail is only the backstop.
 
-After **any** of these: `npm.cmd run lint && npm.cmd run test -- --watch=false --browsers=ChromeHeadless && npm.cmd run build`,
-then `npx cap sync` and launch on a device. A green web build does not prove the native shell works.
+- **The CSP names no remote hosts and no `unsafe-eval`.** `script-src 'self'` (F-21, `con-0002`).
+  `guardrail:csp-unsafe-eval` is a plain regex scan of `src/index.html`, which means the explanatory
+  comment in that file cannot name the banned string either — it is worded around it on purpose.
+  Keep it that way rather than adding a scanner exclusion. A guardrail that a comment can talk its
+  way past is not a guardrail.
+
+- **Backup behaviour is declared, not defaulted.** The manifest sets both
+  `android:fullBackupContent` and `android:dataExtractionRules` (F-22), and the two XML files under
+  `android/app/src/main/res/xml/` include sharedprefs while **excluding the in-flight quiz sidecar**
+  (`CapacitorStorage.temp_quiz_session.xml`). Restoring a half-finished quiz alongside a save from a
+  different moment is `pm-0001-stale-quiz-session` again, arriving by backup instead. A new
+  persisted key is an explicit include/exclude decision in **both** files.
+
+- **Release signing never references the debug keystore** (`guardrail:debug-keystore-in-release`).
+  A debug-signed APK installs perfectly and can then never be updated on Play.
+
+- **The iOS target stays iPhone-only** — `TARGETED_DEVICE_FAMILY = "1"`
+  (`guardrail:ios-ipad-target`, `dec-0016`). Capacitor scaffolds every iOS target as universal
+  (`"1,2"`), and regenerating the Xcode project restores that silently. Universal is a promise:
+  Apple reviews on iPad and rejects layouts that break there, and App Store Connect will not take
+  the listing without 13-inch iPad screenshots. None of that work exists, and Android is
+  portrait-locked anyway (`con-0005`).
+
+- **`Info.plist` answers export compliance up front** — `ITSAppUsesNonExemptEncryption`
+  (`guardrail:ios-export-compliance`). Without it, App Store Connect asks on *every* upload and the
+  build sits in "Missing Compliance" until someone answers by hand. The app ships no encryption of
+  its own (`dec-0009`), so the answer is `false` and never changes. Note this guardrail fires on
+  **absence**, so it is a `paired-pattern` keyed on a plist key that is always present.
+
+## Toolchain — settled, do not migrate again
+
+All five migrations landed (phases 2 and 4). Each is now a shape to preserve, and each has a trap
+that is cheap to reintroduce:
+
+1. **Karma is headless single-run by default** (F-36). `karma.conf.js` sets
+   `browsers: ['ChromeHeadless']`, `singleRun: true`, `autoWatch: false`, so `npm test` needs no
+   flags; `npm run test:ci` is the same run with them spelled out for CI. Do not put
+   `--browsers=ChromeHeadless` back into scripts or docs — forgetting the flags used to hang the
+   run, and the fix was to make it the default rather than something to remember.
+2. **ESLint is flat config** (F-38). `eslint.config.js` only; `.eslintrc.json` is gone. It is built
+   from the individual plugin packages rather than the `angular-eslint` / `typescript-eslint`
+   umbrellas, so the migration needed no new dependencies. It deliberately does **not** extend
+   `typescript-eslint/recommended` — that surfaces ~34 further errors, which is worth doing as its
+   own change and not smuggled inside a config edit.
+3. **tsconfig `target` and `lib` are in step** (F-39): `target: es2022`, `lib: ["es2022","dom"]`,
+   `useDefineForClassFields: true`. The old skew emitted modern syntax while refusing modern library
+   methods — `Array.prototype.flatMap` failed to typecheck on an es2022 target. Move `target` and
+   `lib` together or not at all.
+4. **The `application` (esbuild) builder** (F-25, `dec-0011`). `outputPath` is the object form
+   `{ "base": "www", "browser": "" }` on purpose: the builder otherwise emits into `www/browser/`,
+   which `capacitor.config.ts` (`webDir: "www"`) never looks at. The symptom is a blank white screen
+   on device after `cap sync`, behind a perfectly green web build. `outputPath` and `webDir` move
+   together.
+5. **Zoneless** (F-26, `dec-0013`). `provideZonelessChangeDetection()` in both `src/main.ts` and
+   `src/test.ts`; no `polyfills.ts`, no zone.js. Every component stays OnPush + signals with no
+   manual `markForCheck`. The trap `dec-0013` records: never hand a raw Capacitor plugin proxy to
+   DI — it answers *any* property including `ngOnDestroy`, so Angular calls it during injector
+   teardown and hits the native bridge. Inject behind a token.
+
+After **any** build-config change: `npm.cmd run verify` (lint + headless suite + evals) then
+`npm.cmd run build`, then `npx cap sync` and launch on a device. A green web build does not prove
+the native shell works.
 
 ## Android specifics
 
@@ -78,16 +150,24 @@ then `npx cap sync` and launch on a device. A green web build does not prove the
 `docs/store-submission.md`, `docs/app-store-release.md`, and `docs/store-metadata.*.json` are the
 checklists. Store copy is copy — route wording through `tagspotter-copy`.
 
+Play takes the **AAB**, not the APK: `npm.cmd run release:aab` (`release:apk` is for on-device smoke
+tests). iOS builds on the macOS runner in `.github/workflows/ios.yml`, which is manual-dispatch or
+`v*`-tag only because GitHub bills macOS at 10x; its App Store Connect upload sits behind an explicit
+`upload` input, so a tag push alone never sends a build to Apple. See `f-044-store-readiness`.
+
+Every URL in store metadata and the privacy policy is real and live —
+`guardrail:store-placeholder-urls` bans `example.com`/`example.org` in those files, because a
+placeholder that reaches them is publicly visible immediately.
+
 Privacy declarations must match reality: location is read, used for one arithmetic operation, and
 discarded (`con-0004-no-backend-no-accounts`, `dec-0007-coarse-location-default`). If a change makes
 the published privacy copy false, that is a store-listing change too.
 
 ## Definition of done
 
-- [ ] `npm.cmd run lint` clean
-- [ ] Full suite green, headless
+- [ ] `npm.cmd run verify` clean — lint, full headless suite, evals, no baseline increased
 - [ ] Production web build succeeds; bundle sizes reported
 - [ ] `npx cap sync` and a real device launch for native changes
-- [ ] Version parity guardrail passes; `versionCode` incremented for a store build
-- [ ] `npm run evals` green, no baseline increased
+- [ ] Anything touching R8, plugins, or reflection smoke-tested on a **release** APK
+- [ ] `npm.cmd run version:check` passes; `versionCode` incremented for a store build
 - [ ] Outward-facing step? **Confirmed with the maintainer in chat first.**
