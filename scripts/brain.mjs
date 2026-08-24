@@ -66,11 +66,29 @@ function parseFrontmatter(raw, file) {
     }
     if (nested && currentKey) {
       const value = nested[2].trim();
-      if (data[currentKey] === '' || data[currentKey] === null) data[currentKey] = [];
+
+      // A bare `key:` header opens a block collection, and YAML says which kind
+      // by the first child: a leading `- ` is a sequence, `child: value` is a
+      // mapping (audit F-46). This used to assume sequence unconditionally, so
+      //
+      //   claims:
+      //     nav-icons.paint-method: mask-image
+      //
+      // became the ARRAY ["nav-icons.paint-method: mask-image"]. Nothing
+      // rejected it — `typeof [] === 'object'` — so the contradiction check
+      // in brainLint indexed it under the positional keys '0', '1', '2'. The
+      // record's real claims were never compared against anything, and two
+      // authoritative records written this way collided on '0' with values
+      // that had nothing to do with each other.
+      //
+      // Dotted keys are allowed because claims use them (`contrast.baseline.light`).
+      const pair = nested[1] ? null : /^([\w.-]+):\s*(.*)$/.exec(value);
+      if (data[currentKey] === '' || data[currentKey] === null) {
+        data[currentKey] = pair ? {} : [];
+      }
       if (Array.isArray(data[currentKey])) data[currentKey].push(parseScalar(value));
-      else if (typeof data[currentKey] === 'object') {
-        const kv = /^([\w-]+):\s*(.*)$/.exec(value);
-        if (kv) data[currentKey][kv[1]] = parseScalar(kv[2]);
+      else if (data[currentKey] && typeof data[currentKey] === 'object') {
+        if (pair) data[currentKey][pair[1]] = parseScalar(pair[2]);
       }
     }
   }
@@ -138,11 +156,21 @@ export function loadRecords() {
       tags: toArray(data.tags),
       related: toArray(data.related),
       supersedes: toArray(data.supersedes),
-      claims: data.claims && typeof data.claims === 'object' ? data.claims : {},
+      claims: isPlainObject(data.claims) ? data.claims : {},
+      // Supporting the block form (F-46) fixes the shape people actually write.
+      // This catches the ones nobody has written yet: anything that is not a
+      // mapping is reported by brainLint rather than quietly coerced, because
+      // silent coercion is what let the array form survive in the first place.
+      malformedClaims: data.claims !== undefined && data.claims !== null
+        && data.claims !== '' && !isPlainObject(data.claims),
       body,
       file: relative(ROOT, file).replace(/\\/g, '/'),
     };
   });
+}
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
 function toArray(value) {
@@ -234,6 +262,16 @@ export function lint(records, { strict = false } = {}) {
     }
     if (record.confidence && !VALID_CONFIDENCE.includes(record.confidence)) {
       errors.push(`${at}: confidence '${record.confidence}' not one of ${VALID_CONFIDENCE.join('|')}`);
+    }
+    // `claims:` must be a mapping. Both spellings work — inline
+    // `{key: value}` and an indented block — but a sequence or a bare scalar
+    // cannot carry keys, and the contradiction check silently indexed those
+    // under '0', '1', '2' instead of saying so (audit F-46).
+    if (record.malformedClaims) {
+      errors.push(
+        `${at}: 'claims' must be a mapping, not a list or scalar — write `
+          + `\`claims: {key: value}\` or an indented block of \`key: value\` lines`,
+      );
     }
     if (record.body.length < 80) {
       warnings.push(`${at}: body is thin (${record.body.length} chars) — a record nobody can act on is noise`);

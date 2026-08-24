@@ -1,16 +1,16 @@
 ---
 id: f-046-block-form-claims-parse-as-a-list
 type: finding
-title: F-46 — multi-line `claims:` parses as a list, so those claims are never contradiction-checked
-status: open
+title: F-46 — multi-line `claims:` parsed as a list; the parser now reads block mappings
+status: resolved
 date: 2026-08-24
 source: file:scripts/brain.mjs:141
 author: claude
 confidence: high
 tags: [brain, librarian, claims, tooling]
-claims: {brain.claims-form: inline-mapping-only}
+claims: {brain.claims-form: inline-or-block-mapping}
 supersedes: []
-related: [f-045-resolver-substring-keyword-collisions]
+related: [f-045-resolver-substring-keyword-collisions, f-044-store-readiness, f-047-guardrails-do-not-cover-the-instruction-layer]
 review_by: 2027-02-28
 ---
 
@@ -54,11 +54,48 @@ ERROR CONTRADICTION on claim '1': f-042-contrast-debt='contrast.baseline.dark: 0
 So the corpus is consistent by accident, not by construction — and the diagnostic a librarian would
 eventually hit names a key nobody wrote and two records that contradict nothing.
 
-**Preferred fix:** make the shape a lint error rather than teaching the parser the block form.
-`.agents/brain/README.md` and Rule 5 both document the inline form, so the block form is drift, and
-a loud failure at write time is better than a parser that accepts two spellings with different
-semantics. `Array.isArray(data.claims)` (or any non-plain-object) should fail lint with a message
-that names the record and shows the inline form. Convert `f-042` and `f-043` in the same commit.
+## Fixed
 
-Filed alongside `f-045-resolver-substring-keyword-collisions`; both are the same shape of defect —
-tooling that matches more loosely than it appears to, and stays quiet about it.
+Two changes in `scripts/brain.mjs`, and they hold each other up.
+
+**The parser now reads block mappings.** A bare `key:` opens a block collection, and YAML decides
+which kind by the first child: a leading `- ` is a sequence, `child: value` is a mapping. The old
+code assumed sequence unconditionally. It now branches on the dash the `nested` regex was already
+capturing and discarding. Dotted keys are allowed too — the mapping branch matched `[\w-]+`, which
+stops at the first `.`, so `contrast.baseline.light` would have been dropped even once the branch was
+reachable.
+
+**`claims:` that is not a mapping is now a lint error.** Supporting the block form fixes the shape
+people actually write; the type guard catches the shapes nobody has written yet. A sequence or a bare
+string is reported against the record that carries it, with both valid spellings in the message,
+rather than being coerced to `{}` and forgotten.
+
+## Deviated from what this record recommended
+
+The original entry said to make the block form a lint error and convert `f-042` and `f-043` to inline
+— treat the block form as drift. That was wrong, and the evidence was already in the corpus: two
+records written months apart independently used it. It is idiomatic YAML and the natural way to write
+a mapping of more than two keys. The thing that was actually broken was a hand-rolled parser that
+accepted valid YAML and produced something else.
+
+So the form was supported instead of banned, and neither record was edited. Both now parse correctly
+with no change to their text.
+
+## Verified
+
+- **Parse output diffed across all 30 records, before and after.** The only differences anywhere are
+  `f-042` and `f-043`, whose `claims` go from a 3- and 2-element array of `"key: value"` strings to
+  the mappings they were written as. Every other field on every other record is identical, which is
+  what makes this a parser fix and not a corpus edit.
+- **The original repro no longer reproduces.** Flipping both records to `open` — the state that made
+  their claims authoritative — previously produced `CONTRADICTION on claim '0'` and `'1'` between two
+  records that contradict nothing. Now clean.
+- **Lint rejects both bad shapes.** Checked with a temporary probe record: a `- ` sequence errors, a
+  bare scalar errors, a block mapping passes. Probe removed.
+- **The guard catches a regression in the parser, not just in a record.** With the parser
+  deliberately reverted to sequence-always, `f-042` and `f-043` immediately fail lint with the new
+  error. So the two halves are each other's regression test, and CI already runs
+  `brain lint --strict`. No separate guardrail was added for the same reason as `f-045`: it would be
+  a second lock on one door.
+
+`.agents/brain/README.md` now documents both spellings where a librarian will actually read them.

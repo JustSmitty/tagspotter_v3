@@ -594,11 +594,11 @@
         "design-system",
         "dark-mode"
       ],
-      "claims": [
-        "contrast.baseline.light: 0",
-        "contrast.baseline.dark: 0",
-        "contrast.scope: all-five-routes-populated"
-      ],
+      "claims": {
+        "contrast.baseline.light": "0",
+        "contrast.baseline.dark": "0",
+        "contrast.scope": "all-five-routes-populated"
+      },
       "supersedes": [],
       "related": [
         "dec-0012-dark-mode-instrument-cluster",
@@ -623,10 +623,10 @@
         "icons",
         "navigation"
       ],
-      "claims": [
-        "nav-icons.paint-method: mask-image",
-        "nav-icons.currentcolor-works: true"
-      ],
+      "claims": {
+        "nav-icons.paint-method": "mask-image",
+        "nav-icons.currentcolor-works": true
+      },
       "supersedes": [],
       "related": [
         "dec-0015-ink-follows-its-ground",
@@ -696,8 +696,8 @@
     {
       "id": "f-046-block-form-claims-parse-as-a-list",
       "type": "finding",
-      "title": "F-46 — multi-line `claims:` parses as a list, so those claims are never contradiction-checked",
-      "status": "open",
+      "title": "F-46 — multi-line `claims:` parsed as a list; the parser now reads block mappings",
+      "status": "resolved",
       "date": "2026-08-24",
       "source": "file:scripts/brain.mjs:141",
       "confidence": "high",
@@ -708,11 +708,13 @@
         "tooling"
       ],
       "claims": {
-        "brain.claims-form": "inline-mapping-only"
+        "brain.claims-form": "inline-or-block-mapping"
       },
       "supersedes": [],
       "related": [
-        "f-045-resolver-substring-keyword-collisions"
+        "f-045-resolver-substring-keyword-collisions",
+        "f-044-store-readiness",
+        "f-047-guardrails-do-not-cover-the-instruction-layer"
       ],
       "file": ".agents/brain/findings/f-046-block-form-claims-parse-as-a-list.md",
       "review_by": "2027-02-28"
