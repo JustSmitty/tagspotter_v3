@@ -221,9 +221,19 @@ export class HomeWorkflowService {
     if (!saved) return;
 
     if (!this.isSpottedInCurrentSave(saved.stateId)) {
-      // Silent on purpose. The player did not leave this quiz behind on this
-      // trip, so asking them about it would be asking about a state they have
-      // no memory of spotting.
+      // Silent on purpose, but the reason is narrower than it first looks.
+      // It holds for a reset caught mid-window and for an un-spotted state:
+      // there the player has no memory of spotting it, so a prompt would be
+      // about nothing they did.
+      //
+      // It does NOT hold when the save itself failed to load. StateService
+      // rebuilds an all-unspotted seed save from a blob it could not read and
+      // resolves normally, so every state reads as unspotted and a quiz the
+      // player genuinely left behind is dropped here too. Discarding is still
+      // the better of the two options — keeping it offers a resume that
+      // completeQuiz will refuse to score — but the loss is real and the
+      // player is told nothing about it, because nothing tells them the trip
+      // was lost either. That silence is the actual defect and it is upstream.
       await this.quizSessions.clear();
       return;
     }

@@ -309,6 +309,10 @@ describe('HomeWorkflowService', () => {
 
         expect(alertController.create).not.toHaveBeenCalled();
         expect(modalController.create).not.toHaveBeenCalled();
+        // The source calls this silence deliberate, so pin it: adding a toast
+        // here left the suite green, which made 'silent on purpose' a comment
+        // rather than a contract.
+        expect(toastController.create).not.toHaveBeenCalled();
         expect(quizSessions.clear).toHaveBeenCalled();
       });
 
@@ -319,6 +323,19 @@ describe('HomeWorkflowService', () => {
         await workflow.initialize();
 
         expect(store.completeQuiz).not.toHaveBeenCalled();
+      });
+
+      it('is dropped when a different state is spotted but this one is not', async () => {
+        // The discriminating case. Every other fixture here spots the very
+        // state the session belongs to, so dropping the `state.ID === stateId`
+        // half of the guard left the whole suite green — the check would then
+        // resume a session for any state as long as SOME state was spotted.
+        store.snapshot.set({ states: savedStates([2]), foundCount: 1 });
+
+        await workflow.initialize();
+
+        expect(alertController.create).not.toHaveBeenCalled();
+        expect(quizSessions.clear).toHaveBeenCalled();
       });
 
       it('does not strand the session — a later spot can still resume it', async () => {
