@@ -82,9 +82,18 @@ surface to a bug that pm-0001 already attributed to surface mismatch.
 The `stateFound` guard now has the spec it should have had, at the layer that enforces it.
 
 The producer-side window in `resetProgress` is closed too, by ordering rather than by atomicity. The
-two writes **cannot** be made one: `@capacitor/preferences` exposes `configure/get/set/remove/clear/
-keys` and no transaction, and each call is its own `edit()`/`apply()` natively. A window between
-them is therefore unavoidable, and the only decision available is which pairing it leaves on disk.
+two writes target separate **keys**, and `@capacitor/preferences` exposes `configure/get/set/remove/
+clear/keys` with no transaction across them, so while the session remains its own key the window is
+unavoidable and the only decision available is which pairing it leaves on disk.
+
+That is a trade rather than an impossibility, and the first draft of this record stated it as the
+latter — in bold, in three places an agent will read. Folding the session into the save value makes
+the reset a single `set()` and removes the window outright; `PersistedGameSnapshot` already carries
+optional additively-migrated fields, so the shape supports it. It was not done because the session
+is deliberately outside the save (`dec-0006` — it must survive a corrupt save that the trip does
+not) and because moving persisted player data is a `data-migration` escalation. Both are good
+reasons. Neither makes the alternative unavailable, and writing it down as unavailable is how the
+next reader stops looking.
 Clearing first leaves `old save + no session` — a consistent trip that has lost an in-flight quiz.
 The old order left `fresh save + stale session`, the hazard itself. The same asymmetry covers a
 partial failure: if the second write throws, one order has dropped an ephemeral quiz and the other

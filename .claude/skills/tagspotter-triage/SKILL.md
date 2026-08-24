@@ -38,9 +38,17 @@ surfaces with **deliberately different lifetimes**:
 | Key | Survives trip reset? | Survives save corruption? |
 |---|---|---|
 | `tagspotter_v1_save_data` | rebuilt from seed | no — triggers reset |
-| `temp_quiz_session` | **cleared** (`pm-0001`) | independent |
+| `temp_quiz_session` | **cleared first**, then the save is rebuilt (`pm-0002`) | **not independent** — see below |
 | `tagspotter_v1_onboarding_seen` | **yes** (`dec-0006`) | **yes** — by design |
 | `tagspotter_v1_location_precision` | **yes** | **yes** — privacy preference |
+
+The sidecar row changed with `pm-0002` and the old wording is the likeliest thing to mislead you:
+the session is no longer independent of the save. `HomeWorkflowService.checkAndResumeQuiz` drops it
+on load whenever the hydrated save has not spotted its state, so a vanished quiz has **two**
+possible causes, not one — the reset clearing it, or the resume gate refusing a pair it considers
+mismatched. The second is silent by design, which makes it the one you will not find by reading
+logs. A save that failed its integrity check rebuilds as all-unspotted, so it takes the quiz with
+it — check for that before assuming the gate is wrong.
 
 A large share of state bugs in this app are a mismatch between one of those rows and someone's
 assumption. Check the table before blaming logic.
