@@ -302,10 +302,27 @@ export class GameStateStore {
 
     await this.enqueueMutation(async () => {
       const tripHistory = this.withArchivedCurrentTrip(this.tripHistory());
-      const resetSnapshot = await this.stateService.resetSnapshot(tripHistory, this.hasSeenOnboarding(), this.storedStreak());
       // A quiz saved mid-flight belongs to the old trip; resuming it against
       // the fresh save would award trivia points to an unspotted state.
+      //
+      // Cleared BEFORE the save is rebuilt, and the order is the whole point.
+      // These are two separate Preferences writes and cannot be made one: the
+      // plugin exposes no transaction, and each call is its own
+      // `edit()`/`apply()` on the native side. So a window between them is
+      // unavoidable and the only choice is which pairing it leaves on disk.
+      //
+      // Clearing first leaves `old save + no session` — a consistent trip that
+      // has merely lost an in-flight quiz. The other order leaves
+      // `fresh save + old session`, which is pm-0001's exact hazard sitting on
+      // disk for an Android backup to snapshot (pm-0002). The same asymmetry
+      // covers a partial failure: if the second write throws, this order has
+      // dropped an ephemeral quiz, and the other has stranded a stale one
+      // against a reset trip.
+      //
+      // checkAndResumeQuiz refuses a mismatched pair regardless. This keeps the
+      // mismatch from being written down in the first place.
       await this.stateService.clearTempQuizSession();
+      const resetSnapshot = await this.stateService.resetSnapshot(tripHistory, this.hasSeenOnboarding(), this.storedStreak());
       this.setSnapshot(resetSnapshot.states, resetSnapshot.points);
       this.hasSeenOnboarding.set(resetSnapshot.hasSeenOnboarding);
       this.gameMode.set(resetSnapshot.gameMode);

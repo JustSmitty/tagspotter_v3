@@ -58,10 +58,10 @@ normally returns a save and a session captured at the same moment, which are con
 other — the "quiz alongside a save from a different moment" framing in the comments was not
 generally reachable.
 
-Where it *was* reachable: `GameStateStore.resetProgress` commits the fresh save
-(`stateService.resetSnapshot`) and clears the sidecar (`clearTempQuizSession`) as two separate
-Preferences writes. A backup snapshotting between them captures a fresh save paired with a stale
-session — pm-0001's exact shape, arriving by a route pm-0001's fix did not cover.
+Where it *was* reachable: `GameStateStore.resetProgress` committed the fresh save
+(`stateService.resetSnapshot`) and *then* cleared the sidecar (`clearTempQuizSession`), as two
+separate Preferences writes. A backup snapshotting between them captures a fresh save paired with a
+stale session — pm-0001's exact shape, arriving by a route pm-0001's fix did not cover.
 
 And the reason that never became a scoring bug: `GameCommandService.completeQuiz` returns `null`
 unless `foundState.fnd.stateFound`. That guard was load-bearing for pm-0001's whole hazard class and
@@ -81,6 +81,18 @@ surface to a bug that pm-0001 already attributed to surface mismatch.
 
 The `stateFound` guard now has the spec it should have had, at the layer that enforces it.
 
+The producer-side window in `resetProgress` is closed too, by ordering rather than by atomicity. The
+two writes **cannot** be made one: `@capacitor/preferences` exposes `configure/get/set/remove/clear/
+keys` and no transaction, and each call is its own `edit()`/`apply()` natively. A window between
+them is therefore unavoidable, and the only decision available is which pairing it leaves on disk.
+Clearing first leaves `old save + no session` — a consistent trip that has lost an in-flight quiz.
+The old order left `fresh save + stale session`, the hazard itself. The same asymmetry covers a
+partial failure: if the second write throws, one order has dropped an ephemeral quiz and the other
+has stranded a stale one against a reset trip.
+
+Nothing observable distinguishes the two orders, so a spec pins it — a refactor that swaps them back
+goes red.
+
 ## The lesson that generalizes
 
 **Configuration that cannot fail cannot be trusted, and prose about it is not verification.** A
@@ -92,6 +104,11 @@ matching exclude by itself and an invented name stays a violation.
 Note what it does *not* do: it can tell you a rule is inert, never that it is correct. The class it
 catches is "config that silently matches nothing", which is worth catching precisely because that
 class produces green builds and confident documentation.
+
+And where two writes cannot be made atomic, **order them so the state in between is the harmless
+one.** That choice is free, it is invisible in every observable outcome, and it is therefore worth a
+spec — it is not a thing a reader will infer from the code, and a refactor tidying the sequence has
+no reason to suspect the order carried meaning.
 
 The pm-0001 lesson also needs an amendment. It asked that every sidecar key declare its lifetime,
 and `temp_quiz_session` did. What it did not ask is where the invariant is *enforced*. pm-0001 fixed
