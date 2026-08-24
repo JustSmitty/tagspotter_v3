@@ -209,6 +209,49 @@ New product surface. Only after the above.
 
 ---
 
+## Phase 6 — Store readiness 🟡 IN PROGRESS
+
+The only live phase. Everything the two stores refuse the app without, plus the Mac that Windows
+cannot provide. It has no numbered slot in the audit because it is not audit debt — it is the work of
+actually shipping, and it was found by trying (`f-044-store-readiness`, `51960d8`).
+
+Five guardrails, all at baseline 0. Two had to be **widened rather than re-baselined**, which is the
+lesson this phase keeps teaching: a check that goes green while the thing it is named for is still
+broken is worse than no check. `store-placeholder-urls` matched URLs only, so it read 0 while
+`contactEmail` was still `support@example.com`; its `include` then covered the metadata files but not
+`docs/privacy-policy.md`, which is the file actually served at the URL handed to Google and Apple.
+
+| ID | Item | Owning skill | Acceptance |
+|---|---|---|---|
+| F-44 | `example.com` placeholders in anything published to a store | `tagspotter-release` | `guardrail:store-placeholder-urls` = 0, scanning metadata **and** the served policy |
+| F-44 | Release signing could reference the debug keystore | `tagspotter-release` | `guardrail:debug-keystore-in-release` = 0 |
+| F-45 | iOS target scaffolded universal, with no iPad layout or screenshots | `tagspotter-release` | `guardrail:ios-ipad-target` = 0; `TARGETED_DEVICE_FAMILY = "1"` (`dec-0016`) |
+| F-46 | `Info.plist` did not answer export compliance, so every upload stalled | `tagspotter-release` | `guardrail:ios-export-compliance` = 0 (`ITSAppUsesNonExemptEncryption`) |
+| PM-0002 | Backup rules excluded a sharedpref file that cannot exist | `tagspotter-release` | `guardrail:backup-exclude-paths` = 0 |
+
+**Landed:** the AAB verified by actually running `bundleRelease` rather than trusting the runbook;
+`scripts/bump-version.mjs`, with version parity widened to seven fields across four files; the iOS
+privacy manifest wired into a classic `pbxproj`; the macOS workflow, manual-dispatch only at 10x
+billing and with App Store Connect upload behind an explicit input; real listing URLs on a Pages site
+that publishes two pages and excludes the rest; screenshots re-shot against a populated save.
+
+**Live and verified 2026-08-24:** Pages reports `status: built`; both listing URLs return 200 with
+real content, and all six internal docs return 404. Re-check that exclusion whenever anything is added
+to `docs/` — a Pages site is public even while the repository is private, and the exclusion is
+opt-out, not opt-in.
+
+**Still open, and all of it maintainer-only:**
+
+- iPhone screenshots at 6.9in (1320×2868) or 6.7in (1290×2796). `store-assets/app-store/iphone`
+  holds only `.gitkeep`.
+- App Store Connect signing secrets for the `archive` job (`dec-0017`). The workflow reads them; only
+  the maintainer can create them.
+
+**Exit:** a build accepted by both consoles. No guardrail can assert that, which is the honest reason
+this phase ends with a human check.
+
+---
+
 ## The five things, if only five happen
 
 1. **F-01/F-02** — rewrite the copy, drop the AI claim. *Phase 1.*
