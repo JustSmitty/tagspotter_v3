@@ -24,6 +24,18 @@ retrieve-before-act (rule 1), provenance (rule 3), and escalate-don't-widen (rul
 `npm run brain -- lint` and `npm run brain -- index` maintain the memory layer; CI fails if the
 index is stale.
 
+## Mobile Workflows
+
+- `npm.cmd run assets:mobile` — regenerate Android and iOS launcher icons and splash images from
+  `scripts/generate-mobile-assets.ps1`.
+- `npm.cmd run build:mobile` — web build, then `assets:mobile`, then `npx cap sync`.
+- `npm.cmd run cap:sync` — resync Capacitor on its own, after a web build or a native config change.
+- `npm.cmd run android:open` / `npm.cmd run ios:open` — open the native projects in Android Studio
+  or Xcode.
+
+A green web build does not prove the native shell works. Anything touching native config needs
+`cap sync` and a launch on a device; `tagspotter-release` owns that.
+
 ## Notes
 
 - In the Codex desktop sandbox on Windows, `npm.cmd run test:ci` may fail with `spawn EPERM` unless
