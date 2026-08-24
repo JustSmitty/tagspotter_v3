@@ -16,7 +16,9 @@
     {
       "id": "copy-request-routes-to-copy",
       "request": "rewrite the golf wording in the onboarding handbook",
-      "files": ["src/app/shared/onboarding-modal/onboarding-modal.component.html"],
+      "files": [
+        "src/app/shared/onboarding-modal/onboarding-modal.component.html"
+      ],
       "expectPrimary": "tagspotter-copy"
     },
     {
@@ -27,7 +29,9 @@
     {
       "id": "assets-route-to-pipeline",
       "request": "the state flag svgs are enormous, optimize them",
-      "files": ["src/assets/stateflags/Pennsylvania.svg"],
+      "files": [
+        "src/assets/stateflags/Pennsylvania.svg"
+      ],
       "expectPrimary": "tagspotter-asset-pipeline"
     },
     {
@@ -48,14 +52,18 @@
     {
       "id": "build-config-routes-to-release",
       "request": "migrate us to the esbuild application builder",
-      "files": ["angular.json"],
+      "files": [
+        "angular.json"
+      ],
       "expectPrimary": "tagspotter-release"
     },
     {
       "id": "versioning-routes-to-release",
       "request": "bump the versionCode and versionName for the next store build",
       "expectPrimary": "tagspotter-release",
-      "expectEscalation": ["publishing"]
+      "expectEscalation": [
+        "publishing"
+      ]
     },
     {
       "id": "feature-work-is-the-default",
@@ -65,29 +73,41 @@
     {
       "id": "signals-question-gets-vendored-support",
       "request": "refactor this effect into a computed signal in the store",
-      "files": ["src/app/services/game-state.store.ts"],
-      "expectSupport": ["angular-signals"]
+      "files": [
+        "src/app/services/game-state.store.ts"
+      ],
+      "expectSupport": [
+        "angular-signals"
+      ]
     },
     {
       "id": "leaderboard-escalates-on-constraint",
       "request": "add a leaderboard so friends can compare scores",
-      "expectEscalation": ["constraint-collision"]
+      "expectEscalation": [
+        "constraint-collision"
+      ]
     },
     {
       "id": "cdn-escalates-on-constraint",
       "request": "load the fonts from a cdn instead of bundling them",
-      "expectEscalation": ["constraint-collision"]
+      "expectEscalation": [
+        "constraint-collision"
+      ]
     },
     {
       "id": "store-submission-escalates",
       "request": "publish the release build to the play console",
       "expectPrimary": "tagspotter-release",
-      "expectEscalation": ["publishing"]
+      "expectEscalation": [
+        "publishing"
+      ]
     },
     {
       "id": "seed-data-escalates-on-migration",
       "request": "change the state id ordering in states.json",
-      "expectEscalation": ["data-migration"]
+      "expectEscalation": [
+        "data-migration"
+      ]
     },
     {
       "id": "decision-is-not-ci",
@@ -152,6 +172,64 @@
       "id": "ci-as-a-word-still-routes-to-release",
       "request": "the ci pipeline is red on master",
       "expectPrimary": "tagspotter-release"
+    },
+    {
+      "id": "republish-still-escalates",
+      "request": "republish the store listing with the new screenshots",
+      "expectPrimary": "tagspotter-release",
+      "expectEscalation": [
+        "publishing"
+      ]
+    },
+    {
+      "id": "unpublish-still-escalates",
+      "request": "unpublish the beta track",
+      "expectEscalation": [
+        "publishing"
+      ]
+    },
+    {
+      "id": "identifier-routes-to-release",
+      "request": "add a permission to AndroidManifest.xml",
+      "expectPrimary": "tagspotter-release"
+    },
+    {
+      "id": "camelcase-identifier-routes-to-release",
+      "request": "the versionName is stale after the bump",
+      "expectPrimary": "tagspotter-release"
+    },
+    {
+      "id": "gerund-symptom-routes-to-triage",
+      "request": "the plate grid is lagging when I scroll",
+      "expectPrimary": "tagspotter-triage"
+    },
+    {
+      "id": "doubled-consonant-routes-to-copy",
+      "request": "the miles number is mislabelled on the summary",
+      "expectPrimary": "tagspotter-copy"
+    },
+    {
+      "id": "storing-state-is-not-the-app-store",
+      "request": "storing the selected plate between launches",
+      "expectPrimary": "tagspotter-feature",
+      "expectNoEscalation": true
+    },
+    {
+      "id": "ci-still-routes-to-release",
+      "request": "the ci pipeline is red on master",
+      "expectPrimary": "tagspotter-release"
+    },
+    {
+      "id": "aria-still-routes-to-a11y",
+      "request": "add an aria role to the grid",
+      "expectPrimary": "tagspotter-a11y-gate"
+    },
+    {
+      "id": "sync-still-escalates",
+      "request": "sync the trip archive to a server",
+      "expectEscalation": [
+        "constraint-collision"
+      ]
     }
   ]
 }
