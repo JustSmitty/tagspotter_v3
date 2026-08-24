@@ -306,10 +306,19 @@ export class GameStateStore {
       // the fresh save would award trivia points to an unspotted state.
       //
       // Cleared BEFORE the save is rebuilt, and the order is the whole point.
-      // These are two separate Preferences writes and cannot be made one: the
-      // plugin exposes no transaction, and each call is its own
-      // `edit()`/`apply()` on the native side. So a window between them is
-      // unavoidable and the only choice is which pairing it leaves on disk.
+      // These are two separate Preferences KEYS, and the plugin has no
+      // transaction across keys, so as long as the session lives in its own
+      // key the window is unavoidable and the only choice is which pairing it
+      // leaves on disk.
+      //
+      // That is a trade, not a law. Folding the session into the save value
+      // would make this one `set()` and remove the window entirely —
+      // PersistedGameSnapshot already carries optional additively-migrated
+      // fields. It is not done because the session is deliberately outside
+      // the save (dec-0006 lifetimes; it must survive a corrupt save that the
+      // trip does not), and moving persisted player data is a
+      // data-migration escalation. Anyone revisiting this should weigh those,
+      // not conclude the fix is unavailable.
       //
       // Clearing first leaves `old save + no session` — a consistent trip that
       // has merely lost an in-flight quiz. The other order leaves
@@ -321,7 +330,14 @@ export class GameStateStore {
       //
       // checkAndResumeQuiz refuses a mismatched pair regardless. This keeps the
       // mismatch from being written down in the first place.
-      await this.stateService.clearTempQuizSession();
+      // Failure here must not gate the reset. This is the first await in the
+      // mutation, so a rejecting Preferences.remove aborted the whole thing
+      // before anything was written — leaving "Start new trip" doing nothing,
+      // silently, on every tap. Dropping an ephemeral sidecar is not worth a
+      // trip the player asked to end, and checkAndResumeQuiz refuses a
+      // mismatched pair anyway, so proceeding is safe rather than merely
+      // convenient.
+      await this.stateService.clearTempQuizSession().catch(() => undefined);
       const resetSnapshot = await this.stateService.resetSnapshot(tripHistory, this.hasSeenOnboarding(), this.storedStreak());
       this.setSnapshot(resetSnapshot.states, resetSnapshot.points);
       this.hasSeenOnboarding.set(resetSnapshot.hasSeenOnboarding);

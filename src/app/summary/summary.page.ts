@@ -43,8 +43,15 @@ export class SummaryPage implements OnInit {
     });
     await alert.present();
     if ((await alert.onDidDismiss()).role !== 'confirm') return;
-    await this.gameStateStore.resetProgress();
-    await this.router.navigate(['/home']);
+    // Navigate even if the reset rejected. Without this, a failed reset left
+    // the player on the summary page with no navigation, no message and no
+    // retry — this page renders no error surface — so the button simply did
+    // nothing. The store records the error for the home page to surface.
+    try {
+      await this.gameStateStore.resetProgress();
+    } finally {
+      await this.router.navigate(['/home']);
+    }
   }
 
   async openRoadLog(): Promise<void> {
