@@ -30,7 +30,13 @@ const VALID_STATUS = ['proposed', 'accepted', 'rejected', 'superseded', 'open', 
 const VALID_CONFIDENCE = ['high', 'medium', 'low'];
 
 /** Statuses whose claims are treated as currently-true facts about the app. */
-const AUTHORITATIVE = new Set(['accepted', 'open']);
+// 'resolved' belongs here. A finding that has been fixed still asserts a true
+// fact about the tree — f-042 says the contrast baseline IS 0, f-048 says the
+// claims form IS inline-or-block — and leaving it out meant six records
+// declared claims that silently entered nothing. That is F-048 exactly: it
+// looked like it was participating and contributed nothing. `superseded` and
+// `rejected` stay out, because their claims are meant to be dead.
+const AUTHORITATIVE = new Set(['accepted', 'open', 'resolved']);
 
 const STOP_WORDS = new Set([
   'a', 'an', 'and', 'are', 'as', 'at', 'be', 'but', 'by', 'do', 'for', 'from', 'how', 'i', 'if',
@@ -301,6 +307,18 @@ export function lint(records, { strict = false } = {}) {
     }
     if (record.body.length < 80) {
       warnings.push(`${at}: body is thin (${record.body.length} chars) — a record nobody can act on is noise`);
+    }
+    // Filing rule 5: "A record still under discussion should carry
+    // `status: proposed` and **no claims**, so it can sit alongside the
+    // decision it may eventually replace without breaking the build." A
+    // proposed record with claims is therefore asserting something it has not
+    // earned the right to assert — and, because proposed is not authoritative,
+    // asserting it into nothing.
+    if (Object.keys(record.claims ?? {}).length && record.status === 'proposed') {
+      warnings.push(
+        `${at}: declares claims but status '${record.status}' is not authoritative`
+          + ` — they never enter the contradiction check`,
+      );
     }
 
     // Provenance: every fact must be traceable to something outside this file.
