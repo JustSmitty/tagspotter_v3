@@ -1,6 +1,7 @@
 ---
 name: tagspotter-triage
 description: Owns anything reported as broken in Tag Spotter — bugs, crashes, regressions, freezes, wrong behaviour, "it used to work". Use when the request describes a symptom rather than a change. Enforces search-memory-first, reproduce-before-fixing, a failing test before the fix, and a mandatory postmortem for anything that reached a build.
+review_by: 2027-02-28
 ---
 
 # Tag Spotter — Triage

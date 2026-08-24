@@ -331,6 +331,7 @@ function loadSkills() {
         vendored: vendored.has(entry),
         name: /^name:\s*(.+)$/m.exec(head)?.[1]?.trim(),
         description: /^description:\s*([\s\S]+?)(?:\n[a-z_-]+:|$)/m.exec(head)?.[1]?.trim(),
+        reviewBy: /^review_by:\s*(\S+)\s*$/m.exec(head)?.[1],
         body: raw,
       };
     })
@@ -341,6 +342,9 @@ function structuralSuite() {
   const results = [];
   const skills = loadSkills();
   const resolver = loadResolver();
+  const guardrails = JSON.parse(readFileSync(GUARDRAILS_PATH, 'utf8')).guardrails ?? [];
+  const guardrailIds = new Set(guardrails.map((guardrail) => guardrail.id));
+  const today = new Date().toISOString().slice(0, 10);
   const routedSkills = new Set(resolver.routes.map((route) => route.skill));
   const vendoredOnDisk = existsSync(join(ROOT, '.agents', 'skills'))
     ? new Set(readdirSync(join(ROOT, '.agents', 'skills')))
@@ -364,6 +368,42 @@ function structuralSuite() {
         id: `skill:${skill.dir}:registered`,
         pass: routedSkills.has(skill.dir),
         detail: routedSkills.has(skill.dir) ? '' : 'not present in .agents/resolver.json routes',
+      });
+
+      // F-47. A skill file is not documentation about the project, it is the
+      // prompt an agent executes once the resolver picks it. Guardrails ratchet
+      // the code and nothing ratcheted this, so tagspotter-release spent months
+      // telling agents to turn on R8 that was already on, with every guardrail
+      // green and the suite passing. The two checks below are the part of that
+      // which is structurally decidable.
+      const owned = guardrails.filter((guardrail) => guardrail.owner === skill.dir);
+      const unmentioned = owned.filter((guardrail) => !skill.body.includes(guardrail.id));
+      results.push({
+        id: `skill:${skill.dir}:owns-its-guardrails`,
+        pass: unmentioned.length === 0,
+        detail: unmentioned.length
+          ? `owns but never names: ${unmentioned.map((guardrail) => guardrail.id).join(', ')}`
+          : `${owned.length} named`,
+      });
+
+      const referenced = [...skill.body.matchAll(/guardrail:([a-z0-9-]+)/g)].map((match) => match[1]);
+      const dangling = [...new Set(referenced)].filter((id) => !guardrailIds.has(id));
+      results.push({
+        id: `skill:${skill.dir}:guardrail-refs-resolve`,
+        pass: dangling.length === 0,
+        detail: dangling.length ? `no such guardrail: ${dangling.join(', ')}` : '',
+      });
+
+      // Brain records carry review_by and `brain lint --strict` fails on a passed
+      // date (filing rule 3). Skills had no equivalent, which is precisely how
+      // this layer rotted quietly. Same mechanism, same commitment.
+      const fresh = Boolean(skill.reviewBy) && skill.reviewBy >= today;
+      results.push({
+        id: `skill:${skill.dir}:review-fresh`,
+        pass: fresh,
+        detail: skill.reviewBy
+          ? (fresh ? '' : `review_by ${skill.reviewBy} has passed — reread it against the tree`)
+          : 'no review_by in frontmatter',
       });
     }
   }

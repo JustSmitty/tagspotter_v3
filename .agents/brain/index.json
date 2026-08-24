@@ -722,10 +722,10 @@
     {
       "id": "f-047-guardrails-do-not-cover-the-instruction-layer",
       "type": "finding",
-      "title": "F-47 — guardrails ratchet the code, nothing ratchets the text that instructs agents",
-      "status": "open",
+      "title": "F-47 — nothing ratcheted the text that instructs agents; skills now carry review_by",
+      "status": "resolved",
       "date": "2026-08-24",
-      "source": "file:.claude/skills/tagspotter-release/SKILL.md",
+      "source": "commit:32e4b87",
       "confidence": "high",
       "tags": [
         "agents",
@@ -735,7 +735,7 @@
         "process"
       ],
       "claims": {
-        "guardrails.cover-instruction-layer": false
+        "guardrails.cover-instruction-layer": "structural-only"
       },
       "supersedes": [],
       "related": [

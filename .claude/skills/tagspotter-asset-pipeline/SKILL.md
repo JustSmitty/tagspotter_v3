@@ -1,6 +1,7 @@
 ---
 name: tagspotter-asset-pipeline
 description: Owns everything under src/assets and the app's shipped weight — state flag SVGs, fonts, icons, the GeoJSON atlas, and the angular.json asset globs. Use when the request involves assets, images, SVGs, flags, icons, fonts, bundle size, payload, optimization, or the asset budget. Enforces the offline-first constraint and the per-asset size budgets.
+review_by: 2027-02-28
 ---
 
 # Tag Spotter — Asset Pipeline
@@ -70,6 +71,11 @@ budget even after rasterizing, the source art is the problem — do not raise th
 Every icon is registered through `addIcons({...})` from `ionicons/icons`, which inlines it as a data
 URI. There is no icon directory in the build any more, and no lazy-fetch fallback to rescue a missing
 registration — an unregistered name renders an empty box.
+
+`guardrail:ionicons-glob` holds that: it fails if `angular.json` grows an asset glob for
+`ionicons/dist/ionicons/svg` again. That glob copied 3.6 MB of SVGs into `www/` that nothing ever
+read (F-24). Adding it back is the obvious-looking fix for a missing icon, and it is the wrong one —
+register the name instead.
 
 So when adding an `ion-icon`, **register it in the component's `addIcons()` call**, then verify
 visually. This check catches an unregistered name across the whole app:

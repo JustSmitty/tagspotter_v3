@@ -1,6 +1,7 @@
 ---
 name: tagspotter-feature
 description: The default workflow for any behaviour change to the Tag Spotter app — new features, refactors, bug fixes in app code. Use when the request is to implement, add, change, wire, extract or refactor something in src/app. Enforces retrieve-before-act against the Brain, the store/command/view-model layering, and file-back-after. Do not use for copy-only changes (tagspotter-copy), assets (tagspotter-asset-pipeline), accessibility (tagspotter-a11y-gate), or build/release config (tagspotter-release).
+review_by: 2027-02-28
 ---
 
 # Tag Spotter — Feature Work
@@ -81,7 +82,7 @@ the user-visible change first, resolve slow external facts after.
 
 ## 5. Test what you changed
 
-Run: `npm.cmd run test -- --watch=false --browsers=ChromeHeadless`
+Run: `npm.cmd run test` — headless and single-run by default, no flags needed (F-36).
 
 - A new store mutator needs a `game-state.store.spec.ts` case covering **both** the success path and
   the persistence-failure path.
@@ -89,6 +90,19 @@ Run: `npm.cmd run test -- --watch=false --browsers=ChromeHeadless`
 - A new user-interaction sequence needs a `home-workflow.service.spec.ts` case.
 
 `guardrail:untested-services` tracks services that have no spec file at all. Do not increase it.
+
+Three more guardrails are owned by this skill and are easiest to break by accident:
+
+- **`guardrail:dead-handlers`** — a component method that no template binds. `/summary` was
+  unreachable for exactly this reason: `openSummary()` existed and nothing called it (F-08). Wiring
+  a handler is not done until something binds it.
+- **`guardrail:preload-strategy`** — `PreloadAllModules` in `src/main.ts`. It fetches every lazy
+  route right after boot, which cancels out the code splitting (F-27). Every route here is lazy on
+  purpose.
+- **`guardrail:crypto-theater`** — hardcoded key material presented as encryption (F-20, `dec-0009`).
+  `legacy-save-reader.service.ts` is excluded on purpose: it reproduces the ≤ 1.1.0 key constants for
+  **decrypt only**, so upgrading players do not lose their trip. It has no encrypt path. Do not add
+  one, and do not copy those constants anywhere else.
 
 ## 6. File back
 

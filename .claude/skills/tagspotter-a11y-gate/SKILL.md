@@ -1,6 +1,7 @@
 ---
 name: tagspotter-a11y-gate
 description: Owns Tag Spotter's accessibility invariants — pinch zoom, colour contrast, reduced motion, focus order, keyboard reachability, screen-reader labelling, and dark mode. Use when the request involves accessibility, a11y, WCAG, contrast, colour, screen readers, keyboard navigation, ARIA, focus, tabindex, reduced motion, dark mode, or theming. Enforces the design-system palette while holding the WCAG line.
+review_by: 2027-02-28
 ---
 
 # Tag Spotter — Accessibility Gate
@@ -50,6 +51,13 @@ install proves only that the empty state is fine. Seed progress first.
 Getting this backwards is the single most common way this app breaks: a themed ink on a fixed ground
 inverts into its own background. `guardrail:background-token-as-ink` catches the worst version of it
 (`--app-bg-*` used as a text colour) but only that version.
+
+**`currentColor` is inert inside a `background-image` data URI** —
+`guardrail:currentcolor-in-background-image`. An SVG used as an image is its own document, so
+`currentColor` there resolves to the initial black instead of inheriting the element's colour. That
+is why the four bottom-nav glyphs painted black in both themes: invisible on the dark tags, and the
+active tab drew a rust label beside a black icon (F-43). Use `mask-image` with
+`background-color: currentColor` instead, which does inherit.
 
 **One colour, two jobs.** The regional accents pass easily on the 43px plate code and failed badly on
 the 9px state name beneath it. That is why each region now has a separate `--region-*-name` ink: a

@@ -1,6 +1,7 @@
 ---
 name: tagspotter-release
 description: Owns Tag Spotter's build configuration, CI, versioning, native Android/iOS config, and store submission. Use when the request involves release, publishing, versioning, CI pipelines, Gradle, APK/AAB, the Capacitor config, the Android manifest, tsconfig, ESLint or Karma configuration, or the Angular builder. Enforces version parity, release-build hardening, and the escalation rule for anything that ships outward.
+review_by: 2027-02-28
 ---
 
 # Tag Spotter — Release Engineering
