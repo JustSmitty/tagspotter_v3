@@ -64,12 +64,12 @@ Ranked by how often they have actually been the cause:
 Write the test that fails **before** the fix. If you cannot express the bug as a failing test, you do
 not yet understand it — go back to step 2.
 
-`npm.cmd run test -- --watch=false --browsers=ChromeHeadless`
+`npm.cmd run test`
 
 Put it at the layer where the bug lives: `game-command.service.spec.ts` for scoring,
 `game-state.store.spec.ts` for state/persistence, `home-workflow.service.spec.ts` for interaction
-sequencing. Note that the last file does not exist yet (F-37) — creating it is part of the fix, not a
-reason to test at the wrong layer.
+sequencing. All three exist, and `guardrail:untested-services` keeps it that way — a service without
+a sibling spec fails the build, so the question is only which layer, never whether.
 
 ## 5. Fix at the cause, not the symptom
 

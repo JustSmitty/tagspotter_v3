@@ -347,7 +347,7 @@ function loadSkills() {
         vendored: vendored.has(entry),
         name: /^name:\s*(.+)$/m.exec(head)?.[1]?.trim(),
         description: /^description:\s*([\s\S]+?)(?:\n[a-z_-]+:|$)/m.exec(head)?.[1]?.trim(),
-        reviewBy: /^review_by:\s*(\S+)\s*$/m.exec(head)?.[1],
+        reviewBy: /^review_by:\s*(.+?)\s*(?:#.*)?$/m.exec(head)?.[1]?.replace(/^["']|["']$/g, ''),
         body: raw,
       };
     })
@@ -393,7 +393,13 @@ function structuralSuite() {
       // green and the suite passing. The two checks below are the part of that
       // which is structurally decidable.
       const owned = guardrails.filter((guardrail) => guardrail.owner === skill.dir);
-      const unmentioned = owned.filter((guardrail) => !skill.body.includes(guardrail.id));
+      // Cited as `guardrail:<id>`, not merely present as a substring. A bare
+      // includes() call is the defect F-047 removes from the resolver, and it
+      // fired here for real: `reduced-motion` is satisfied by the CSS media
+      // feature `prefers-reduced-motion` in a11y prose, so that guardrail's
+      // owning instruction could be deleted with this check still green.
+      const cited = new Set([...skill.body.matchAll(/guardrail:([a-z0-9-]+)/g)].map((match) => match[1]));
+      const unmentioned = owned.filter((guardrail) => !cited.has(guardrail.id));
       results.push({
         id: `skill:${skill.dir}:owns-its-guardrails`,
         pass: unmentioned.length === 0,
@@ -402,8 +408,7 @@ function structuralSuite() {
           : `${owned.length} named`,
       });
 
-      const referenced = [...skill.body.matchAll(/guardrail:([a-z0-9-]+)/g)].map((match) => match[1]);
-      const dangling = [...new Set(referenced)].filter((id) => !guardrailIds.has(id));
+      const dangling = [...cited].filter((id) => !guardrailIds.has(id));
       results.push({
         id: `skill:${skill.dir}:guardrail-refs-resolve`,
         pass: dangling.length === 0,
@@ -413,13 +418,20 @@ function structuralSuite() {
       // Brain records carry review_by and `brain lint --strict` fails on a passed
       // date (filing rule 3). Skills had no equivalent, which is precisely how
       // this layer rotted quietly. Same mechanism, same commitment.
-      const fresh = Boolean(skill.reviewBy) && skill.reviewBy >= today;
+      // A raw string compare treats `never`, `tbd` and `n/a` as fresh forever
+      // (letters sort above digits), so the only ratchet on this layer could be
+      // switched off by a plausible-looking placeholder, silently. And a quoted
+      // date compared as stale forever. Require a real ISO date, both ways.
+      const wellFormed = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(skill.reviewBy ?? '');
+      const fresh = wellFormed && skill.reviewBy >= today;
       results.push({
         id: `skill:${skill.dir}:review-fresh`,
         pass: fresh,
-        detail: skill.reviewBy
-          ? (fresh ? '' : `review_by ${skill.reviewBy} has passed — reread it against the tree`)
-          : 'no review_by in frontmatter',
+        detail: !skill.reviewBy
+          ? 'no review_by in frontmatter'
+          : !wellFormed
+            ? `review_by '${skill.reviewBy}' is not a YYYY-MM-DD date`
+            : (fresh ? '' : `review_by ${skill.reviewBy} has passed — reread it against the tree`),
       });
     }
   }

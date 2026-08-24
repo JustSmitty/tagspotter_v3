@@ -64,19 +64,67 @@ function patternToRegExp(pattern) {
 const keywordPatterns = new Map();
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+/**
+ * Prefixes that negate or repeat an action rather than change its subject.
+ * `\b` alone cannot see a keyword glued behind one, so word matching silently
+ * dropped `publish` out of "republish", "unpublish" and "redeploy", taking the
+ * publishing escalation with it — the one failure this resolver must never
+ * have. The set is short, explicit and inspectable on purpose: it is not a
+ * morphology engine, it is the prefixes that turned up in real requests.
+ */
+const PREFIXES = '(?:re|un|mis|de|pre|non|auto)?';
+
+/**
+ * Regular English inflections of a keyword. Regular is the operative word:
+ * these are the endings a speaker applies without thinking, not derivations.
+ * `deploy` still does not reach "deployment" — that stays in resolver.json.
+ *
+ * Three spelling rules, because English has three. Shipping only the first
+ * (F-047) left "shipping", "lagging" and "mislabelled" unreachable while the
+ * docstring claimed inflections were handled — and `lag` was the very keyword
+ * that fix cited as its motivation. A half-applied rule set is worse than
+ * none: its gaps follow no pattern a maintainer can predict, so nobody thinks
+ * to look for them.
+ */
+function inflectedForms(keyword) {
+  const escaped = escapeRegExp(keyword);
+  const forms = [`${escaped}(?:s|es|d|ed|ing)?`];
+  // drop-e: rename -> renaming, optimise -> optimising
+  if (keyword.endsWith('e')) forms.push(`${escapeRegExp(keyword.slice(0, -1))}(?:ed|ing)`);
+  // y -> ies/ied: copy -> copies, verify -> verified
+  if (/[^aeiou]y$/.test(keyword)) forms.push(`${escapeRegExp(keyword.slice(0, -1))}(?:ies|ied)`);
+  // CVC doubling: ship -> shipping, lag -> lagged, label -> labelled
+  if (/[^aeiou][aeiou][bdglmnprt]$/.test(keyword)) forms.push(`${escaped}${keyword.slice(-1)}(?:ed|ing)`);
+  return forms;
+}
+
 function matchesKeyword(keyword, haystack) {
   let pattern = keywordPatterns.get(keyword);
   if (!pattern) {
-    const forms = [`${escapeRegExp(keyword)}(?:s|es|d|ed|ing)?`];
-    if (keyword.endsWith('e')) forms.push(`${escapeRegExp(keyword.slice(0, -1))}(?:ed|ing)`);
-    pattern = new RegExp(`\\b(?:${forms.join('|')})\\b`);
+    pattern = new RegExp(`\\b${PREFIXES}(?:${inflectedForms(keyword).join('|')})\\b`);
     keywordPatterns.set(keyword, pattern);
   }
   return pattern.test(haystack);
 }
 
+/**
+ * Identifiers are compounds, not words, and `\b` cannot see inside one.
+ * AndroidManifest.xml, versionName, MARKETING_VERSION and storeFile all stopped
+ * routing to tagspotter-release the moment matching became word-based — and a
+ * request naming a native file or build symbol is the request most likely to
+ * belong to that skill. Split camelCase humps and underscores BEFORE
+ * lowercasing, because lowercasing is what destroys the humps.
+ */
+function normalizeRequest(request) {
+  return String(request)
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .replace(/_+/g, ' ')
+    .toLowerCase();
+}
+
 export function resolve(request, { files = [], resolver = loadResolver() } = {}) {
-  const haystack = String(request).toLowerCase();
+  const haystack = normalizeRequest(request);
   const normalizedFiles = files.map((file) => file.replace(/\\/g, '/').replace(/^\.\//, ''));
 
   const scored = resolver.routes.map((route) => {

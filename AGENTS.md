@@ -34,8 +34,9 @@ index is stale.
   `src/app/services/game-state.store.spec.ts`,
   `src/app/shared/quiz-modal/quiz-modal.component.spec.ts`, and
   `src/app/services/achievement.service.spec.ts`.
-- `home-workflow.service.ts` and `game-command.service.ts` have **no specs** (audit F-37). Adding one
-  is part of any change to them, not a follow-up.
+- `home-workflow.service.ts` and `game-command.service.ts` both have specs, and
+  `guardrail:untested-services` (F-37) holds every `@Injectable` in `src/app/services` to that.
+  Adding a service without a sibling spec fails the build.
 
 ## Open work
 

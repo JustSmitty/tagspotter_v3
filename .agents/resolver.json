@@ -8,39 +8,164 @@
       "skill": "tagspotter-copy",
       "owns": "Every user-facing string, plus README and store metadata.",
       "priority": 100,
-      "keywords": ["copy", "wording", "string", "microcopy", "voice", "tone", "brand", "label", "rename", "readme", "onboarding text", "alert text", "toast", "naming"],
-      "paths": ["src/app/**/*.html", "README.md", "docs/**/*.md", "src/app/services/home-workflow.service.ts"],
+      "keywords": [
+        "copy",
+        "wording",
+        "string",
+        "microcopy",
+        "voice",
+        "tone",
+        "brand",
+        "label",
+        "rename",
+        "readme",
+        "onboarding text",
+        "alert text",
+        "toast",
+        "naming"
+      ],
+      "paths": [
+        "src/app/**/*.html",
+        "README.md",
+        "docs/**/*.md",
+        "src/app/services/home-workflow.service.ts"
+      ],
       "brainQuery": "brand voice copy design system americana"
     },
     {
       "skill": "tagspotter-asset-pipeline",
       "owns": "Anything in src/assets, bundle weight, and the asset budget.",
       "priority": 100,
-      "keywords": ["asset", "assets", "svg", "flag", "flags", "image", "icon", "ionicons", "font", "bundle size", "optimize", "optimise", "compress", "budget", "payload", "www size", "apk size"],
-      "paths": ["src/assets/**", "angular.json"],
+      "keywords": [
+        "asset",
+        "assets",
+        "svg",
+        "flag",
+        "flags",
+        "image",
+        "icon",
+        "ionicons",
+        "font",
+        "bundle size",
+        "optimize",
+        "optimise",
+        "compress",
+        "budget",
+        "payload",
+        "www size",
+        "apk size"
+      ],
+      "paths": [
+        "src/assets/**",
+        "angular.json"
+      ],
       "brainQuery": "assets offline bundle fonts flags"
     },
     {
       "skill": "tagspotter-a11y-gate",
       "owns": "Accessibility invariants, contrast, motion, focus order, dark mode.",
       "priority": 100,
-      "keywords": ["accessibility", "a11y", "wcag", "contrast", "screen reader", "keyboard", "aria", "focus", "tabindex", "reduced motion", "dark mode", "colour", "color scheme", "zoom", "pinch"],
-      "paths": ["src/global.scss", "src/theme/**", "src/index.html", "src/app/**/*.scss"],
+      "keywords": [
+        "accessibility",
+        "a11y",
+        "wcag",
+        "contrast",
+        "screen reader",
+        "keyboard",
+        "aria",
+        "focus",
+        "tabindex",
+        "reduced motion",
+        "dark mode",
+        "colour",
+        "color scheme",
+        "zoom",
+        "pinch"
+      ],
+      "paths": [
+        "src/global.scss",
+        "src/theme/**",
+        "src/index.html",
+        "src/app/**/*.scss"
+      ],
       "brainQuery": "design system accessibility contrast motion"
     },
     {
       "skill": "tagspotter-release",
       "owns": "Build config, CI, versioning, native config, store submission.",
       "priority": 100,
-      "keywords": ["release", "publish", "ship", "version", "versioncode", "ci", "pipeline", "workflow", "gradle", "apk", "aab", "store", "capacitor", "manifest", "tsconfig", "eslint config", "karma config", "builder", "r8", "proguard", "signing"],
-      "paths": ["android/**", "ios/**", "angular.json", "package.json", "capacitor.config.ts", ".github/**", "tsconfig*.json", "karma.conf.js"],
+      "keywords": [
+        "release",
+        "publish",
+        "ship",
+        "version",
+        "versioncode",
+        "ci",
+        "pipeline",
+        "workflow",
+        "gradle",
+        "apk",
+        "aab",
+        "app store",
+        "play store",
+        "store listing",
+        "store metadata",
+        "store submission",
+        "capacitor",
+        "manifest",
+        "tsconfig",
+        "eslint",
+        "karma",
+        "builder",
+        "r8",
+        "proguard",
+        "signing",
+        "gradlew"
+      ],
+      "paths": [
+        "android/**",
+        "ios/**",
+        "angular.json",
+        "package.json",
+        "capacitor.config.ts",
+        ".github/**",
+        "tsconfig*.json",
+        "karma.conf.js"
+      ],
       "brainQuery": "windows dev commands release build constraints"
     },
     {
       "skill": "tagspotter-triage",
       "owns": "Anything reported as broken. Owns the repro and the postmortem.",
       "priority": 110,
-      "keywords": ["bug", "broken", "crash", "crashes", "regression", "fails", "failing", "error", "wrong", "unexpected", "repro", "reproduce", "stack trace", "doesn't work", "does not work", "stopped working", "why is", "freeze", "freezes", "frozen", "hangs", "stuck", "lag", "unresponsive", "no longer", "used to work"],
+      "keywords": [
+        "bug",
+        "broken",
+        "crash",
+        "crashes",
+        "regression",
+        "fails",
+        "failing",
+        "error",
+        "wrong",
+        "unexpected",
+        "repro",
+        "reproduce",
+        "stack trace",
+        "doesn't work",
+        "does not work",
+        "stopped working",
+        "why is",
+        "freeze",
+        "freezes",
+        "frozen",
+        "hangs",
+        "stuck",
+        "lag",
+        "unresponsive",
+        "no longer",
+        "used to work"
+      ],
       "paths": [],
       "brainQuery": "postmortem known bugs"
     },
@@ -48,8 +173,21 @@
       "skill": "tagspotter-feature",
       "owns": "Default. Any behaviour change to the app that is not one of the above.",
       "priority": 10,
-      "keywords": ["implement", "add", "build", "change", "refactor", "feature", "support", "wire", "extract", "introduce"],
-      "paths": ["src/app/**/*.ts"],
+      "keywords": [
+        "implement",
+        "add",
+        "build",
+        "change",
+        "refactor",
+        "feature",
+        "support",
+        "wire",
+        "extract",
+        "introduce"
+      ],
+      "paths": [
+        "src/app/**/*.ts"
+      ],
       "brainQuery": "architecture store decisions"
     },
     {
@@ -57,8 +195,18 @@
       "owns": "Reference: signal/computed/effect/linkedSignal patterns.",
       "priority": 50,
       "vendored": true,
-      "keywords": ["signal", "signals", "computed", "linkedsignal", "effect", "reactive state", "behaviorsubject"],
-      "paths": ["src/app/services/game-state.store.ts"],
+      "keywords": [
+        "signal",
+        "signals",
+        "computed",
+        "linkedsignal",
+        "effect",
+        "reactive state",
+        "behaviorsubject"
+      ],
+      "paths": [
+        "src/app/services/game-state.store.ts"
+      ],
       "brainQuery": "store state management"
     },
     {
@@ -66,8 +214,23 @@
       "owns": "Reference: TestBed, spec structure, mocking, Vitest migration.",
       "priority": 50,
       "vendored": true,
-      "keywords": ["test", "tests", "spec", "specs", "coverage", "karma", "jasmine", "vitest", "testbed", "mock", "stub", "fake"],
-      "paths": ["src/**/*.spec.ts"],
+      "keywords": [
+        "test",
+        "tests",
+        "spec",
+        "specs",
+        "coverage",
+        "karma",
+        "jasmine",
+        "vitest",
+        "testbed",
+        "mock",
+        "stub",
+        "fake"
+      ],
+      "paths": [
+        "src/**/*.spec.ts"
+      ],
       "brainQuery": "testing conventions"
     },
     {
@@ -75,8 +238,21 @@
       "owns": "Reference: routes, lazy loading, guards, resolvers.",
       "priority": 50,
       "vendored": true,
-      "keywords": ["route", "router", "routing", "navigate", "navigation", "guard", "resolver", "lazy load", "deep link", "preload"],
-      "paths": ["src/app/app.routes.ts"],
+      "keywords": [
+        "route",
+        "router",
+        "routing",
+        "navigate",
+        "navigation",
+        "guard",
+        "resolver",
+        "lazy load",
+        "deep link",
+        "preload"
+      ],
+      "paths": [
+        "src/app/app.routes.ts"
+      ],
       "brainQuery": "navigation routes"
     },
     {
@@ -84,7 +260,14 @@
       "owns": "Reference: HttpClient, httpResource, request patterns.",
       "priority": 50,
       "vendored": true,
-      "keywords": ["httpclient", "httpresource", "fetch", "request", "interceptor", "api call"],
+      "keywords": [
+        "httpclient",
+        "httpresource",
+        "fetch",
+        "request",
+        "interceptor",
+        "api call"
+      ],
       "paths": [],
       "brainQuery": "offline first network"
     },
@@ -93,7 +276,14 @@
       "owns": "Reference: concrete ARIA/focus/dialog remediation recipes.",
       "priority": 40,
       "vendored": true,
-      "keywords": ["aria", "focus management", "dialog", "modal accessibility", "form errors", "landmark"],
+      "keywords": [
+        "aria",
+        "focus management",
+        "dialog",
+        "modal accessibility",
+        "form errors",
+        "landmark"
+      ],
       "paths": [],
       "brainQuery": "accessibility"
     }
@@ -102,17 +292,49 @@
     {
       "id": "publishing",
       "reason": "Sends something outward or is hard to reverse. Confirm with the maintainer in chat before acting.",
-      "keywords": ["publish", "submit to store", "push to main", "release build", "store build", "upload", "deploy", "deployment", "app store", "play console", "git push", "force push"]
+      "keywords": [
+        "publish",
+        "submit to store",
+        "push to main",
+        "release build",
+        "store build",
+        "upload",
+        "deploy",
+        "deployment",
+        "app store",
+        "play console",
+        "git push",
+        "force push"
+      ]
     },
     {
       "id": "constraint-collision",
       "reason": "Would violate a brain constraint (offline-first, CSP, no-backend). Stop and escalate rather than widening the constraint.",
-      "keywords": ["cdn", "remote font", "tile server", "analytics", "telemetry", "backend", "account", "login", "leaderboard", "sync", "unsafe-eval"]
+      "keywords": [
+        "cdn",
+        "remote font",
+        "tile server",
+        "analytics",
+        "telemetry",
+        "backend",
+        "account",
+        "login",
+        "leaderboard",
+        "sync",
+        "unsafe-eval"
+      ]
     },
     {
       "id": "data-migration",
       "reason": "Changes persisted player data. Requires a migration note and a store spec before merging.",
-      "keywords": ["states.json", "save format", "migration", "storage key", "preferences key", "state id"]
+      "keywords": [
+        "states.json",
+        "save format",
+        "migration",
+        "storage key",
+        "preferences key",
+        "state id"
+      ]
     }
   ]
 }

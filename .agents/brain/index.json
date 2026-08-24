@@ -722,7 +722,7 @@
       "title": "F-47 — the resolver matched keywords as bare substrings; now word-boundary with inflections",
       "status": "resolved",
       "date": "2026-08-24",
-      "source": "file:scripts/resolve.mjs:44",
+      "source": "file:scripts/resolve.mjs:101",
       "confidence": "high",
       "tags": [
         "resolver",
@@ -749,7 +749,7 @@
       "title": "F-48 — multi-line `claims:` parsed as a list; the parser now reads block mappings",
       "status": "resolved",
       "date": "2026-08-24",
-      "source": "file:scripts/brain.mjs:141",
+      "source": "file:scripts/brain.mjs:95",
       "confidence": "high",
       "tags": [
         "brain",

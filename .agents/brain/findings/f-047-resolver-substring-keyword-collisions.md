@@ -4,7 +4,7 @@ type: finding
 title: F-47 — the resolver matched keywords as bare substrings; now word-boundary with inflections
 status: resolved
 date: 2026-08-24
-source: file:scripts/resolve.mjs:44
+source: file:scripts/resolve.mjs:101
 author: claude
 confidence: high
 tags: [resolver, routing, tooling, agents]
@@ -89,3 +89,30 @@ Two collisions nobody had measured turned up while building this, both hidden in
 passing green: `lag` matched f-**lag**, routing a flag-optimisation request to triage, and `build`
 matched es-**build**. The suite absorbed them because it only ever asserted the winner, never who
 else was in the room — which is the same blind spot as `f-047`, one layer down.
+
+## Amended after review — the first fix was too tight, in three ways
+
+Word matching alone lost more than it caught, and none of it was visible: the suite stayed green
+because every added case asserted the direction the author had in mind.
+
+- **Prefixed verbs lost their escalation.** `\b` cannot see `publish` inside "republish",
+  "unpublish" or "redeploy", so those requests routed to `tagspotter-release` with the `publishing`
+  gate **silent** — the one failure this file argues must never happen. Fixed with a short explicit
+  prefix set (`re|un|mis|de|pre|non|auto`), not by reverting to substring: "asynchronous" must still
+  not fire `sync`, and it does not.
+- **Identifiers are compounds, not words.** `AndroidManifest.xml`, `versionName`, `storeFile` and
+  `MARKETING_VERSION` all stopped reaching this skill — the requests most likely to belong to it.
+  The request is now split on camelCase humps and underscores *before* lowercasing, because
+  lowercasing is what destroys the humps.
+- **The inflection set was one rule of three.** Only drop-e shipped, leaving "shipping", "lagging"
+  and "mislabelled" unreachable while the docstring claimed inflections were handled — and `lag` was
+  the keyword this record cites as motivation. CVC doubling and y→ies/ied were added alongside it.
+
+Separately, `store` was too blunt a keyword: it is a noun here (the app store) and a verb there
+(persisting state), so `storing the plate` was routed to the build-and-release skill. Bare `store`
+is replaced by `app store` / `play store` / `store listing` / `store metadata` / `store submission`.
+
+**The lesson is about the tests, not the matcher.** The six collision cases assert the resolver's
+*default* owner, so they pass with the entire keyword table deleted — verified by deleting it. A
+negative case that cannot fail when the matcher goes silent tests nothing about matching. Each
+collision keyword now has a positive twin, and the regressions above are pinned by name.

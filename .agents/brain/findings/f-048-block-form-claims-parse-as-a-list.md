@@ -4,7 +4,7 @@ type: finding
 title: F-48 — multi-line `claims:` parsed as a list; the parser now reads block mappings
 status: resolved
 date: 2026-08-24
-source: file:scripts/brain.mjs:141
+source: file:scripts/brain.mjs:95
 author: claude
 confidence: high
 tags: [brain, librarian, claims, tooling]
@@ -99,3 +99,28 @@ with no change to their text.
   a second lock on one door.
 
 `.agents/brain/README.md` now documents both spellings where a librarian will actually read them.
+
+## Amended after review — the fix dropped lines instead of records
+
+Deciding mapping-vs-sequence from the first child fixed the whole-value shape and left the same bug
+at line granularity. Three holes, all silent, all confirmed against the shipped loader:
+
+- **A child line whose key fell outside `[\w.-]` was discarded** with `malformedClaims: false` and
+  lint green. So `claims:` with `csp/script-src: self` in it parsed to a valid-looking mapping
+  missing that claim, and the contradiction check never saw it — this record's own stated harm, one
+  level down.
+- **The outcome depended on line order.** The same three lines produced either a hard error or
+  silent data loss depending on which one came first, because only the first child chose the
+  container.
+- **A two-level block flattened into siblings.** `claims:` / `contrast:` / `light: 4.5` / `dark: 7.0`
+  parsed to `{contrast: "", light: "4.5", dark: "7.0"}` — nesting lost, an empty-string claim minted
+  under a key nobody wrote, and `light`/`dark` promoted to corpus-wide claim keys that would collide
+  with any other record using them.
+
+The block key grammar now matches the inline one exactly (`[^:]+`), which is what
+`.agents/brain/README.md` already promised readers — that sentence was false for any key with a
+slash or a space. Anything still unrepresentable is **reported**, never dropped: a non-pair line and
+a nested mapping both fail lint by name and line content.
+
+**The principle this record stated and the fix did not keep:** silent coercion is what let the array
+form survive. A parser that cannot represent an input must say so.
