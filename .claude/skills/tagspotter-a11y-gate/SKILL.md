@@ -73,7 +73,23 @@ Verify against the *real* background — cream, paper, card, or the region-tinte
 the postcard's paper is a **gradient**, so a checker that only reads `background-color` will climb
 past it and report nonsense.
 
-### 3. Motion respects the OS — `guardrail:reduced-motion`
+### 3. Nothing hides under the system bars — `guardrail:raw-env-safe-area`
+
+Android's WebView **never populates `env(safe-area-inset-*)`** — it takes the `0px` fallback, so a
+component that reaches for `env()` directly gets no inset and no warning. Since `targetSdk 35+`
+removed the edge-to-edge opt-out, that silent zero puts the system navigation bar on top of anything
+bottom-anchored (pm-0004: the quiz's "Next question" button).
+
+Capacitor's `SystemBars` measures the real insets natively and injects `--safe-area-inset-*`
+(density-corrected, and only when the viewport meta carries `viewport-fit=cover`). `theme/variables.scss`
+folds those into the `--app-safe-*` tokens with `env()` as the iOS/web fallback, and feeds the
+`--ion-safe-area-*` names so Ionic's own components inset too.
+
+Rule: **components use `--app-safe-*`; `env()` appears only in `theme/variables.scss`.** That file is
+also the *only* place these tokens may be defined — a second `:root` block in `global.scss` used to
+win on stylesheet order and pin them all to zero.
+
+### 4. Motion respects the OS — `guardrail:reduced-motion`
 
 Every stylesheet that declares an `animation:` must also carry a
 `@media (prefers-reduced-motion: reduce)` block that neutralizes it. All six do now (F-31, guardrail
@@ -84,7 +100,7 @@ none.
 The stamp animation is *feedback*, so when it is suppressed the state change must still be obvious
 through colour and the "Spotted" label alone. Check that.
 
-### 4. Keyboard reaches everything, once — `guardrail:svg-tabindex`
+### 5. Keyboard reaches everything, once — `guardrail:svg-tabindex`
 
 Fixed (F-32, guardrail at 0). The atlas used to render 51 `<path role="button" tabindex="0">` above a
 plate grid that did the same job, putting 51 tab stops in front of the content.
@@ -147,7 +163,8 @@ recipes must not cross.
 
 ## Definition of done
 
-- [ ] All six guardrails pass and none increased
+- [ ] All seven guardrails pass and none increased
+- [ ] Bottom-anchored UI checked against the system navigation bar, not just the viewport
 - [ ] Contrast verified against the element's real background, in both themes if dark shipped
 - [ ] Full keyboard pass: every action reachable, focus always visible, no dead-end tab stops
 - [ ] Reduced-motion pass: nothing animates, all state changes still legible

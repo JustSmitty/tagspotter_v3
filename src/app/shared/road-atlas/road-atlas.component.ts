@@ -32,6 +32,18 @@ interface AtlasFeature {
   labelY: number;
 }
 
+/**
+ * Geometry as it comes out of the GeoJSON: projected, but not yet tied to a
+ * state record. Keeping this separate from AtlasFeature is what lets the
+ * drawing survive arriving before the save does (pm-0005).
+ */
+interface AtlasShape {
+  name: string;
+  path: string;
+  labelX: number;
+  labelY: number;
+}
+
 @Component({
   selector: 'app-road-atlas',
   templateUrl: './road-atlas.component.html',
@@ -58,8 +70,40 @@ export class RoadAtlasComponent implements OnInit {
     if (id === null) return null;
     return this.store.snapshot().states.find((state) => state.ID === id) ?? null;
   });
-  readonly features = signal<AtlasFeature[]>([]);
-  readonly isLoading = signal(true);
+  /**
+   * The two halves of the map arrive independently: the geometry over HTTP,
+   * the state records from storage. Joining them in a `computed` rather than
+   * once inside the fetch is what keeps the order from mattering — whichever
+   * lands second, the map redraws (pm-0005). Doing the join eagerly meant that
+   * on a device, where hydration crosses the native bridge and the GeoJSON
+   * comes off the local bundle, the fetch won and every shape was discarded as
+   * unmatched: 51 paths silently reduced to none, with no error to show for it.
+   */
+  private readonly shapes = signal<AtlasShape[]>([]);
+  readonly features = computed<AtlasFeature[]>(() => {
+    const statesByName = new Map(
+      this.store.snapshot().states.map((state) => [state.Name.toLowerCase(), state]),
+    );
+
+    return this.shapes().reduce<AtlasFeature[]>((result, shape) => {
+      const state = statesByName.get(shape.name.toLowerCase());
+      if (!state) return result;
+      result.push({
+        id: state.ID,
+        name: shape.name,
+        code: state.Abbrv,
+        path: shape.path,
+        labelX: shape.labelX,
+        labelY: shape.labelY,
+      });
+      return result;
+    }, []);
+  });
+
+  private readonly isFetching = signal(true);
+  /** Still drawing until BOTH halves are in — otherwise the empty window
+      between them renders as a blank card with nothing to explain it. */
+  readonly isLoading = computed(() => this.isFetching() || !this.store.isLoaded());
   readonly loadError = signal<string | null>(null);
   readonly foundIds = computed(() => new Set(
     this.store.snapshot().states.filter((state) => state.fnd.stateFound).map((state) => state.ID),
@@ -111,23 +155,20 @@ export class RoadAtlasComponent implements OnInit {
   }
 
   private async loadAtlas(): Promise<void> {
-    this.isLoading.set(true);
+    this.isFetching.set(true);
     this.loadError.set(null);
     try {
       const data = await firstValueFrom(this.http.get<StateAtlasGeoJson>('assets/us-states.json'));
-      const statesByName = new Map(this.store.snapshot().states.map((state) => [state.Name.toLowerCase(), state]));
-      this.features.set(data.features.reduce<AtlasFeature[]>((result, feature) => {
+      this.shapes.set(data.features.reduce<AtlasShape[]>((result, feature) => {
         const name = feature.properties?.name ?? '';
-        const state = statesByName.get(name.toLowerCase());
-        if (!state || !feature.geometry) return result;
-        const projected = this.toProjectedFeature(feature.geometry, name);
-        result.push({ id: state.ID, name, code: state.Abbrv, ...projected });
+        if (!name || !feature.geometry) return result;
+        result.push({ name, ...this.toProjectedFeature(feature.geometry, name) });
         return result;
       }, []));
     } catch {
       this.loadError.set('The road atlas could not be loaded.');
     } finally {
-      this.isLoading.set(false);
+      this.isFetching.set(false);
     }
   }
 

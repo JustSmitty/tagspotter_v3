@@ -58,7 +58,10 @@
 }
 
 .quiz-stage {
-  padding: 12px 18px 30px;
+  /* The system navigation bar draws over the bottom edge under enforced
+     edge-to-edge; without the inset the feedback slip's button sat behind the
+     3-button bar (pm-0004). */
+  padding: 12px 18px calc(30px + var(--app-safe-bottom));
 }
 
 .quiz-pass {
