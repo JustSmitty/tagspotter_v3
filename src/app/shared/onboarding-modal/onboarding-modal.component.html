@@ -108,12 +108,14 @@
 
 <ion-footer class="ion-no-border handbook-footer">
   <div class="footer-controls">
-    <div class="page-dots">
+    <!-- Decorative page tally: the buttons below are the accessible interface,
+         and NEXT PAGE / the disabled back chevron already carry the position. -->
+    <div class="page-dots" aria-hidden="true">
       <div *ngFor="let i of [0,1,2,3,4]" class="dot" [class.active]="i === currentPage()"></div>
     </div>
 
     <div class="nav-buttons">
-      <ion-button fill="clear" (click)="prev()" [disabled]="currentPage() === 0" class="guide-btn">
+      <ion-button fill="clear" (click)="prev()" [disabled]="currentPage() === 0" class="guide-btn" aria-label="Previous page">
         <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
       </ion-button>
 

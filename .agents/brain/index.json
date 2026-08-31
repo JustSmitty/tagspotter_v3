@@ -1,5 +1,5 @@
 {
-  "count": 36,
+  "count": 37,
   "records": [
     {
       "id": "audit-2026-08-15",
@@ -795,6 +795,38 @@
         "f-048-block-form-claims-parse-as-a-list"
       ],
       "file": ".agents/brain/findings/f-049-guardrails-do-not-cover-the-instruction-layer.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "f-050-handbook-chrome-fixed-ink",
+      "type": "finding",
+      "title": "F-50 — the handbook modal's chrome printed fixed pine on the themed card",
+      "status": "resolved",
+      "date": "2026-08-31",
+      "source": "audit:contrast-audit-2026-08-31",
+      "confidence": "high",
+      "tags": [
+        "accessibility",
+        "dark-mode",
+        "contrast",
+        "theming",
+        "onboarding",
+        "modal",
+        "guardrails"
+      ],
+      "claims": {
+        "handbook-chrome.ink": "themed-tokens",
+        "handbook-paper.ink": "fixed-on-ephemera",
+        "handbook-footer.background-var": "removed-was-inert"
+      },
+      "supersedes": [],
+      "related": [
+        "dec-0015-ink-follows-its-ground",
+        "pm-0003-quiz-pass-themed-ink",
+        "dec-0012-dark-mode-instrument-cluster",
+        "f-042-contrast-debt"
+      ],
+      "file": ".agents/brain/findings/f-050-handbook-chrome-fixed-ink.md",
       "review_by": "2027-02-28"
     },
     {

@@ -545,7 +545,9 @@ ion-router-outlet {
     font-family: 'Special Elite', cursive;
     font-size: 0.7rem;
     letter-spacing: 2px;
-    color: var(--app-ink-muted);
+    /* The manila tab never themes, so neither may its label: the themed muted
+       ink flips light at night and faded to 1.40:1 on this stock (dec-0015). */
+    color: var(--app-ink-on-ephemera-muted);
     box-shadow: -2px -2px 5px rgba(0,0,0,0.1);
     z-index: -1;
   }
