@@ -1,5 +1,5 @@
 {
-  "count": 33,
+  "count": 34,
   "records": [
     {
       "id": "audit-2026-08-15",
@@ -847,6 +847,36 @@
         "f-049-guardrails-do-not-cover-the-instruction-layer"
       ],
       "file": ".agents/brain/postmortems/pm-0002-inert-backup-exclude.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "pm-0003-quiz-pass-themed-ink",
+      "type": "postmortem",
+      "title": "The quiz pass shipped unreadable in dark mode — with its rule already on file",
+      "status": "resolved",
+      "date": "2026-08-31",
+      "source": "commit:2866dd4",
+      "confidence": "high",
+      "tags": [
+        "dark-mode",
+        "contrast",
+        "accessibility",
+        "theming",
+        "quiz",
+        "guardrails",
+        "bug"
+      ],
+      "claims": {
+        "quiz-modal.ink": "fixed-on-ephemera"
+      },
+      "supersedes": [],
+      "related": [
+        "dec-0015-ink-follows-its-ground",
+        "dec-0012-dark-mode-instrument-cluster",
+        "f-042-contrast-debt",
+        "f-049-guardrails-do-not-cover-the-instruction-layer"
+      ],
+      "file": ".agents/brain/postmortems/pm-0003-quiz-pass-themed-ink.md",
       "review_by": "2027-02-28"
     }
   ]

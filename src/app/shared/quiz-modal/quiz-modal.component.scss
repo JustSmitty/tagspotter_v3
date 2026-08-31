@@ -64,7 +64,11 @@
 .quiz-pass {
   --quiz-accent: var(--region-south-primary);
   --quiz-accent-strong: #a54016;
-  --quiz-surface: var(--app-surface-card);
+  /* The ticket is ephemera, so its option rows are fixed card stock — never
+     --app-surface-card, which goes near-black in dark mode (dec-0015). Every
+     region below overrides this with its own fixed paper, so this default only
+     exists for a pass with no data-region; it must fail cream, not themed. */
+  --quiz-surface: #fff7ec;
   --quiz-banner: var(--region-south-accent);
   --quiz-banner-ink: #1b3330;
   position: relative;
@@ -251,7 +255,9 @@
   font-size: 1.52rem;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--app-ink-deep);
+  /* On the cream ticket, which never themes — so neither does its ink
+     (dec-0015). --app-ink-deep here was invisible in dark mode (pm-0003). */
+  color: var(--app-ink-on-ephemera);
 }
 
 .options-grid {
@@ -352,7 +358,8 @@
   border-left: 4px solid #a54016;
   border-radius: 6px;
   background: #fff3e8;
-  color: var(--app-ink-deep);
+  /* Fixed slip, fixed ink (dec-0015) — see .question-text. */
+  color: var(--app-ink-on-ephemera);
   font-family: 'Work Sans', sans-serif;
 
   &--correct {
@@ -396,7 +403,8 @@
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--app-ink-deep);
+  /* Fixed row, fixed ink (dec-0015) — see .question-text. */
+  color: var(--app-ink-on-ephemera);
 }
 
 .indicator {

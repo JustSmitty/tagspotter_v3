@@ -150,6 +150,21 @@
       "note": "Cream text on a fixed coloured fill was written as --app-bg-cream in four places. That token inverts to near-black in dark mode, so the label vanished into its own chip. Fixed fills take --app-ink-on-fill; only surfaces take --app-bg-*."
     },
     {
+      "id": "themed-ink-on-ephemera-sheet",
+      "title": "An ephemera-only stylesheet may not use a themed ink token",
+      "finding": "PM-0003",
+      "phase": 5,
+      "owner": "tagspotter-a11y-gate",
+      "type": "regex-scan",
+      "include": [
+        "src/app/shared/quiz-modal/quiz-modal.component.scss"
+      ],
+      "pattern": "var\\(--app-(ink-deep|ink-muted|ink-subtle|rust-ink|success-ink|nav-ink)\\b",
+      "baseline": 0,
+      "measuredAt": "2026-08-31",
+      "note": "The quiz pass is printed matter end to end: every ground in the sheet is fixed card stock, so a token that inverts in dark mode has nothing legitimate to sit on (dec-0015). Three of these shipped invisible to a phone because scripts/contrast-audit.js only walks routes, never overlays (pm-0003). Include-list membership is the criterion: add any stylesheet here whose component draws only ephemera. The runtime twin of this check is the 'ink discipline' describe in quiz-modal.component.spec.ts, which catches the same class for tokens this pattern does not name."
+    },
+    {
       "id": "currentcolor-in-background-image",
       "title": "currentColor is inert inside a background-image data URI",
       "finding": "F-43",

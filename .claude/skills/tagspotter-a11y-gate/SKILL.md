@@ -50,7 +50,13 @@ install proves only that the empty state is fine. Seed progress first.
 
 Getting this backwards is the single most common way this app breaks: a themed ink on a fixed ground
 inverts into its own background. `guardrail:background-token-as-ink` catches the worst version of it
-(`--app-bg-*` used as a text colour) but only that version.
+(`--app-bg-*` used as a text colour) but only that version. For stylesheets that draw *only*
+ephemera, `guardrail:themed-ink-on-ephemera-sheet` goes further and bans the themed ink tokens from
+the file outright — the quiz pass shipped unreadable to a phone through exactly the slice the first
+regex cannot see (pm-0003). If a component is printed matter end to end, add its sheet to that
+guardrail's include list, and give it a runtime twin like the "ink discipline" describe in
+`quiz-modal.component.spec.ts`: redefine the dark block's tokens on `:root` and fail if anything on
+the fixed stock moves.
 
 **`currentColor` is inert inside a `background-image` data URI** —
 `guardrail:currentcolor-in-background-image`. An SVG used as an image is its own document, so
@@ -130,13 +136,18 @@ npm start
 Baseline to beat: **0 in light, 0 in dark**, across all five routes (F-42). The CSP blocks `eval`,
 so the snippet has to be pasted rather than re-hydrated from storage between reloads.
 
+**The audit only sees what is in the DOM when it runs — and that means routes, not overlays.** The
+quiz modal sat behind the spot-confirmation flow, appeared in no audit population, and reached a
+device at 1.1:1 in dark mode (pm-0003). A surface that only exists mid-flow needs its contrast
+check in a component spec, where mounting it is unconditional.
+
 For component-level ARIA and focus-management recipes, the vendored `fixing-accessibility` and
 `accessibility-audit` skills are the reference. This skill owns the project-specific line those
 recipes must not cross.
 
 ## Definition of done
 
-- [ ] All five guardrails pass and none increased
+- [ ] All six guardrails pass and none increased
 - [ ] Contrast verified against the element's real background, in both themes if dark shipped
 - [ ] Full keyboard pass: every action reachable, focus always visible, no dead-end tab stops
 - [ ] Reduced-motion pass: nothing animates, all state changes still legible
