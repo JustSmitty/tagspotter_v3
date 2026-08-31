@@ -5,7 +5,16 @@
 
 .premium-toolbar {
   --background: transparent;
-  --min-height: 72px;
+  /*
+   * 48px, matching the onboarding modal and Android's touch-target guidance.
+   * It was 72px, which is the one thing in this header with a say over its
+   * height: the kicker and counter together are 38px, so the toolbar padded
+   * two short lines out to 68px and the band around them to 89px. Every other
+   * screen puts its content straight into ion-header and has no toolbar to
+   * impose a minimum; this modal is the only place the wrapper exists, which
+   * is why it was the only header that looked empty.
+   */
+  --min-height: 48px;
   padding: 0;
 }
 
@@ -47,6 +56,13 @@
   --padding-end: 0;
   --ripple-color: rgba(217, 84, 28, 0.18);
   margin: 0;
+  /* The glyph is 1.9rem and the padding is zeroed to keep it optically tight
+     against the toolbar edge, which left the hit area at 37x38 — under the
+     44px floor, on the only control that dismisses this modal. The box is
+     pinned to 48 independently of the glyph so the target survives any later
+     change to the icon size. */
+  min-width: 48px;
+  min-height: 48px;
 
   ion-icon {
     font-size: 1.9rem;
