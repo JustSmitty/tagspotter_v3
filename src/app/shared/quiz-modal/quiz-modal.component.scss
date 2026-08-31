@@ -3,6 +3,27 @@
   display: block;
 }
 
+/*
+ * The shared .digital-ephemera-header pads by `calc(var(--app-safe-top) + 12px)`
+ * because on a route it IS the top of the screen and has to clear the status
+ * bar. This header is inside a modal card that already starts well below the
+ * status bar, so that inset is counted twice.
+ *
+ * It cost nothing in a browser, where the top safe-area inset resolves to 0 —
+ * but on a device it does not: measured against a phone screenshot it is
+ * ~55px, which padded this header to 67px and left a band of empty card stock
+ * above "Roadside Quiz" roughly as tall as the status bar. (Note the asymmetry
+ * with pm-0004: the top inset IS populated on Android and over-reports here,
+ * while the bottom one was not populated and under-reported there. Neither end
+ * can be trusted raw — see guardrail:raw-env-safe-area.)
+ *
+ * The handbook modal already zeroes this for the same reason. A modal header
+ * is not a page header.
+ */
+.quiz-header {
+  padding-top: 12px;
+}
+
 .premium-toolbar {
   --background: transparent;
   /*
