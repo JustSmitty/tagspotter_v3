@@ -969,6 +969,34 @@
       ],
       "file": ".agents/brain/postmortems/pm-0005-atlas-drawn-before-the-save-arrived.md",
       "review_by": "2027-02-28"
+    },
+    {
+      "id": "pm-0006-page-header-inset-inside-a-modal",
+      "type": "postmortem",
+      "title": "A page header reused inside a modal counted the status bar twice",
+      "status": "resolved",
+      "date": "2026-08-31",
+      "source": "file:src/global.scss:61",
+      "confidence": "high",
+      "tags": [
+        "android",
+        "safe-area",
+        "modal",
+        "layout",
+        "capacitor",
+        "css",
+        "bug"
+      ],
+      "claims": {
+        "safe-area.env-top": "populated-and-overcounts"
+      },
+      "supersedes": [],
+      "related": [
+        "pm-0004-env-safe-area-is-zero-on-android",
+        "dec-0012-dark-mode-instrument-cluster"
+      ],
+      "file": ".agents/brain/postmortems/pm-0006-page-header-inset-inside-a-modal.md",
+      "review_by": "2027-02-28"
     }
   ]
 }

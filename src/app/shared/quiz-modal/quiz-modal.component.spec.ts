@@ -268,6 +268,24 @@ describe('QuizModalComponent ink discipline (dec-0015)', () => {
    * exercises the full chain that keeps the stage clear of the system
    * navigation bar: injected var -> --app-safe-bottom -> .quiz-stage padding.
    */
+  /**
+   * The shared page-header class pads by the status-bar inset; inside a modal
+   * card that already clears the status bar, that is counted twice. Invisible
+   * in a browser, where Android's env(safe-area-inset-top) is 0 — ~55px on a
+   * device (pm-0006).
+   */
+  it('does not add the status-bar inset to the modal header', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(host);
+    const header = host.querySelector('.quiz-header') as HTMLElement;
+
+    document.documentElement.style.setProperty('--app-safe-top', '55px');
+    const padded = getComputedStyle(header).paddingTop;
+    document.documentElement.style.removeProperty('--app-safe-top');
+
+    expect(padded).toBe('12px');
+  });
+
   describe('safe-area insets', () => {
     afterEach(() => {
       document.documentElement.style.removeProperty('--safe-area-inset-bottom');

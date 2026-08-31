@@ -89,6 +89,18 @@ Rule: **components use `--app-safe-*`; `env()` appears only in `theme/variables.
 also the *only* place these tokens may be defined — a second `:root` block in `global.scss` used to
 win on stylesheet order and pin them all to zero.
 
+**Neither end of `env()` is trustworthy on Android, and they fail in opposite directions:** the
+bottom reads 0 when there is a navigation bar to clear (pm-0004), and the top reports a full status
+bar that Capacitor has *already* cleared via `StatusBar.overlaysWebView: false` (pm-0006).
+
+**Only a surface that really is at the edge of the screen may consume a safe-area token.**
+`--app-safe-top` means "distance to the top of the screen" — a viewport fact, not a component one.
+`.digital-ephemera-header` consumes it because on a route it is the top of the screen; put that same
+class inside a modal, which already starts below the status bar, and the inset lands twice. Both
+modals now override it (`padding-top: 12px` in the quiz, `0` in the handbook). When reusing a
+header, ask what it is anchored to, and remember a browser shows you none of this — `env()` is 0
+there, so the double-count is invisible until it reaches a phone.
+
 ### 4. Motion respects the OS — `guardrail:reduced-motion`
 
 Every stylesheet that declares an `animation:` must also carry a
