@@ -165,6 +165,22 @@
       "note": "The quiz pass is printed matter end to end: every ground in the sheet is fixed card stock, so a token that inverts in dark mode has nothing legitimate to sit on (dec-0015). Three of these shipped invisible to a phone because scripts/contrast-audit.js only walks routes, never overlays (pm-0003). Include-list membership is the criterion: add any stylesheet here whose component draws only ephemera. The runtime twin of this check is the 'ink discipline' describe in quiz-modal.component.spec.ts, which catches the same class for tokens this pattern does not name."
     },
     {
+      "id": "raw-env-safe-area",
+      "title": "Safe-area insets go through the tokens, never raw env()",
+      "finding": "PM-0004",
+      "phase": 5,
+      "owner": "tagspotter-a11y-gate",
+      "type": "regex-scan",
+      "include": [
+        "src/app/**/*.scss",
+        "src/global.scss"
+      ],
+      "pattern": "env\\(safe-area-inset",
+      "baseline": 0,
+      "measuredAt": "2026-08-31",
+      "note": "Android's WebView leaves env(safe-area-inset-*) at its 0px fallback, so a component reaching for env() directly gets no inset and slides under the system navigation bar once edge-to-edge is enforced (targetSdk 35+). Capacitor's SystemBars plugin measures the real insets natively and injects --safe-area-inset-*; src/theme/variables.scss folds those into --app-safe-* with env() as the iOS/web fallback. Components use the --app-* tokens. variables.scss is excluded because it is where the fallback legitimately lives."
+    },
+    {
       "id": "currentcolor-in-background-image",
       "title": "currentColor is inert inside a background-image data URI",
       "finding": "F-43",

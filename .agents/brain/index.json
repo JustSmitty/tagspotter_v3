@@ -1,5 +1,5 @@
 {
-  "count": 34,
+  "count": 36,
   "records": [
     {
       "id": "audit-2026-08-15",
@@ -877,6 +877,65 @@
         "f-049-guardrails-do-not-cover-the-instruction-layer"
       ],
       "file": ".agents/brain/postmortems/pm-0003-quiz-pass-themed-ink.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "pm-0004-env-safe-area-is-zero-on-android",
+      "type": "postmortem",
+      "title": "The safe-area tokens asked a question Android's WebView does not answer",
+      "status": "resolved",
+      "date": "2026-08-31",
+      "source": "file:src/theme/variables.scss:21",
+      "confidence": "high",
+      "tags": [
+        "android",
+        "edge-to-edge",
+        "capacitor",
+        "layout",
+        "insets",
+        "css",
+        "bug"
+      ],
+      "claims": {
+        "safe-area.source": "capacitor-injected-vars"
+      },
+      "supersedes": [],
+      "related": [
+        "pm-0005-atlas-drawn-before-the-save-arrived",
+        "con-0003-windows-dev-commands",
+        "f-042-contrast-debt"
+      ],
+      "file": ".agents/brain/postmortems/pm-0004-env-safe-area-is-zero-on-android.md",
+      "review_by": "2027-02-28"
+    },
+    {
+      "id": "pm-0005-atlas-drawn-before-the-save-arrived",
+      "type": "postmortem",
+      "title": "The atlas joined two async arrivals in the order only the browser guarantees",
+      "status": "resolved",
+      "date": "2026-08-31",
+      "source": "file:src/app/shared/road-atlas/road-atlas.component.ts:117",
+      "confidence": "high",
+      "tags": [
+        "angular",
+        "signals",
+        "race",
+        "capacitor",
+        "native",
+        "atlas",
+        "state",
+        "bug"
+      ],
+      "claims": {
+        "atlas.join": "reactive-computed"
+      },
+      "supersedes": [],
+      "related": [
+        "pm-0004-env-safe-area-is-zero-on-android",
+        "pm-0001-stale-quiz-session",
+        "con-0001-offline-first"
+      ],
+      "file": ".agents/brain/postmortems/pm-0005-atlas-drawn-before-the-save-arrived.md",
       "review_by": "2027-02-28"
     }
   ]

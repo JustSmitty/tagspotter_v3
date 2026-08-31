@@ -260,4 +260,25 @@ describe('QuizModalComponent ink discipline (dec-0015)', () => {
 
     expect(failures).toEqual([]);
   });
+
+  /**
+   * pm-0004 — Android's WebView never populates env(safe-area-inset-*), so
+   * Capacitor's SystemBars plugin injects the real window insets as
+   * --safe-area-inset-* custom properties on the document element. This
+   * exercises the full chain that keeps the stage clear of the system
+   * navigation bar: injected var -> --app-safe-bottom -> .quiz-stage padding.
+   */
+  describe('safe-area insets', () => {
+    afterEach(() => {
+      document.documentElement.style.removeProperty('--safe-area-inset-bottom');
+    });
+
+    it('pads the stage bottom by the inset SystemBars injects', () => {
+      const stage = (fixture.nativeElement as HTMLElement).querySelector('.quiz-stage') as HTMLElement;
+      expect(getComputedStyle(stage).paddingBottom).toBe('30px');
+
+      document.documentElement.style.setProperty('--safe-area-inset-bottom', '48px');
+      expect(getComputedStyle(stage).paddingBottom).toBe('78px');
+    });
+  });
 });

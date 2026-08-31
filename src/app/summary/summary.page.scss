@@ -2,8 +2,10 @@
   --background: var(--app-bg-cream);
 
   .content-inner {
-    padding: calc(env(safe-area-inset-top) + 24px) 16px
-      calc(env(safe-area-inset-bottom) + 32px);
+    /* Through the tokens, not raw env() — env() is always 0 in the Android
+       WebView (pm-0004, guardrail:raw-env-safe-area). */
+    padding: calc(var(--app-safe-top) + 24px) 16px
+      calc(var(--app-safe-bottom) + 32px);
     min-height: 100%;
     display: flex;
     flex-direction: column;
