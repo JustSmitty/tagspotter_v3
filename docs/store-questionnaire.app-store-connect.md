@@ -132,8 +132,9 @@ capability questions are what would move the rating, not the trivia.
 | Field | Answer |
 |---|---|
 | Bundle ID | `com.tagspotter.app` |
-| Primary category | Games → Trivia |
-| Secondary category | Games → Puzzle — **the metadata JSON currently drafts "Trivia" for both; ASC will not accept the same category twice** |
+| Primary category | Games (`primaryCategory` in the metadata JSON) |
+| Game subcategories | Trivia, then Puzzle. ASC lets a Games primary carry two subcategories, which is where Trivia survives now that `secondaryCategory` is Puzzle |
+| Secondary category | Puzzle (`secondaryCategory`). It must differ from the primary — ASC will not take the same category twice |
 | Price | Free |
 | Availability | All territories (the content is U.S.-specific, but nothing restricts distribution) |
 | Export compliance | **Already answered in the binary.** `ITSAppUsesNonExemptEncryption = false` in `Info.plist`, so ASC will not ask per upload |
