@@ -287,17 +287,36 @@ describe('QuizModalComponent ink discipline (dec-0015)', () => {
     expect(padded).toBe('0px');
   });
 
+  /**
+   * The ticket must show its complete rust frame without scrolling: a text
+   * question with the feedback slip open has to fit a typical phone's content
+   * window (~640px once the modal chrome and insets are paid). It used to run
+   * ~170px over, so no scroll position ever showed all four edges. Measured at
+   * phone width with the answered state rendered — the tallest text layout.
+   */
+  it('fits a text question with feedback inside the frame budget', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(host);
+    host.style.width = '412px';
+    const pass = host.querySelector('.quiz-pass') as HTMLElement;
+
+    expect(host.querySelector('.answer-feedback')).not.toBeNull();
+    expect(pass.offsetHeight).toBeLessThanOrEqual(580);
+  });
+
   describe('safe-area insets', () => {
     afterEach(() => {
       document.documentElement.style.removeProperty('--safe-area-inset-bottom');
     });
 
-    it('pads the stage bottom by the inset SystemBars injects', () => {
+    it('leaves the stage inset-free: the modal height already clears the nav', () => {
       const stage = (fixture.nativeElement as HTMLElement).querySelector('.quiz-stage') as HTMLElement;
-      expect(getComputedStyle(stage).paddingBottom).toBe('30px');
+      expect(getComputedStyle(stage).paddingBottom).toBe('14px');
 
+      // The card's height subtracts the inset, so the stage never sits under
+      // the nav bar; consuming the inset here too stole ticket room twice.
       document.documentElement.style.setProperty('--safe-area-inset-bottom', '48px');
-      expect(getComputedStyle(stage).paddingBottom).toBe('78px');
+      expect(getComputedStyle(stage).paddingBottom).toBe('14px');
     });
   });
 });
