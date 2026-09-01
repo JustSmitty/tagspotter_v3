@@ -208,9 +208,15 @@ jobs:
           # running for this simulator at all: nothing holds a cached domain,
           # nothing can clobber the file, and the first launch after boot reads
           # what is actually on disk.
+          # Resolve the container path FIRST: get_app_container needs the device
+          # booted ("Unable to lookup in current state: Shutdown"), while the
+          # write needs it shut down. The path stays valid across the shutdown —
+          # it is a directory on the host filesystem, not a runtime handle.
+          DATA=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)
+          echo "container: $DATA"
+
           xcrun simctl shutdown "$UDID"
 
-          DATA=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)
           PREFS="$DATA/Library/Preferences"
           # Installing does not necessarily create Preferences/ — `defaults` will
           # not create a missing parent directory, and would fail here rather than
