@@ -175,6 +175,23 @@ jobs:
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
 
+      - name: Set appearance and a clean status bar
+        env:
+          APPEARANCE: ${{ inputs.appearance }}
+        run: |
+          xcrun simctl ui "$UDID" appearance "$APPEARANCE"
+          # Apple's own marketing convention, and it keeps the status bar from
+          # differing between runs (a drifting clock or battery level makes two
+          # screenshot sets impossible to diff).
+          xcrun simctl status_bar "$UDID" override \
+            --time "9:41" \
+            --batteryState charged \
+            --batteryLevel 100 \
+            --cellularMode active \
+            --cellularBars 4 \
+            --wifiMode active \
+            --wifiBars 3
+
       - name: Install the app
         run: |
           PRODUCTS="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphonesimulator"
@@ -193,34 +210,49 @@ jobs:
 
       - name: Seed a mid-trip save
         run: |
-          # Seed BEFORE the app has ever launched, with the device SHUT DOWN.
-          #
-          # Three attempts failed here, and the diagnostic from the third explains
-          # why. Dumping the container after a launch showed no preferences file
-          # at all — not our seed, not the app's own. The app does not flush
-          # UserDefaults before `simctl terminate` kills it, so the earlier
-          # sequence (launch, terminate, write, reboot) had cfprefsd holding an
-          # empty cached domain for this app the whole time, ready to write it
-          # back over anything on disk.
-          #
-          # Installing creates the data container, so no launch is needed to make
-          # a place to write. Shutting the device down first means cfprefsd is not
-          # running for this simulator at all: nothing holds a cached domain,
-          # nothing can clobber the file, and the first launch after boot reads
-          # what is actually on disk.
-          xcrun simctl shutdown "$UDID"
-
-          DATA=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)
-          PREFS="$DATA/Library/Preferences"
-          # Installing does not necessarily create Preferences/ — `defaults` will
-          # not create a missing parent directory, and would fail here rather than
-          # produce the empty screenshots this replaces.
-          mkdir -p "$PREFS"
-          PLIST="$PREFS/$BUNDLE_ID.plist"
-          DOMAIN="${PLIST%.plist}"
+          # Launch once so the app's data container exists, then write the save
+          # into the UserDefaults that @capacitor/preferences reads. Keys are
+          # prefixed CapacitorStorage. because no Preferences group is configured
+          # anywhere in src/ — see the backup-rules note in the release skill.
+          xcrun simctl launch "$UDID" "$BUNDLE_ID"
+          sleep 5
+          xcrun simctl terminate "$UDID" "$BUNDLE_ID" || true
 
           node scripts/make-screenshot-seed.mjs --out "$RUNNER_TEMP/seed.json"
           SEED=$(cat "$RUNNER_TEMP/seed.json")
+
+          # Write into the app's OWN data container.
+          #
+          # The first attempt used `simctl spawn <udid> defaults write <bundle-id>`,
+          # which looks right and is not: spawn runs outside the app sandbox, so it
+          # writes the simulator's system-wide preferences domain, not the
+          # sandboxed container the app actually reads. Every screenshot came back
+          # with an empty collection and the onboarding handbook over the top.
+          DATA=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)
+          PLIST="$DATA/Library/Preferences/$BUNDLE_ID.plist"
+
+          # Ground truth about where this app's Preferences actually live.
+          #
+          # The launch above let the app write its own save, so whatever file that
+          # produced is the file the seed has to go into. Two earlier attempts
+          # guessed at the location and both "verified" themselves into passing
+          # while every screenshot came out empty, so the location is now observed
+          # rather than assumed — and stays printed, because the next person to
+          # debug this deserves the same evidence without another 10x-billed run.
+          echo "--- data container: $DATA"
+          echo "--- files mentioning tagspotter_v1 anywhere in the container:"
+          grep -rl "tagspotter_v1" "$DATA" 2>/dev/null | head -10 || echo "  (none found)"
+          echo "--- every plist under the container:"
+          find "$DATA" -name '*.plist' 2>/dev/null | head -20
+          echo "--- keys the app itself wrote to $PLIST:"
+          if [ -f "$PLIST" ]; then
+            plutil -p "$PLIST" 2>/dev/null | cut -c1-120 | head -20
+          else
+            echo "  (the app wrote no plist at that path — the guess is wrong)"
+          fi
+          # `defaults` wants a domain, not a filename — hand it the path with the
+          # extension stripped.
+          DOMAIN="${PLIST%.plist}"
 
           # Keys are prefixed CapacitorStorage. because no Preferences group is
           # configured anywhere in src/ — see the backup-rules note in the release
@@ -228,25 +260,67 @@ jobs:
           defaults write "$DOMAIN" "CapacitorStorage.tagspotter_v1_save_data" -string "$SEED"
           # Standalone flag, stored outside the save blob so a returning player is
           # not shown the handbook again. Without it the onboarding modal covers
-          # the first screenshot — which is exactly what it did, twice.
+          # every screenshot — which is exactly what it did.
           defaults write "$DOMAIN" "CapacitorStorage.tagspotter_v1_onboarding_seen" -string "true"
 
-          echo "--- seeded plist now holds:"
-          plutil -p "$PLIST" | cut -c1-140 | head -10
-
+          # cfprefsd inside the simulator caches this file and can serve the app
+          # its pre-write copy. A reboot is the blunt, reliable flush.
+          xcrun simctl shutdown "$UDID"
           xcrun simctl boot "$UDID"
           xcrun simctl bootstatus "$UDID" -b
 
-      # After the boot above, because shutting the device down clears both.
-      - name: Set appearance and a clean status bar
+      # Shutting the device down clears the status-bar override and appearance, so
+      # they are re-applied after the reboot rather than before it.
+      - name: Re-apply appearance and status bar
         env:
           APPEARANCE: ${{ inputs.appearance }}
         run: |
           xcrun simctl ui "$UDID" appearance "$APPEARANCE"
-          # Apple's own marketing convention, and it keeps the status bar from
-          # differing between runs (a drifting clock or battery level makes two
-          # screenshot sets impossible to diff).
-          xcrun simctl status_bar "$UDID" override             --time "9:41"             --batteryState charged             --batteryLevel 100             --cellularMode active             --cellularBars 4             --wifiMode active             --wifiBars 3
+          xcrun simctl status_bar "$UDID" override \
+            --time "9:41" \
+            --batteryState charged \
+            --batteryLevel 100 \
+            --cellularMode active \
+            --cellularBars 4 \
+            --wifiMode active \
+            --wifiBars 3
+
+      - name: Confirm the app can actually read the seed
+        run: |
+          # Checking that the write landed is not the same as checking the app can
+          # see it — the previous version of this step read back through the same
+          # wrong path it had written to, so it agreed with itself and passed while
+          # every screenshot came out empty.
+          #
+          # This asserts app-visible behaviour instead. StateService.loadSnapshot
+          # falls back to loadLegacySnapshot and SAVES a fresh snapshot whenever it
+          # cannot read a unified blob, so an unreadable seed is not merely ignored
+          # — it is overwritten. If our trip id is still in the store after a real
+          # launch, the app read our save rather than replacing it.
+          DATA=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)
+          DOMAIN="$DATA/Library/Preferences/$BUNDLE_ID"
+
+          xcrun simctl launch "$UDID" "$BUNDLE_ID"
+          sleep 10
+          xcrun simctl terminate "$UDID" "$BUNDLE_ID" || true
+
+          STORED=$(defaults read "$DOMAIN" "CapacitorStorage.tagspotter_v1_save_data" 2>/dev/null || echo '')
+          case "$STORED" in
+            *trip-screenshot-001*)
+              FOUND=$(printf '%s' "$STORED" | grep -o 'stateFound.\{0,8\}1' | wc -l | tr -d ' ')
+              echo "app read the seeded save (trip id intact, ~$FOUND states marked found)"
+              ;;
+            '')
+              echo "::error::No save in the app container after launch — the seed never reached the app."
+              exit 1
+              ;;
+            *)
+              echo "::error::The app replaced the seeded save with a fresh one, so it could not read it."
+              echo "First 200 chars of what is stored now:"
+              printf '%s' "$STORED" | head -c 200
+              exit 1
+              ;;
+          esac
 
       - name: Capture
         run: |
