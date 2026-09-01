@@ -379,6 +379,22 @@
       "measuredAt": "2026-08-24"
     },
     {
+      "id": "ios-armv7-capability",
+      "title": "Info.plist requires arm64, the architecture the app actually ships",
+      "finding": "F-52",
+      "phase": 6,
+      "owner": "tagspotter-release",
+      "type": "regex-scan",
+      "include": [
+        "ios/App/App/Info.plist"
+      ],
+      "$note": "Capacitor scaffolds UIRequiredDeviceCapabilities as armv7, a 32-bit ISA. The deployment target is iOS 15, so the binary has no armv7 slice and no device that can install the app is 32-bit - the key declared a requirement the app cannot satisfy and that filters nothing. Same regression shape as ios-ipad-target: a value nobody chose, restored silently when the Xcode project is regenerated. The pattern is the element form rather than the bare token so the explanatory comment in Info.plist, which names armv7 deliberately, does not trip it - the defect has an exact shape and matching that shape is more precise than matching the word. See f-052.",
+      "caseSensitive": true,
+      "pattern": "<string>armv7</string>",
+      "baseline": 0,
+      "measuredAt": "2026-09-01"
+    },
+    {
       "id": "ios-export-compliance",
       "title": "Info.plist answers the export-compliance question up front",
       "finding": "F-46",

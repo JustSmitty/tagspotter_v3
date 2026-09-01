@@ -1,5 +1,5 @@
 {
-  "count": 40,
+  "count": 41,
   "records": [
     {
       "id": "audit-2026-08-15",
@@ -883,6 +883,33 @@
       ],
       "file": ".agents/brain/findings/f-051-atlas-insets-projected-off-canvas.md",
       "review_by": "2027-03-01"
+    },
+    {
+      "id": "f-052-armv7-required-device-capability",
+      "type": "finding",
+      "title": "Info.plist required a CPU the app does not ship and no supported device has",
+      "status": "resolved",
+      "date": "2026-09-01",
+      "source": "file:ios/App/App/Info.plist:44",
+      "confidence": "medium",
+      "tags": [
+        "ios",
+        "release",
+        "store",
+        "capacitor",
+        "info-plist"
+      ],
+      "claims": {
+        "ios.required-capability": "arm64"
+      },
+      "supersedes": [],
+      "related": [
+        "dec-0016-iphone-only-ios",
+        "f-044-store-readiness",
+        "con-0002-csp-no-remote-hosts"
+      ],
+      "file": ".agents/brain/findings/f-052-armv7-required-device-capability.md",
+      "review_by": "2027-09-01"
     },
     {
       "id": "pm-0001-stale-quiz-session",

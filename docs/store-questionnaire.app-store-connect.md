@@ -177,6 +177,7 @@ app predictably draws — why a trivia game wants location, and where that data 
   string says "Your coordinates are not stored," which stays true in the sense a user
   reads it (nothing is retained), but the cache is worth knowing about if a reviewer
   asks a precise question.
-- **`UIRequiredDeviceCapabilities = armv7`** in `Info.plist` is Capacitor's scaffold
-  default on an arm64-only, iOS 15 minimum target. Historically accepted, but vestigial
-  — worth resolving before the first upload rather than during a review.
+- **`UIRequiredDeviceCapabilities`** — resolved. It carried Capacitor's scaffolded
+  `armv7` on an arm64-only, iOS 15 target, declaring a requirement the binary does not
+  ship and no supported device has. It is now `arm64`, held by
+  `guardrail:ios-armv7-capability`. See `f-052-armv7-required-device-capability`.
