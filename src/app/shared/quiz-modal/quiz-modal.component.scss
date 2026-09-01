@@ -1,40 +1,28 @@
 :host {
-  --page-header-gradient: linear-gradient(180deg, rgba(253, 250, 233, 0.98) 0%, rgba(253, 250, 233, 0.9) 100%);
   display: block;
 }
 
 /*
- * The shared .digital-ephemera-header pads by `calc(var(--app-safe-top) + 12px)`
- * because on a route it IS the top of the screen and has to clear the status
- * bar. This header is inside a modal card that already starts well below the
- * status bar, so that inset is counted twice.
- *
- * It cost nothing in a browser, where the top safe-area inset resolves to 0 —
- * but on a device it does not: measured against a phone screenshot it is
- * ~55px, which padded this header to 67px and left a band of empty card stock
- * above "Roadside Quiz" roughly as tall as the status bar. (Note the asymmetry
- * with pm-0004: the top inset IS populated on Android and over-reports here,
- * while the bottom one was not populated and under-reported there. Neither end
- * can be trusted raw — see guardrail:raw-env-safe-area.)
- *
- * The handbook modal already zeroes this for the same reason. A modal header
- * is not a page header.
+ * One full-bleed band, the handbook pattern. This header used to wear
+ * .digital-ephemera-header — the ROUTE header class — which pads by the
+ * status-bar inset a modal has already cleared (pm-0006) and paints a cream
+ * panel for a floating cardstock strip to sit on. Two near-identical creams
+ * separated by a drop shadow read as a rendering mistake, and every other
+ * header in the app fills its band with content; this was the only floating
+ * strip anywhere. Now the text IS the band: solid handbook stock, a rust rule
+ * for a firm bottom edge (a modal wants an edge, not the route header’s
+ * scroll fade), and nothing above or below.
  */
 .quiz-header {
-  padding-top: 12px;
+  padding: 0;
+  background: #f7efdb;
+  border-bottom: 2px solid #d9541c;
 }
 
 .premium-toolbar {
   --background: transparent;
-  /*
-   * 48px, matching the onboarding modal and Android's touch-target guidance.
-   * It was 72px, which is the one thing in this header with a say over its
-   * height: the kicker and counter together are 38px, so the toolbar padded
-   * two short lines out to 68px and the band around them to 89px. Every other
-   * screen puts its content straight into ion-header and has no toolbar to
-   * impose a minimum; this modal is the only place the wrapper exists, which
-   * is why it was the only header that looked empty.
-   */
+  /* Handbook parity and Android’s touch-target floor; the band takes its
+     height from the type, not the other way around. */
   --min-height: 48px;
   padding: 0;
 }
@@ -44,12 +32,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding: 6px 6px 6px 16px;
 }
 
 .toolbar-copy {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .toolbar-kicker {
