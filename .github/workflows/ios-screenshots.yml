@@ -61,26 +61,45 @@ jobs:
       - name: Build web assets
         run: npm run build
 
-      # Inject the route helper into the built web assets before cap sync copies
-      # them into the .app. See scripts/screenshot-route.js for why the route is
-      # set at boot rather than navigated to.
-      - name: Inject the route helper
+      # Inject both screenshot-only helpers into the built web assets, before cap
+      # sync copies them into the .app:
+      #
+      #   screenshot-route.js  — sets the start route (see that file for why the
+      #                          route is set at boot rather than navigated to)
+      #   screenshot-seed.js   — defines the window global PreferenceStorageService
+      #                          reads, standing in for a stored save
+      #
+      # The seed lives here rather than in the simulator's Preferences because
+      # three attempts to write it there failed, two of them silently. This seam
+      # is the app's own storage boundary, so migration, normalization and
+      # hydration all run exactly as they do for a real player — and no seed ships
+      # in any production build, which `guardrail:screenshot-hooks-in-src`
+      # enforces on src/index.html.
+      #
+      # Both are same-origin classic scripts, so `script-src 'self'` is unchanged
+      # (con-0002) and they run before the deferred module bundles.
+      - name: Inject the screenshot helpers
         run: |
           cp scripts/screenshot-route.js www/screenshot-route.js
+          node scripts/make-screenshot-seed.mjs --js www/screenshot-seed.js
           node - <<'NODE'
           const fs = require('fs');
           const path = 'www/index.html';
           let html = fs.readFileSync(path, 'utf8');
-          const tag = '<script src="screenshot-route.js"></script>';
-          if (html.includes(tag)) process.exit(0);
-          // Ahead of </head>, so it runs before the deferred module bundles.
+          const tags = [
+            '<script src="screenshot-seed.js"></script>',
+            '<script src="screenshot-route.js"></script>',
+          ];
           if (!html.includes('</head>')) {
             console.error('::error::www/index.html has no </head> to inject before');
             process.exit(1);
           }
-          html = html.replace('</head>', `  ${tag}\n</head>`);
+          for (const tag of tags) {
+            if (html.includes(tag)) continue;
+            html = html.replace('</head>', `  ${tag}\n</head>`);
+          }
           fs.writeFileSync(path, html);
-          console.log('injected screenshot-route.js');
+          console.log('injected: ' + tags.join(' '));
           NODE
 
       - name: Sync Capacitor
@@ -207,121 +226,6 @@ jobs:
           echo "installing: $APP"
           xcrun simctl install "$UDID" "$APP"
           echo "APP_PATH=$APP" >> "$GITHUB_ENV"
-
-      - name: Seed a mid-trip save
-        run: |
-          # Launch once so the app's data container exists, then write the save
-          # into the UserDefaults that @capacitor/preferences reads. Keys are
-          # prefixed CapacitorStorage. because no Preferences group is configured
-          # anywhere in src/ — see the backup-rules note in the release skill.
-          xcrun simctl launch "$UDID" "$BUNDLE_ID"
-          sleep 5
-          xcrun simctl terminate "$UDID" "$BUNDLE_ID" || true
-
-          node scripts/make-screenshot-seed.mjs --out "$RUNNER_TEMP/seed.json"
-          SEED=$(cat "$RUNNER_TEMP/seed.json")
-
-          # Write into the app's OWN data container.
-          #
-          # The first attempt used `simctl spawn <udid> defaults write <bundle-id>`,
-          # which looks right and is not: spawn runs outside the app sandbox, so it
-          # writes the simulator's system-wide preferences domain, not the
-          # sandboxed container the app actually reads. Every screenshot came back
-          # with an empty collection and the onboarding handbook over the top.
-          DATA=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)
-          PLIST="$DATA/Library/Preferences/$BUNDLE_ID.plist"
-
-          # Ground truth about where this app's Preferences actually live.
-          #
-          # The launch above let the app write its own save, so whatever file that
-          # produced is the file the seed has to go into. Two earlier attempts
-          # guessed at the location and both "verified" themselves into passing
-          # while every screenshot came out empty, so the location is now observed
-          # rather than assumed — and stays printed, because the next person to
-          # debug this deserves the same evidence without another 10x-billed run.
-          echo "--- data container: $DATA"
-          echo "--- files mentioning tagspotter_v1 anywhere in the container:"
-          grep -rl "tagspotter_v1" "$DATA" 2>/dev/null | head -10 || echo "  (none found)"
-          echo "--- every plist under the container:"
-          find "$DATA" -name '*.plist' 2>/dev/null | head -20
-          echo "--- keys the app itself wrote to $PLIST:"
-          if [ -f "$PLIST" ]; then
-            plutil -p "$PLIST" 2>/dev/null | cut -c1-120 | head -20
-          else
-            echo "  (the app wrote no plist at that path — the guess is wrong)"
-          fi
-          # `defaults` wants a domain, not a filename — hand it the path with the
-          # extension stripped.
-          DOMAIN="${PLIST%.plist}"
-
-          # Keys are prefixed CapacitorStorage. because no Preferences group is
-          # configured anywhere in src/ — see the backup-rules note in the release
-          # skill, which turns on the same fact.
-          defaults write "$DOMAIN" "CapacitorStorage.tagspotter_v1_save_data" -string "$SEED"
-          # Standalone flag, stored outside the save blob so a returning player is
-          # not shown the handbook again. Without it the onboarding modal covers
-          # every screenshot — which is exactly what it did.
-          defaults write "$DOMAIN" "CapacitorStorage.tagspotter_v1_onboarding_seen" -string "true"
-
-          # cfprefsd inside the simulator caches this file and can serve the app
-          # its pre-write copy. A reboot is the blunt, reliable flush.
-          xcrun simctl shutdown "$UDID"
-          xcrun simctl boot "$UDID"
-          xcrun simctl bootstatus "$UDID" -b
-
-      # Shutting the device down clears the status-bar override and appearance, so
-      # they are re-applied after the reboot rather than before it.
-      - name: Re-apply appearance and status bar
-        env:
-          APPEARANCE: ${{ inputs.appearance }}
-        run: |
-          xcrun simctl ui "$UDID" appearance "$APPEARANCE"
-          xcrun simctl status_bar "$UDID" override \
-            --time "9:41" \
-            --batteryState charged \
-            --batteryLevel 100 \
-            --cellularMode active \
-            --cellularBars 4 \
-            --wifiMode active \
-            --wifiBars 3
-
-      - name: Confirm the app can actually read the seed
-        run: |
-          # Checking that the write landed is not the same as checking the app can
-          # see it — the previous version of this step read back through the same
-          # wrong path it had written to, so it agreed with itself and passed while
-          # every screenshot came out empty.
-          #
-          # This asserts app-visible behaviour instead. StateService.loadSnapshot
-          # falls back to loadLegacySnapshot and SAVES a fresh snapshot whenever it
-          # cannot read a unified blob, so an unreadable seed is not merely ignored
-          # — it is overwritten. If our trip id is still in the store after a real
-          # launch, the app read our save rather than replacing it.
-          DATA=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)
-          DOMAIN="$DATA/Library/Preferences/$BUNDLE_ID"
-
-          xcrun simctl launch "$UDID" "$BUNDLE_ID"
-          sleep 10
-          xcrun simctl terminate "$UDID" "$BUNDLE_ID" || true
-
-          STORED=$(defaults read "$DOMAIN" "CapacitorStorage.tagspotter_v1_save_data" 2>/dev/null || echo '')
-          case "$STORED" in
-            *trip-screenshot-001*)
-              FOUND=$(printf '%s' "$STORED" | grep -o 'stateFound.\{0,8\}1' | wc -l | tr -d ' ')
-              echo "app read the seeded save (trip id intact, ~$FOUND states marked found)"
-              ;;
-            '')
-              echo "::error::No save in the app container after launch — the seed never reached the app."
-              exit 1
-              ;;
-            *)
-              echo "::error::The app replaced the seeded save with a fresh one, so it could not read it."
-              echo "First 200 chars of what is stored now:"
-              printf '%s' "$STORED" | head -c 200
-              exit 1
-              ;;
-          esac
-
       - name: Capture
         run: |
           OUT="$RUNNER_TEMP/shots"
