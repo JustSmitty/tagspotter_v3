@@ -396,6 +396,20 @@ jobs:
               fail=1
             fi
           done
+
+          # Five captures of five different screens must not be the same image.
+          # A run that produced five byte-identical 86KB black frames passed every
+          # check above: right size, over the byte floor, five files present. The
+          # size floor cannot tell "blank" from "dark screenshot", but identical
+          # checksums across supposedly different screens is unambiguous.
+          UNIQUE=$(md5 -q "$OUT"/*.png | sort -u | wc -l | tr -d ' ')
+          TOTAL=$(ls -1 "$OUT"/*.png | wc -l | tr -d ' ')
+          echo "distinct images: $UNIQUE of $TOTAL"
+          if [ "$UNIQUE" -lt "$TOTAL" ]; then
+            echo "::error::Only $UNIQUE distinct images across $TOTAL captures — the app is not rendering, or the route helper is not taking effect."
+            md5 "$OUT"/*.png
+            fail=1
+          fi
           exit $fail
 
       - name: Upload the screenshot set
