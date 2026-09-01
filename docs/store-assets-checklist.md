@@ -14,11 +14,11 @@ Tablet folders (`seven-inch`, and any 10-inch set) are empty. Play accepts the l
 it just will not present the app as tablet-ready. That is consistent with the app being portrait,
 phone-first (`con-0005-portrait-only`).
 
-## App Store — not ready
+## App Store — ready
 
 | Asset | Where | State |
 |---|---|---|
-| iPhone screenshots, 6.9" (1320x2868) or 6.7" (1290x2796) | `store-assets/app-store/iphone/` | **missing — required** |
+| iPhone screenshots, 6.9" (1320x2868) | `store-assets/app-store/iphone/` | **present** — 5 captures at 1320x2868 from an iPhone 17 Pro Max simulator, regenerate with the `iOS screenshots` workflow |
 | iPad screenshots | `store-assets/app-store/ipad/` | **not needed**, the target is iPhone-only (`dec-0016`) |
 | 1024x1024 marketing icon | `ios/App/App/Assets.xcassets/AppIcon.appiconset/` | present, in the app bundle |
 

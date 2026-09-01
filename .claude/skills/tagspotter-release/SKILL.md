@@ -122,6 +122,18 @@ here is holding the line, not doing the work again.
   banned string. The difference is that this defect has an exact shape and the scanner matches that
   shape; it is not being loosened to let a comment through.
 
+- **Screenshot-only hooks never enter the shipped `index.html`**
+  (`guardrail:screenshot-hooks-in-src`, F-53). `.github/workflows/ios-screenshots.yml` injects two
+  same-origin scripts into the **built** web assets — `screenshot-route.js` (start route) and
+  `screenshot-seed.js` (the `window` global `PreferenceStorageService` reads instead of a stored
+  save, `dec-0019`). Committing either tag into `src/index.html` would ship a fake 28-state save and
+  a forced start route to every player, and would look like a working app in review. The scan covers
+  the source `index.html` only; `www/` is build output and is exactly where these belong.
+
+  `dec-0019` is worth reading before touching the seeding: writing the save into the simulator's own
+  Preferences was tried three times across six 10x-billed runs and never worked, and twice the check
+  passed while every screenshot came out empty. Verify at the consumer, not at your own write.
+
 - **`Info.plist` answers export compliance up front** — `ITSAppUsesNonExemptEncryption`
   (`guardrail:ios-export-compliance`). Without it, App Store Connect asks on *every* upload and the
   build sits in "Missing Compliance" until someone answers by hand. The app ships no encryption of

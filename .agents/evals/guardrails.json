@@ -395,6 +395,22 @@
       "measuredAt": "2026-09-01"
     },
     {
+      "id": "screenshot-hooks-in-src",
+      "title": "Screenshot-only hooks never enter the shipped index.html",
+      "finding": "F-53",
+      "phase": 6,
+      "owner": "tagspotter-release",
+      "type": "regex-scan",
+      "include": [
+        "src/index.html"
+      ],
+      "$note": "The store-screenshot build injects two same-origin scripts into the BUILT web assets - screenshot-route.js (start route) and screenshot-seed.js (the window global PreferenceStorageService reads). Both exist so no seed or route override ships to players: in a real build the global is undefined and the branch in preference-storage.service.ts is dead. Committing either tag into src/index.html would ship a fake 28-state save and a forced start route to every player, and it would look exactly like a working app in review. The scan is on the source index.html only; www/ is build output and is where these belong. See f-053.",
+      "caseSensitive": false,
+      "pattern": "screenshot-(route|seed)\\.js",
+      "baseline": 0,
+      "measuredAt": "2026-09-01"
+    },
+    {
       "id": "ios-export-compliance",
       "title": "Info.plist answers the export-compliance question up front",
       "finding": "F-46",

@@ -1,5 +1,5 @@
 {
-  "count": 41,
+  "count": 42,
   "records": [
     {
       "id": "audit-2026-08-15",
@@ -656,6 +656,36 @@
       ],
       "file": ".agents/brain/decisions/dec-0018-visible-build-number.md",
       "review_by": "2027-02-28"
+    },
+    {
+      "id": "dec-0019-screenshot-seed-at-the-storage-seam",
+      "type": "decision",
+      "title": "Store screenshots are seeded at the app's storage seam, not in the simulator's Preferences",
+      "status": "accepted",
+      "date": "2026-09-01",
+      "source": "file:src/app/services/platform/preference-storage.service.ts:36",
+      "confidence": "high",
+      "tags": [
+        "ios",
+        "release",
+        "store",
+        "screenshots",
+        "storage",
+        "ci"
+      ],
+      "claims": {
+        "screenshot-seed-mechanism": "window-global-at-storage-seam"
+      },
+      "supersedes": [],
+      "related": [
+        "f-044-store-readiness",
+        "dec-0016-iphone-only-ios",
+        "con-0001-offline-first",
+        "con-0002-csp-no-remote-hosts",
+        "dec-0009-plain-json-saves"
+      ],
+      "file": ".agents/brain/decisions/dec-0019-screenshot-seed-at-the-storage-seam.md",
+      "review_by": "2027-09-01"
     },
     {
       "id": "f-042-contrast-debt",
