@@ -10,7 +10,7 @@ confidence: high
 tags: [atlas, geojson, projection, svg, data-assumption, bug]
 claims: {atlas.projection: single-uniform}
 supersedes: []
-related: [pm-0005-atlas-drawn-before-the-save-arrived, con-0001-offline-first, dec-0004-inline-svg-over-maplibre]
+related: [pm-0005-atlas-drawn-before-the-save-arrived, con-0001-offline-first, dec-0004-inline-svg-atlas]
 review_by: 2027-03-01
 ---
 
