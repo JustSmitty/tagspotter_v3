@@ -54,6 +54,10 @@ account, a Mac, or a physical device.
    and app access (no login exists).
 3. **Apple Developer enrolment, then the signing secrets** listed in `docs/app-store-release.md`.
    The iOS `archive` job has never run; expect the first dispatch to need adjustment.
+   The App Store Connect App Privacy and age-rating answers are already drafted, with the
+   code evidence for each, in `docs/store-questionnaire.app-store-connect.md` — including
+   the notes-to-reviewer text that pre-empts the "why does a trivia game want location"
+   question. They are answers to transcribe, not decisions to re-make.
 4. **iPhone screenshots** at 6.9" or 6.7", from a Simulator or device running the release build.
    This is the one asset gap. No iPad set is needed — the target is iPhone-only (`dec-0016`).
 5. **Device QA against the signed build**, not a debug build: first launch clean, the location prompt
