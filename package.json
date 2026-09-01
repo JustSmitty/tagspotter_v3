@@ -25,7 +25,9 @@
     "version:bump": "node scripts/bump-version.mjs",
     "release:aab": "npm.cmd run build:mobile && cd android && .\\gradlew.bat bundleRelease",
     "release:apk": "npm.cmd run build:mobile && cd android && .\\gradlew.bat assembleRelease",
-    "assets:store": "node scripts/make-store-graphics.mjs"
+    "assets:store": "node scripts/make-store-graphics.mjs",
+    "screenshots:seed": "node scripts/make-screenshot-seed.mjs",
+    "screenshots:verify": "node scripts/make-screenshot-seed.mjs --verify"
   },
   "private": true,
   "dependencies": {

@@ -1,0 +1,292 @@
+name: iOS screenshots
+
+# Captures the App Store iPhone screenshot set on a simulator.
+#
+# `store-assets/app-store/iphone/` is the last asset gap before submission, and
+# it cannot be filled from this repo's development machine: the maintainer is on
+# Windows, an iOS Simulator needs macOS, and a resized Android capture is not a
+# substitute — the status bar, safe areas and corner radius all differ, and
+# env(safe-area-inset-*) behaves differently in the native WebView than in a
+# browser (pm-0004). This workflow is the Mac.
+#
+# Manual dispatch only, like ios.yml and for the same reason: GitHub bills macOS
+# runners at 10x. Nothing here signs, uploads, or contacts Apple — it produces
+# PNGs as a build artifact, and a human decides whether they are good enough to
+# commit.
+
+on:
+  workflow_dispatch:
+    inputs:
+      device:
+        description: 'Simulator to capture on (must be a 6.9" or 6.7" iPhone for App Store Connect)'
+        type: choice
+        default: 'iPhone 16 Pro Max'
+        options:
+          - 'iPhone 16 Pro Max'
+          - 'iPhone 16 Plus'
+          - 'iPhone 15 Pro Max'
+      appearance:
+        description: 'Light or dark'
+        type: choice
+        default: 'light'
+        options: [light, dark]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SCHEME: App
+  PROJECT: ios/App/App.xcodeproj
+  BUNDLE_ID: com.tagspotter.app
+
+jobs:
+  screenshots:
+    name: Capture
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Fail before the expensive part if the seed no longer matches the save
+      # shape or the scoring rules. A bad seed is only visible as a wrong number
+      # in a finished screenshot, which is the worst place to find it.
+      - name: Verify the screenshot seed
+        run: node scripts/make-screenshot-seed.mjs --verify
+
+      # NOT `npm run build:mobile` — that shells out to PowerShell and is
+      # Windows-only. Same reasoning as ios.yml.
+      - name: Build web assets
+        run: npm run build
+
+      # Inject the route helper into the built web assets before cap sync copies
+      # them into the .app. See scripts/screenshot-route.js for why the route is
+      # set at boot rather than navigated to.
+      - name: Inject the route helper
+        run: |
+          cp scripts/screenshot-route.js www/screenshot-route.js
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'www/index.html';
+          let html = fs.readFileSync(path, 'utf8');
+          const tag = '<script src="screenshot-route.js"></script>';
+          if (html.includes(tag)) process.exit(0);
+          // Ahead of </head>, so it runs before the deferred module bundles.
+          if (!html.includes('</head>')) {
+            console.error('::error::www/index.html has no </head> to inject before');
+            process.exit(1);
+          }
+          html = html.replace('</head>', `  ${tag}\n</head>`);
+          fs.writeFileSync(path, html);
+          console.log('injected screenshot-route.js');
+          NODE
+
+      - name: Sync Capacitor
+        run: npx cap sync ios
+
+      - name: Build for the simulator
+        run: |
+          set -o pipefail
+          FORMAT=cat
+          command -v xcpretty >/dev/null 2>&1 && FORMAT=xcpretty
+          xcodebuild build \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            | "$FORMAT"
+
+      - name: Boot the simulator
+        env:
+          DEVICE: ${{ inputs.device }}
+        run: |
+          # Resolve the device by name. If the image does not carry it, say so
+          # with the list rather than failing later on an opaque "invalid device".
+          UDID=$(xcrun simctl list devices available -j \
+            | python3 -c "
+          import json,sys
+          want = sys.argv[1]
+          data = json.load(sys.stdin)['devices']
+          for runtime, devices in data.items():
+              if 'iOS' not in runtime: continue
+              for d in devices:
+                  if d['name'] == want:
+                      print(d['udid']); sys.exit(0)
+          sys.exit(1)
+          " "$DEVICE") || {
+            echo "::error::No available simulator named '$DEVICE' on this runner."
+            echo "Available iOS simulators:"
+            xcrun simctl list devices available | sed -n '/iOS/,$p'
+            exit 1
+          }
+
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+
+      - name: Set appearance and a clean status bar
+        env:
+          APPEARANCE: ${{ inputs.appearance }}
+        run: |
+          xcrun simctl ui "$UDID" appearance "$APPEARANCE"
+          # Apple's own marketing convention, and it keeps the status bar from
+          # differing between runs (a drifting clock or battery level makes two
+          # screenshot sets impossible to diff).
+          xcrun simctl status_bar "$UDID" override \
+            --time "9:41" \
+            --batteryState charged \
+            --batteryLevel 100 \
+            --cellularMode active \
+            --cellularBars 4 \
+            --wifiMode active \
+            --wifiBars 3
+
+      - name: Install the app
+        run: |
+          PRODUCTS="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphonesimulator"
+          # The bundle is "Tag Spotter.app", not "App.app" — the target is named
+          # App but PRODUCT_NAME is the display name. Match on the extension and
+          # keep every expansion quoted; there is a space in the name.
+          APP=$(find "$PRODUCTS" -maxdepth 1 -name '*.app' | head -1)
+          if [ -z "$APP" ] || [ ! -d "$APP" ]; then
+            echo "::error::No .app in $PRODUCTS"
+            ls -la "$PRODUCTS" 2>/dev/null || echo "  (missing)"
+            exit 1
+          fi
+          echo "installing: $APP"
+          xcrun simctl install "$UDID" "$APP"
+          echo "APP_PATH=$APP" >> "$GITHUB_ENV"
+
+      - name: Seed a mid-trip save
+        run: |
+          # Launch once so the app's data container exists, then write the save
+          # into the UserDefaults that @capacitor/preferences reads. Keys are
+          # prefixed CapacitorStorage. because no Preferences group is configured
+          # anywhere in src/ — see the backup-rules note in the release skill.
+          xcrun simctl launch "$UDID" "$BUNDLE_ID"
+          sleep 5
+          xcrun simctl terminate "$UDID" "$BUNDLE_ID" || true
+
+          node scripts/make-screenshot-seed.mjs --out "$RUNNER_TEMP/seed.json"
+          SEED=$(cat "$RUNNER_TEMP/seed.json")
+
+          # Write THROUGH the simulator, not into its plist from the host. cfprefsd
+          # inside the simulator caches the preferences file and will happily
+          # overwrite a host-side edit with its cached copy, so the app reads the
+          # save it had before the write and the screenshots come out empty.
+          # `simctl spawn <udid> defaults` runs inside that sandbox and goes
+          # through the same daemon the app reads from.
+          xcrun simctl spawn "$UDID" defaults write "$BUNDLE_ID" \
+            "CapacitorStorage.tagspotter_v1_save_data" -string "$SEED"
+          # Standalone flag, stored outside the save blob so a returning player is
+          # not shown the handbook again. Without it the onboarding modal covers
+          # every screenshot.
+          xcrun simctl spawn "$UDID" defaults write "$BUNDLE_ID" \
+            "CapacitorStorage.tagspotter_v1_onboarding_seen" -string "true"
+
+          # Read it back through the same path. A silent no-op here is the whole
+          # ballgame: every screenshot would show an empty collection and still
+          # pass every size and file check downstream.
+          READBACK=$(xcrun simctl spawn "$UDID" defaults read "$BUNDLE_ID" \
+            "CapacitorStorage.tagspotter_v1_save_data" 2>/dev/null | wc -c | tr -d ' ')
+          echo "seed written: $(wc -c < "$RUNNER_TEMP/seed.json") bytes, read back: $READBACK"
+          if [ "$READBACK" -lt 1000 ]; then
+            echo "::error::The seed did not survive the write — the app would launch with an empty collection."
+            exit 1
+          fi
+
+      - name: Capture
+        run: |
+          OUT="$RUNNER_TEMP/shots"
+          mkdir -p "$OUT"
+
+          BUNDLE_PUBLIC=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" app)/public
+          HELPER="$BUNDLE_PUBLIC/screenshot-route.js"
+          if [ ! -f "$HELPER" ]; then
+            echo "::error::screenshot-route.js is not in the installed bundle at $HELPER"
+            echo "The injection step ran before cap sync — check that www/ is the synced webDir."
+            ls -la "$BUNDLE_PUBLIC" | head -20
+            exit 1
+          fi
+
+          # Names mirror store-assets/google-play/phone/ so the two listings are
+          # obviously the same five screens in the same order.
+          capture() {
+            local name="$1" route="$2"
+
+            # Rewrite the route inside the INSTALLED bundle and relaunch. Editing
+            # the helper is why each capture is a cold start: the app boots
+            # straight onto the route with no page transition to race.
+            python3 - "$HELPER" "$route" <<'PY'
+          import re, sys
+          path, route = sys.argv[1], sys.argv[2]
+          src = open(path, encoding='utf-8').read()
+          new, n = re.subn(r"/\* ROUTE \*/ var route = '[^']*';",
+                           "/* ROUTE */ var route = '%s';" % route, src)
+          if n != 1:
+              sys.exit('screenshot-route.js: expected exactly 1 ROUTE marker, found %d' % n)
+          open(path, 'w', encoding='utf-8').write(new)
+          PY
+
+            xcrun simctl terminate "$UDID" "$BUNDLE_ID" || true
+            xcrun simctl launch "$UDID" "$BUNDLE_ID"
+            # The atlas parses bundled GeoJSON and the save hydrates before the
+            # map paints (pm-0005 was a race between exactly those two), so give
+            # the first paint room rather than capturing a half-drawn screen.
+            sleep 12
+            xcrun simctl io "$UDID" screenshot --type png "$OUT/$name.png"
+            echo "captured $name ($route)"
+          }
+
+          capture 01-explore /home
+          capture 02-log     /dashboard
+          capture 03-trivia  /trivia
+          capture 04-goals   /goals
+          capture 05-summary /summary
+
+      - name: Check the captures are the size App Store Connect wants
+        run: |
+          OUT="$RUNNER_TEMP/shots"
+          # ASC accepts 1320x2868 (6.9") or 1290x2796 (6.7") portrait. A run that
+          # silently produced a different size would be discovered by an upload
+          # rejection weeks later.
+          fail=0
+          for f in "$OUT"/*.png; do
+            SIZE=$(sips -g pixelWidth -g pixelHeight "$f" | awk '/pixel/ {print $2}' | paste -sd x -)
+            case "$SIZE" in
+              1320x2868|1290x2796) echo "ok   $(basename "$f") $SIZE" ;;
+              *) echo "::error::$(basename "$f") is $SIZE — not a 6.9\" or 6.7\" portrait size"; fail=1 ;;
+            esac
+          done
+          # A blank or near-blank capture is the failure mode that looks like
+          # success: the file exists and is the right size. Flat PNGs compress to
+          # almost nothing, so size on disk is a cheap proxy for "something is
+          # actually drawn".
+          for f in "$OUT"/*.png; do
+            BYTES=$(wc -c < "$f")
+            if [ "$BYTES" -lt 40000 ]; then
+              echo "::error::$(basename "$f") is only $BYTES bytes — probably a blank or unpainted screen"
+              fail=1
+            fi
+          done
+          exit $fail
+
+      - name: Upload the screenshot set
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-store-iphone-screenshots
+          path: ${{ runner.temp }}/shots/*.png
+          if-no-files-found: error
+          retention-days: 14
