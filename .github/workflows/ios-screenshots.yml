@@ -321,8 +321,12 @@ jobs:
           # 20 sits with a comfortable margin on both sides and catches both
           # failure modes seen so far. The status bar is cropped off first, since
           # its clock and icons are drawn even on a blank screen.
-          python3 -m pip install --quiet --disable-pip-version-check pillow
-          python3 - "$OUT" <<'PY' || fail=1
+          # A venv, not a bare `pip install`: the runner's python3 is PEP 668
+          # "externally managed" and refuses to install into itself, which failed
+          # this step while the captures themselves were perfectly good.
+          python3 -m venv "$RUNNER_TEMP/shotvenv"
+          "$RUNNER_TEMP/shotvenv/bin/pip" install --quiet --disable-pip-version-check pillow
+          "$RUNNER_TEMP/shotvenv/bin/python" - "$OUT" <<'PY' || fail=1
           import sys, pathlib
           from PIL import Image, ImageStat
 
