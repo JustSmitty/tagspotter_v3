@@ -231,6 +231,15 @@ jobs:
           OUT="$RUNNER_TEMP/shots"
           mkdir -p "$OUT"
 
+          # Warm-up launch, thrown away. The first launch after an install is the
+          # slowest one — the webview cold-starts and the atlas parses its bundled
+          # GeoJSON — and the first capture used to pay that cost and come back as
+          # bare paper texture with no content on it. Paying it here means every
+          # captured launch is a warm one.
+          xcrun simctl launch "$UDID" "$BUNDLE_ID"
+          sleep 20
+          xcrun simctl terminate "$UDID" "$BUNDLE_ID" || true
+
           BUNDLE_PUBLIC=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" app)/public
           HELPER="$BUNDLE_PUBLIC/screenshot-route.js"
           if [ ! -f "$HELPER" ]; then
@@ -293,13 +302,46 @@ jobs:
           # success: the file exists and is the right size. Flat PNGs compress to
           # almost nothing, so size on disk is a cheap proxy for "something is
           # actually drawn".
-          for f in "$OUT"/*.png; do
-            BYTES=$(wc -c < "$f")
-            if [ "$BYTES" -lt 40000 ]; then
-              echo "::error::$(basename "$f") is only $BYTES bytes — probably a blank or unpainted screen"
-              fail=1
-            fi
-          done
+          # Does each capture actually have CONTENT on it?
+          #
+          # File size cannot answer this. A capture that came back as bare paper
+          # texture with nothing drawn on it was the LARGEST file in its run at
+          # 2.9MB, because the texture's noise compresses badly — it sailed past a
+          # byte floor meant to catch exactly that failure.
+          #
+          # Luminance variance is the honest signal, and it is appearance-agnostic:
+          # a screen with a layout on it varies, an unpainted one does not,
+          # whether the theme is light or dark. Measured across every capture this
+          # workflow has actually produced:
+          #
+          #   all-black frames      stddev 0.00
+          #   bare paper texture    stddev 7.40
+          #   real content          stddev 40.82 – 83.49
+          #
+          # 20 sits with a comfortable margin on both sides and catches both
+          # failure modes seen so far. The status bar is cropped off first, since
+          # its clock and icons are drawn even on a blank screen.
+          python3 -m pip install --quiet --disable-pip-version-check pillow
+          python3 - "$OUT" <<'PY' || fail=1
+          import sys, pathlib
+          from PIL import Image, ImageStat
+
+          out = pathlib.Path(sys.argv[1])
+          bad = []
+          for f in sorted(out.glob('*.png')):
+              im = Image.open(f).convert('L')
+              w, h = im.size
+              # Drop the status bar (top ~5%) and the home indicator (bottom ~2%).
+              im = im.crop((0, int(h * 0.05), w, int(h * 0.98)))
+              sd = ImageStat.Stat(im).stddev[0]
+              print(f'{"ok   " if sd >= 20 else "BLANK"} {f.name}  stddev {sd:.2f}')
+              if sd < 20:
+                  bad.append(f.name)
+
+          if bad:
+              print('::error::Nothing drawn in: ' + ', '.join(bad) + ' — the screen never painted.')
+              sys.exit(1)
+          PY
 
           # Five captures of five different screens must not be the same image.
           # A run that produced five byte-identical 86KB black frames passed every
