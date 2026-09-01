@@ -581,6 +581,18 @@ ion-router-outlet {
   &::after {
     content: 'FIELD NOTES';
   }
+
+  /*
+   * The rust frame closes around the whole card. The header's rust rule and
+   * the ticket's side borders always implied a frame, but nothing ever
+   * completed the rectangle at the modal's own edges — the tester, four
+   * screenshots running, kept pointing at the border "not going all the way
+   * around the screen". Brand rust, not the per-region accent: the frame
+   * belongs to the modal, which does not change region.
+   */
+  &::part(content) {
+    border: 3px solid #d9541c;
+  }
 }
 
 /*
