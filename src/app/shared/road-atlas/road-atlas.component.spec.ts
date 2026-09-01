@@ -144,3 +144,87 @@ function buildState(id: number, name: string, stateFound: boolean) {
     fnd: { distance: 0, stateFound, questionsCorrect: 0 },
   };
 }
+
+/**
+ * F-051 — the shipped GeoJSON is already an inset map: Alaska and Hawaii are
+ * stored pre-translated into the lower-left of the continental frame. The
+ * projection used to special-case them for their REAL-WORLD coordinates, which
+ * threw both off the 600x400 canvas (Alaska to y 426..447, Hawaii to x
+ * 586..628) — they drew every frame, just outside the window.
+ *
+ * The bounds below are the actual extremes of src/assets/us-states.json, and
+ * the path data is parsed rather than measured, so this holds without SVG
+ * layout.
+ */
+describe('RoadAtlasComponent projection (F-051)', () => {
+  const VIEWBOX_W = 600;
+  const VIEWBOX_H = 400;
+
+  // [name, lngMin, lngMax, latMin, latMax] straight from the shipped atlas.
+  const EXTREMES: Array<[string, number, number, number, number]> = [
+    ['Alaska', -130.62, -110.0, 22.01, 28.92],
+    ['Hawaii', -109.76, -104.81, 23.95, 27.23],
+    ['Washington', -124.71, -116.92, 45.54, 49.38],
+    ['Maine', -71.08, -66.98, 43.06, 47.46],
+    ['Florida', -87.6, -80.03, 25.12, 31.0],
+  ];
+
+  let fixture: ComponentFixture<RoadAtlasComponent>;
+
+  function boxOf(name: string, path: string) {
+    const nums = (path.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+    const xs = nums.filter((_, i) => i % 2 === 0);
+    const ys = nums.filter((_, i) => i % 2 === 1);
+    return { name, minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
+  }
+
+  beforeEach(async () => {
+    const http = jasmine.createSpyObj<HttpClient>('HttpClient', ['get']);
+    http.get.and.returnValue(of({
+      type: 'FeatureCollection',
+      features: EXTREMES.map(([name, lngMin, lngMax, latMin, latMax]) =>
+        buildFeature(name, [[[lngMin, latMax], [lngMax, latMax], [lngMax, latMin], [lngMin, latMin], [lngMin, latMax]]])),
+    }));
+
+    const snap = signal<GameSnapshot>({
+      states: EXTREMES.map(([name], i) => buildState(i + 1, name, false)),
+      points: createEmptyPoints(),
+      foundCount: 0,
+      totalCorrect: 0,
+      totalDistanceMiles: 0,
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [RoadAtlasComponent],
+      providers: [
+        { provide: GameStateStore, useValue: { snapshot: snap, isLoaded: signal(true) } },
+        { provide: HttpClient, useValue: http },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(RoadAtlasComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  });
+
+  it('keeps every state inside the viewBox, Alaska and Hawaii included', () => {
+    const boxes = fixture.componentInstance.features().map((f) => boxOf(f.name, f.path));
+    expect(boxes.length).toBe(EXTREMES.length);
+
+    const escaped = boxes.filter(
+      (b) => b.minX < 0 || b.maxX > VIEWBOX_W || b.minY < 0 || b.maxY > VIEWBOX_H,
+    );
+    expect(escaped.map((b) => `${b.name}: x ${b.minX}..${b.maxX} y ${b.minY}..${b.maxY}`)).toEqual([]);
+  });
+
+  it('places the two insets in the lower-left, where an inset map puts them', () => {
+    const boxes = fixture.componentInstance.features().map((f) => boxOf(f.name, f.path));
+    for (const name of ['Alaska', 'Hawaii']) {
+      const box = boxes.find((b) => b.name === name);
+      expect(box).withContext(name).toBeDefined();
+      expect(box!.maxX).withContext(`${name} x`).toBeLessThan(VIEWBOX_W / 2);
+      expect(box!.minY).withContext(`${name} y`).toBeGreaterThan(VIEWBOX_H / 2);
+    }
+  });
+});
