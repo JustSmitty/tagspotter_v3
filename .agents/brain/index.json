@@ -1,5 +1,5 @@
 {
-  "count": 39,
+  "count": 40,
   "records": [
     {
       "id": "audit-2026-08-15",
@@ -855,6 +855,34 @@
       ],
       "file": ".agents/brain/findings/f-050-handbook-chrome-fixed-ink.md",
       "review_by": "2027-02-28"
+    },
+    {
+      "id": "f-051-atlas-insets-projected-off-canvas",
+      "type": "finding",
+      "title": "Alaska and Hawaii drew every frame, just outside the map's window",
+      "status": "resolved",
+      "date": "2026-09-01",
+      "source": "file:src/app/shared/road-atlas/road-atlas.component.ts:214",
+      "confidence": "high",
+      "tags": [
+        "atlas",
+        "geojson",
+        "projection",
+        "svg",
+        "data-assumption",
+        "bug"
+      ],
+      "claims": {
+        "atlas.projection": "single-uniform"
+      },
+      "supersedes": [],
+      "related": [
+        "pm-0005-atlas-drawn-before-the-save-arrived",
+        "con-0001-offline-first",
+        "dec-0004-inline-svg-atlas"
+      ],
+      "file": ".agents/brain/findings/f-051-atlas-insets-projected-off-canvas.md",
+      "review_by": "2027-03-01"
     },
     {
       "id": "pm-0001-stale-quiz-session",
