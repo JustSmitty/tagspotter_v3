@@ -1,5 +1,5 @@
 {
-  "count": 38,
+  "count": 39,
   "records": [
     {
       "id": "audit-2026-08-15",
@@ -629,6 +629,33 @@
       ],
       "file": ".agents/brain/decisions/dec-0017-manual-signing-in-ci.md",
       "review_by": "2027-02-24"
+    },
+    {
+      "id": "dec-0018-visible-build-number",
+      "type": "decision",
+      "title": "The build number is user-visible in the handbook footer; the web fallback imports package.json",
+      "status": "accepted",
+      "date": "2026-08-31",
+      "source": "file:src/app/services/platform/app-info.service.ts:36",
+      "confidence": "high",
+      "tags": [
+        "release",
+        "versioning",
+        "capacitor",
+        "ux"
+      ],
+      "claims": {
+        "build-line-surface": "handbook-footer",
+        "build-line-web-source": "package-json-import"
+      },
+      "supersedes": [],
+      "related": [
+        "dec-0013-zoneless-and-plugin-tokens",
+        "dec-0015-ink-follows-its-ground",
+        "dec-0011-esbuild-application-builder"
+      ],
+      "file": ".agents/brain/decisions/dec-0018-visible-build-number.md",
+      "review_by": "2027-02-28"
     },
     {
       "id": "f-042-contrast-debt",

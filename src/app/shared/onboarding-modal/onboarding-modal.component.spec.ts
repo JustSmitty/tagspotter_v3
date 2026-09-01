@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ModalController } from '@ionic/angular/standalone';
 
+import { APP_INFO_PLUGIN, AppInfoService } from '../../services/platform/app-info.service';
 import { OnboardingModalComponent } from './onboarding-modal.component';
 
 describe('OnboardingModalComponent', () => {
@@ -13,7 +14,16 @@ describe('OnboardingModalComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [OnboardingModalComponent],
-      providers: [{ provide: ModalController, useValue: modalController }],
+      providers: [
+        { provide: ModalController, useValue: modalController },
+        {
+          provide: APP_INFO_PLUGIN,
+          useValue: {
+            getInfo: () =>
+              Promise.resolve({ name: 'Tag Spotter', id: 'io.tagspotter.app', version: '1.2.0', build: '5' }),
+          },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(OnboardingModalComponent);
@@ -56,6 +66,14 @@ describe('OnboardingModalComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.guide-btn')?.getAttribute('aria-label')).toBe('Previous page');
     expect(host.querySelector('.page-dots')?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('prints the edition line in the handbook footer', async () => {
+    await TestBed.inject(AppInfoService).loaded;
+    fixture.detectChanges();
+
+    const line = (fixture.nativeElement as HTMLElement).querySelector('.edition-line');
+    expect(line?.textContent).toContain('Edition 1.2.0 (5)');
   });
 });
 
@@ -100,7 +118,16 @@ describe('OnboardingModalComponent ink discipline (dec-0015)', () => {
 
     await TestBed.configureTestingModule({
       imports: [OnboardingModalComponent],
-      providers: [{ provide: ModalController, useValue: modalController }],
+      providers: [
+        { provide: ModalController, useValue: modalController },
+        {
+          provide: APP_INFO_PLUGIN,
+          useValue: {
+            getInfo: () =>
+              Promise.resolve({ name: 'Tag Spotter', id: 'io.tagspotter.app', version: '1.2.0', build: '5' }),
+          },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(OnboardingModalComponent);

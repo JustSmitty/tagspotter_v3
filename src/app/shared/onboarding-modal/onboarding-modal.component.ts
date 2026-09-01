@@ -12,7 +12,7 @@ import {
   ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { 
+import {
   chevronForwardOutline, 
   chevronBackOutline, 
   checkmarkCircleOutline,
@@ -22,6 +22,8 @@ import {
   speedometerOutline,
   flagOutline
 } from 'ionicons/icons';
+
+import { AppInfoService } from '../../services/platform/app-info.service';
 
 @Component({
   selector: 'app-onboarding-modal',
@@ -43,9 +45,11 @@ import {
 })
 export class OnboardingModalComponent {
   private readonly modalCtrl = inject(ModalController);
-  
+  private readonly appInfo = inject(AppInfoService);
+
   readonly currentPage = signal(0);
   readonly totalPages = 5;
+  readonly versionLabel = this.appInfo.versionLabel;
 
   constructor() {
     addIcons({ 

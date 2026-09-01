@@ -341,6 +341,20 @@
       font-size: 1.2rem;
     }
   }
+
+  /* Printer's imprint. Themed ink, not the sheet's fixed ink: ion-footer has no
+     toolbar, so the --background above never paints and the visible ground here
+     is the modal's --app-surface-card, which goes dark in dark mode. Ink follows
+     its ground (dec-0015). */
+  .edition-line {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--app-ink-muted);
+  }
 }
 
 .fade-in {
