@@ -84,11 +84,23 @@
 }
 
 .quiz-stage {
-  /* The system navigation bar draws over the bottom edge under enforced
-     edge-to-edge; without the inset the feedback slip's button sat behind the
-     3-button bar (pm-0004). */
-  padding: 12px 18px calc(30px + var(--app-safe-bottom));
+  /* No safe-area term here on purpose: the modal's own height already
+     subtracts the bottom inset, so the card ends well above the system
+     navigation bar and the stage never sits under it. Padding the scroll end
+     by the inset as well (the original pm-0004 fix, from when the card DID
+     run under the nav) just stole ticket room twice. */
+  padding: 10px 14px 14px;
 }
+
+/*
+ * The ticket is budgeted to FIT: a text question with its feedback slip open
+ * must show the complete rust frame inside the modal without scrolling on a
+ * typical phone (~640px of content window). It used to run ~170px over, so
+ * no scroll position ever showed all four edges — the tester's words: the
+ * border "not going all the way around". Every fixed spacing below was
+ * tightened for that budget; the spec asserts it. Image-option questions are
+ * taller and may still scroll — that is the accepted trade.
+ */
 
 .quiz-pass {
   --quiz-accent: var(--region-south-primary);
@@ -113,7 +125,7 @@
   &::after {
     content: '';
     position: absolute;
-    top: 104px;
+    top: 74px;
     width: 28px;
     height: 56px;
     background: var(--app-bg-cream);
@@ -168,7 +180,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 22px 22px 14px;
+  padding: 12px 16px 10px;
   /**
    * Runs from --quiz-accent-strong to a darkened form of it, rather than from
    * --quiz-accent. The accent end carried .route-name at 11px, where cream
@@ -199,7 +211,7 @@
 
 .route-code {
   font-family: 'Newsreader', serif;
-  font-size: 3rem;
+  font-size: 2.4rem;
   font-weight: 800;
   line-height: 0.9;
   letter-spacing: -0.03em;
@@ -214,7 +226,7 @@
 }
 
 .passport-stamp {
-  width: 66px;
+  width: 48px;
   aspect-ratio: 1;
   border: 2px dashed rgba(253, 250, 233, 0.75);
   border-radius: 14px;
@@ -236,7 +248,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 12px 22px;
+  padding: 8px 16px;
   background:
     repeating-linear-gradient(
       90deg,
@@ -265,12 +277,12 @@
 }
 
 .question-panel {
-  padding: 24px 22px 18px;
+  padding: 14px 18px 8px;
 }
 
 .question-kicker {
   display: inline-block;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   font-family: 'Special Elite', cursive;
   font-size: 0.72rem;
   letter-spacing: 0.16em;
@@ -281,7 +293,7 @@
 .question-text {
   margin: 0;
   font-family: 'Newsreader', serif;
-  font-size: 1.52rem;
+  font-size: 1.38rem;
   font-weight: 700;
   line-height: 1.2;
   /* On the cream ticket, which never themes — so neither does its ink
@@ -291,8 +303,8 @@
 
 .options-grid {
   display: grid;
-  gap: 14px;
-  padding: 0 18px 22px;
+  gap: 8px;
+  padding: 0 14px 12px;
 
   &.image-grid {
     grid-template-columns: 1fr 1fr;
@@ -308,7 +320,7 @@
   border: 1px solid rgba(0,0,0,0.1);
   border-radius: 4px;
   background: var(--quiz-surface);
-  padding: 16px 18px;
+  padding: 10px 14px;
   box-shadow: 
     inset 1px 1px 0 rgba(255,255,255,0.8),
     0 4px 10px rgba(0, 0, 0, 0.08);
@@ -380,8 +392,8 @@
 }
 
 .answer-feedback {
-  margin: 0 18px 20px;
-  padding: 14px 16px;
+  margin: 0 14px 12px;
+  padding: 10px 14px;
   display: grid;
   gap: 5px;
   border-left: 4px solid #a54016;
@@ -399,8 +411,8 @@
 
 .continue-button {
   justify-self: start;
-  margin-top: 8px;
-  padding: 9px 16px;
+  margin-top: 6px;
+  padding: 8px 14px;
   border: 0;
   border-radius: 999px;
   background: var(--quiz-accent);
@@ -413,15 +425,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
   /* Strong, not accent: cream on the plain accent is 3.83:1 (South) and 4.07:1
      (West) behind this 14px marker. See the note on .pass-topline. */
   background: var(--quiz-accent-strong);
   color: var(--app-ink-on-fill);
   font-family: 'Work Sans', sans-serif;
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -449,7 +461,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 20px 18px;
+  padding: 8px 16px 10px;
   border-top: 2px solid rgba(217, 84, 28, 0.18);
   background: linear-gradient(180deg, rgba(242, 227, 201, 0.72) 0%, rgba(253, 250, 233, 0.98) 100%);
 }
@@ -492,11 +504,11 @@
   }
 
   .route-code {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .question-text {
-    font-size: 1.34rem;
+    font-size: 1.26rem;
   }
 
   .quiz-option {
