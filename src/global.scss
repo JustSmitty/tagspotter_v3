@@ -14,12 +14,9 @@
 
 /* Global application layout styles */
 
-:root {
-  --app-safe-top: env(safe-area-inset-top, 0px);
-  --app-safe-bottom: env(safe-area-inset-bottom, 0px);
-  --app-safe-left: env(safe-area-inset-left, 0px);
-  --app-safe-right: env(safe-area-inset-right, 0px);
-}
+/* The safe-area tokens (--app-safe-*) are defined once, in
+   src/theme/variables.scss — a duplicate block here used to win the cascade
+   and silently pin them to env(), which Android never populates (pm-0004). */
 
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
@@ -519,7 +516,15 @@ ion-router-outlet {
 .ephemera-modal {
   --width: 92%;
   --max-width: 480px;
-  --height: 85vh;
+  /*
+   * 85vh of the *visible* viewport. Under enforced edge-to-edge the WebView's
+   * vh includes the system navigation bar, so a plain 85vh card bottomed out
+   * a few px above the nav with no backdrop showing — it read as running off
+   * the screen (the tester's words: the modal "goes down past the bottom").
+   * Subtracting the injected bottom inset restores a real margin under the
+   * card on device, and costs nothing in a browser where the inset is 0.
+   */
+  --height: calc(85vh - var(--app-safe-bottom, 0px));
   --border-radius: 4px; /* Shorter radius for paper look */
   --box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   --backdrop-opacity: 0.7;
@@ -529,7 +534,11 @@ ion-router-outlet {
     border-radius: 4px;
     position: relative;
     overflow: visible; /* Needed for the folder tab */
-    border: 1px solid rgba(0,0,0,0.1);
+    /* Themed hairline, not rgba-black: the quiz interior and the dimmed
+       backdrop are both near-black at night, so a black border dissolved and
+       the card had no visible edge. This token flips to a cream line in dark
+       and stays a faint umber one in light. */
+    border: 1px solid var(--app-border-soft);
   }
 
   /* Folder Tab Visual */
@@ -548,7 +557,9 @@ ion-router-outlet {
     font-family: 'Special Elite', cursive;
     font-size: 0.7rem;
     letter-spacing: 2px;
-    color: var(--app-ink-muted);
+    /* The manila tab never themes, so neither may its label: the themed muted
+       ink flips light at night and faded to 1.40:1 on this stock (dec-0015). */
+    color: var(--app-ink-on-ephemera-muted);
     box-shadow: -2px -2px 5px rgba(0,0,0,0.1);
     z-index: -1;
   }
@@ -569,6 +580,18 @@ ion-router-outlet {
 .quiz-modal {
   &::after {
     content: 'FIELD NOTES';
+  }
+
+  /*
+   * The rust frame closes around the whole card. The header's rust rule and
+   * the ticket's side borders always implied a frame, but nothing ever
+   * completed the rectangle at the modal's own edges — the tester, four
+   * screenshots running, kept pointing at the border "not going all the way
+   * around the screen". Brand rust, not the per-region accent: the frame
+   * belongs to the modal, which does not change region.
+   */
+  &::part(content) {
+    border: 3px solid #d9541c;
   }
 }
 

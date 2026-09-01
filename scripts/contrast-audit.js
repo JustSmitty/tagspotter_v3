@@ -32,6 +32,15 @@
  * that an empty save never renders — a clean run against a fresh install proves
  * only that the empty state is fine.
  *
+ * And know what a route walk can never see: overlays. A modal that mounts
+ * mid-flow (the quiz pass, the onboarding handbook) is not in this population,
+ * which is how the quiz shipped unreadable at 1.1:1 (pm-0003) and the handbook
+ * chrome at 2.49:1 (F-50) while this audit read zero. Do not try to drive
+ * overlays into view from here — every overlay gets an "ink discipline"
+ * describe in its component spec instead, where mounting is unconditional; see
+ * quiz-modal.component.spec.ts and onboarding-modal.component.spec.ts. If you
+ * add an overlay, give it one.
+ *
  * Baseline (audit F-42): originally 45 in light and 45 in dark on Home alone.
  * Now 0 and 0, measured across all five routes in both themes with 26 of 51
  * states spotted. Zero is the baseline; anything above it is a regression.

@@ -12,8 +12,10 @@ describe('RoadAtlasComponent', () => {
   let fixture: ComponentFixture<RoadAtlasComponent>;
   let http: jasmine.SpyObj<HttpClient>;
   let snapshot: ReturnType<typeof signal<GameSnapshot>>;
+  let isLoaded: ReturnType<typeof signal<boolean>>;
 
   beforeEach(async () => {
+    isLoaded = signal(true);
     snapshot = signal<GameSnapshot>({
       states: [buildState(1, 'Alabama', false), buildState(2, 'Alaska', true)],
       points: createEmptyPoints(),
@@ -33,7 +35,7 @@ describe('RoadAtlasComponent', () => {
     await TestBed.configureTestingModule({
       imports: [RoadAtlasComponent],
       providers: [
-        { provide: GameStateStore, useValue: { snapshot } },
+        { provide: GameStateStore, useValue: { snapshot, isLoaded } },
         { provide: HttpClient, useValue: http },
       ],
     }).compileComponents();
@@ -88,6 +90,38 @@ describe('RoadAtlasComponent', () => {
     await component.retryLoad();
     expect(component.loadError()).toBeNull();
     expect(http.get).toHaveBeenCalledTimes(3);
+  });
+
+  /**
+   * pm-0005 — on a device the save crosses the native bridge while the GeoJSON
+   * comes off the local bundle, so the geometry routinely wins. The old code
+   * joined the two inside the fetch, which meant an empty store at that instant
+   * discarded all 51 shapes permanently: a blank card, no error, no retry.
+   */
+  it('draws the map when the save arrives after the geometry', async () => {
+    isLoaded.set(false);
+    snapshot.set({ ...snapshot(), states: [], foundCount: 0 });
+
+    const late = TestBed.createComponent(RoadAtlasComponent);
+    late.detectChanges();
+    await late.whenStable();
+    late.detectChanges();
+
+    const host = late.nativeElement as HTMLElement;
+    // Nothing to draw yet, and the card says so rather than sitting blank.
+    expect(host.querySelectorAll('.atlas-state').length).toBe(0);
+    expect(host.querySelector('.atlas-status')?.textContent).toContain('Drawing');
+
+    snapshot.set({
+      ...snapshot(),
+      states: [buildState(1, 'Alabama', false), buildState(2, 'Alaska', true)],
+      foundCount: 1,
+    });
+    isLoaded.set(true);
+    late.detectChanges();
+
+    expect(host.querySelectorAll('.atlas-state').length).toBe(2);
+    expect(host.querySelector('.atlas-status')).toBeNull();
   });
 });
 

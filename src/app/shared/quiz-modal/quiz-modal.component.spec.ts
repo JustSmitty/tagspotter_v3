@@ -260,4 +260,63 @@ describe('QuizModalComponent ink discipline (dec-0015)', () => {
 
     expect(failures).toEqual([]);
   });
+
+  /**
+   * pm-0004 — Android's WebView never populates env(safe-area-inset-*), so
+   * Capacitor's SystemBars plugin injects the real window insets as
+   * --safe-area-inset-* custom properties on the document element. This
+   * exercises the full chain that keeps the stage clear of the system
+   * navigation bar: injected var -> --app-safe-bottom -> .quiz-stage padding.
+   */
+  /**
+   * The route page-header class pads by the status-bar inset; inside a modal
+   * card that already clears the status bar, that is counted twice. Invisible
+   * in a browser, where Android's env(safe-area-inset-top) is 0 — ~55px on a
+   * device (pm-0006). The header is now its own full-bleed band and must not
+   * consume the inset at all.
+   */
+  it('does not add the status-bar inset to the modal header', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(host);
+    const header = host.querySelector('.quiz-header') as HTMLElement;
+
+    document.documentElement.style.setProperty('--app-safe-top', '55px');
+    const padded = getComputedStyle(header).paddingTop;
+    document.documentElement.style.removeProperty('--app-safe-top');
+
+    expect(padded).toBe('0px');
+  });
+
+  /**
+   * The ticket must show its complete rust frame without scrolling: a text
+   * question with the feedback slip open has to fit a typical phone's content
+   * window (~640px once the modal chrome and insets are paid). It used to run
+   * ~170px over, so no scroll position ever showed all four edges. Measured at
+   * phone width with the answered state rendered — the tallest text layout.
+   */
+  it('fits a text question with feedback inside the frame budget', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(host);
+    host.style.width = '412px';
+    const pass = host.querySelector('.quiz-pass') as HTMLElement;
+
+    expect(host.querySelector('.answer-feedback')).not.toBeNull();
+    expect(pass.offsetHeight).toBeLessThanOrEqual(580);
+  });
+
+  describe('safe-area insets', () => {
+    afterEach(() => {
+      document.documentElement.style.removeProperty('--safe-area-inset-bottom');
+    });
+
+    it('leaves the stage inset-free: the modal height already clears the nav', () => {
+      const stage = (fixture.nativeElement as HTMLElement).querySelector('.quiz-stage') as HTMLElement;
+      expect(getComputedStyle(stage).paddingBottom).toBe('14px');
+
+      // The card's height subtracts the inset, so the stage never sits under
+      // the nav bar; consuming the inset here too stole ticket room twice.
+      document.documentElement.style.setProperty('--safe-area-inset-bottom', '48px');
+      expect(getComputedStyle(stage).paddingBottom).toBe('14px');
+    });
+  });
 });

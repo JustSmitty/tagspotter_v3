@@ -5,14 +5,26 @@
   overflow: hidden;
 }
 
+/*
+ * The header and footer are the folder's chrome, not printed matter: ion-header
+ * paints nothing itself and the toolbar below is transparent, so their real
+ * ground is the modal's ::part(content) background — var(--app-surface-card),
+ * which goes near-black in dark mode (.handbook-modal in global.scss). A
+ * --background set on ion-header/ion-footer here is inert (nothing consumes
+ * it), and one sat in both blocks looking like a fixed cream ground while the
+ * fixed pine ink on top measured 2.49:1 on the themed card at night (F-50).
+ * Chrome ink follows its ground: themed tokens only (dec-0015).
+ */
 .handbook-header {
-  --background: #f7efdb;
   padding-top: 0;
-  border-bottom: 2px solid #d9541c;
+  /* Brand rust is the constant for rules (see --app-rust-ink's note in
+     variables.scss) and clears 3:1 non-text on both card values. */
+  border-bottom: 2px solid var(--ion-color-primary);
 
   ion-toolbar {
     --background: transparent;
-    --color: #396754;
+    /* Daylight pine, sage at night — the themed twin of #396754. */
+    --color: var(--app-nav-ink);
     padding: 8px 4px; /* Reduced side padding to allow more space for content */
     --min-height: 48px;
   }
@@ -30,8 +42,10 @@
     position: absolute;
     top: -4px;
     right: 16px;
-    background: var(--app-rust-ink);
-    color: #fdfae9;
+    /* A bookmark ribbon is a fixed fill: --app-rust-ink brightens at night and
+       took the cream icon below 3:1. The fill token and its ink never move. */
+    background: var(--app-rust-fill);
+    color: var(--app-ink-on-fill);
     width: 32px;
     height: 44px;
     border-radius: 0 0 4px 4px;
@@ -46,18 +60,20 @@
   }
 
   .skip-btn {
-    --color: #396754;
+    /* De-emphasised with a lighter ink, not opacity: pine at 0.6 alpha
+       composites to ~1.7:1 on the dark card. Muted is the same faded voice at
+       6.36:1 light / 8.45:1 dark ("adjust lightness, never reach for alpha"). */
+    --color: var(--app-ink-muted);
     font-family: 'Work Sans', sans-serif;
     font-size: 0.72rem;
     font-weight: 800;
     letter-spacing: 0.1em;
-    opacity: 0.6;
     --padding-start: 16px;
     --padding-end: 8px;
     margin-top: -2px;
-    
+
     &:active {
-      opacity: 1;
+      --color: var(--app-ink-deep);
     }
   }
 }
@@ -119,12 +135,14 @@
 
       &.classic {
         background: #396754;
-        color: #fdfae9;
+        color: var(--app-ink-on-fill);
       }
-      
+
       &.trivia {
-        background: var(--app-rust-ink);
-        color: #fdfae9;
+        /* A fixed chip on the fixed paper: --app-rust-ink brightens at night
+           and let the cream label sink to 2.94:1. The fill token never moves. */
+        background: var(--app-rust-fill);
+        color: var(--app-ink-on-fill);
       }
     }
   }
@@ -145,14 +163,18 @@
     margin: 0;
 
     strong {
-      color: #d9541c;
+      /* Brand rust measures 3.83:1 on the paper at body sizes; the ephemera
+         rust is the same family darkened to clear AA on cream (F-42). */
+      color: var(--app-rust-on-ephemera);
       font-weight: 800;
     }
 
     &.secondary {
       font-size: 0.95rem;
       font-style: italic;
-      color: var(--app-ink-muted);
+      /* Printed on the fixed cream paper: the themed muted ink flips light in
+         dark mode and sank into the page at 1.82:1 (dec-0015 case 1). */
+      color: var(--app-ink-on-ephemera-muted);
     }
   }
 
@@ -227,16 +249,18 @@
       .p-pts {
         font-family: 'Newsreader', serif;
         font-weight: 700;
-        color: #d9541c;
+        /* Same trade as the strongs above: brand rust is 3.50:1 on this stock. */
+        color: var(--app-rust-on-ephemera);
       }
     }
   }
 }
 
+/* Same chrome as the header: no --background (ion-footer has no toolbar to
+   consume one — it was inert), so the themed card shows through. */
 .handbook-footer {
-  --background: #f7efdb;
   padding: 16px 16px 20px;
-  border-top: 2px solid #d9541c;
+  border-top: 2px solid var(--ion-color-primary);
 
   .footer-controls {
     display: flex;
@@ -253,11 +277,13 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: rgba(57, 103, 84, 0.2);
+      /* On the themed card: pine at 0.2 alpha composited to ~1.1:1 at night.
+         Subtle is the faded ink that holds 3:1 non-text on both card values. */
+      background: var(--app-ink-subtle);
       transition: all 0.2s ease;
 
       &.active {
-        background: #396754;
+        background: var(--app-nav-ink);
         transform: scale(1.2);
       }
     }
@@ -272,14 +298,16 @@
   }
 
   .guide-btn {
-    --color: #396754;
+    --color: var(--app-nav-ink);
     --padding-start: 8px;
     --padding-end: 8px;
   }
 
   .guide-action-btn {
-    --background: #396754;
-    --color: #fdfae9;
+    /* A filled button is a fixed fill (dec-0015): secondary pine never themes,
+       and the cream label rides on the fill, not on the page. */
+    --background: var(--ion-color-secondary);
+    --color: var(--app-ink-on-fill);
     --border-radius: 2px;
     flex: 1;
     font-family: 'Work Sans', sans-serif;
@@ -297,7 +325,10 @@
       top: 50%;
       width: 12px;
       height: 12px;
-      background: #f7efdb; /* Matches footer background */
+      /* A punch hole shows the ground it is punched out of, and the footer's
+         real ground is the themed card — a fixed cream here reads as two bright
+         spots floating on the button at night. */
+      background: var(--app-surface-card);
       border-radius: 50%;
       transform: translateY(-50%);
       z-index: 2;
