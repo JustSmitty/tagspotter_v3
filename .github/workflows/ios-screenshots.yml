@@ -18,13 +18,9 @@ on:
   workflow_dispatch:
     inputs:
       device:
-        description: 'Simulator to capture on (must be a 6.9" or 6.7" iPhone for App Store Connect)'
-        type: choice
-        default: 'iPhone 16 Pro Max'
-        options:
-          - 'iPhone 16 Pro Max'
-          - 'iPhone 16 Plus'
-          - 'iPhone 15 Pro Max'
+        description: 'Simulator to capture on. "auto" picks the largest available Pro Max — leave it there unless a run needs pinning.'
+        type: string
+        default: 'auto'
       appearance:
         description: 'Light or dark'
         type: choice
@@ -111,21 +107,65 @@ jobs:
         env:
           DEVICE: ${{ inputs.device }}
         run: |
-          # Resolve the device by name. If the image does not carry it, say so
-          # with the list rather than failing later on an opaque "invalid device".
+          # Resolve the device. Pinning an exact model name broke on the first
+          # run: the workflow asked for an iPhone 16 Pro Max and the image had
+          # moved to iOS 26 with the iPhone 17 family, so nothing matched. Runner
+          # images roll forward on their own schedule, and a hardcoded model is a
+          # standing appointment with that failure.
+          #
+          # So 'auto' asks for the *class* of device App Store Connect wants — the
+          # largest Pro Max available — and the capture-size check downstream is
+          # what actually guarantees the result is a 6.9" or 6.7" frame. An
+          # explicit name still wins when a run needs pinning.
           UDID=$(xcrun simctl list devices available -j \
             | python3 -c "
-          import json,sys
+          import json, re, sys
           want = sys.argv[1]
           data = json.load(sys.stdin)['devices']
-          for runtime, devices in data.items():
-              if 'iOS' not in runtime: continue
+
+          def runtime_key(runtime):
+              nums = [int(n) for n in re.findall(r'\d+', runtime)]
+              return nums or [0]
+
+          candidates = []
+          for runtime, devices in sorted(data.items(), key=lambda kv: runtime_key(kv[0]), reverse=True):
+              if 'iOS' not in runtime:
+                  continue
               for d in devices:
-                  if d['name'] == want:
-                      print(d['udid']); sys.exit(0)
-          sys.exit(1)
+                  candidates.append((runtime, d['name'], d['udid']))
+
+          if want != 'auto':
+              for runtime, name, udid in candidates:
+                  if name == want:
+                      sys.stderr.write('using %s on %s\n' % (name, runtime))
+                      print(udid); sys.exit(0)
+              sys.exit(1)
+
+          # Newest runtime first, and among iPhones prefer Pro Max, then Max/Plus,
+          # then any iPhone. Never an iPad: the target is iPhone-only (dec-0016).
+          def rank(name):
+              if not name.startswith('iPhone'):
+                  return None
+              if 'Pro Max' in name: return 0
+              if 'Max' in name or 'Plus' in name: return 1
+              return 2
+
+          best = None
+          for runtime, name, udid in candidates:
+              r = rank(name)
+              if r is None:
+                  continue
+              if best is None or r < best[0]:
+                  best = (r, runtime, name, udid)
+              if r == 0:
+                  break
+
+          if best is None:
+              sys.exit(1)
+          sys.stderr.write('auto-selected %s on %s\n' % (best[2], best[1]))
+          print(best[3])
           " "$DEVICE") || {
-            echo "::error::No available simulator named '$DEVICE' on this runner."
+            echo "::error::Could not resolve a simulator for '$DEVICE' on this runner."
             echo "Available iOS simulators:"
             xcrun simctl list devices available | sed -n '/iOS/,$p'
             exit 1
