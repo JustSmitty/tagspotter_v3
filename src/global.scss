@@ -533,7 +533,12 @@ ion-router-outlet {
     background: #e6dcc6; /* Manila folder base color */
     border-radius: 4px;
     position: relative;
-    overflow: visible; /* Needed for the folder tab */
+    /* Hidden, not visible: the folder tab this used to protect lives on the
+       HOST's ::after, which a part's overflow cannot clip — while the modal's
+       inner page overflows the wrapper's bottom by the height of the safe-area
+       inset and bled dark texture past the frame (and painted over the border
+       that outline above replaced). Clip it. */
+    overflow: hidden;
     /* Themed hairline, not rgba-black: the quiz interior and the dimmed
        backdrop are both near-black at night, so a black border dissolved and
        the card had no visible edge. This token flips to a cream line in dark
@@ -589,9 +594,18 @@ ion-router-outlet {
    * screenshots running, kept pointing at the border "not going all the way
    * around the screen". Brand rust, not the per-region accent: the frame
    * belongs to the modal, which does not change region.
+   *
+   * An OUTLINE, not a border, and that is the load-bearing choice: on device
+   * the first cut (a plain border) showed on the top and sides but not the
+   * bottom — the modal's dark content painted over the border row. Outlines
+   * paint above a box's descendants, so the frame renders complete no matter
+   * what the interior does; the negative offset draws it inside the same
+   * edges a border would occupy, and it costs no layout (the wrapper is
+   * content-box, so a border also widened the card by 6px).
    */
   &::part(content) {
-    border: 3px solid #d9541c;
+    outline: 3px solid #d9541c;
+    outline-offset: -3px;
   }
 }
 
