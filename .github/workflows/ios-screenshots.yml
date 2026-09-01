@@ -230,6 +230,26 @@ jobs:
           # with an empty collection and the onboarding handbook over the top.
           DATA=$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)
           PLIST="$DATA/Library/Preferences/$BUNDLE_ID.plist"
+
+          # Ground truth about where this app's Preferences actually live.
+          #
+          # The launch above let the app write its own save, so whatever file that
+          # produced is the file the seed has to go into. Two earlier attempts
+          # guessed at the location and both "verified" themselves into passing
+          # while every screenshot came out empty, so the location is now observed
+          # rather than assumed — and stays printed, because the next person to
+          # debug this deserves the same evidence without another 10x-billed run.
+          echo "--- data container: $DATA"
+          echo "--- files mentioning tagspotter_v1 anywhere in the container:"
+          grep -rl "tagspotter_v1" "$DATA" 2>/dev/null | head -10 || echo "  (none found)"
+          echo "--- every plist under the container:"
+          find "$DATA" -name '*.plist' 2>/dev/null | head -20
+          echo "--- keys the app itself wrote to $PLIST:"
+          if [ -f "$PLIST" ]; then
+            plutil -p "$PLIST" 2>/dev/null | cut -c1-120 | head -20
+          else
+            echo "  (the app wrote no plist at that path — the guess is wrong)"
+          fi
           # `defaults` wants a domain, not a filename — hand it the path with the
           # extension stripped.
           DOMAIN="${PLIST%.plist}"
