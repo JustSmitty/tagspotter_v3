@@ -37,9 +37,14 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<!-- arm64, not Capacitor's scaffolded armv7. The deployment target is iOS 15,
+	     which no 32-bit device can run, so the binary contains no armv7 slice at
+	     all: the scaffold default declared a requirement the app does not ship
+	     and could not satisfy. Every device capable of installing this app is
+	     arm64, so the honest value is the one the binary actually has. -->
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
 	<!-- iPhone only (TARGETED_DEVICE_FAMILY = 1), so there is deliberately no
 	     ~ipad variant of this key: on an iPad the app runs in iPhone

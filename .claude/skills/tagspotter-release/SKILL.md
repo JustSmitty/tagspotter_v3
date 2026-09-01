@@ -111,6 +111,17 @@ here is holding the line, not doing the work again.
   the listing without 13-inch iPad screenshots. None of that work exists, and Android is
   portrait-locked anyway (`con-0005`).
 
+- **`UIRequiredDeviceCapabilities` is `arm64`, not Capacitor's scaffolded `armv7`**
+  (`guardrail:ios-armv7-capability`, F-52). The deployment target is iOS 15, so the binary has no
+  32-bit slice and no device that can install the app has one either — the scaffold default declared
+  a requirement the app cannot satisfy and that filters nothing. Same regression shape as the iPad
+  target above: a value nobody chose, restored silently whenever the Xcode project is regenerated.
+
+  The guardrail's pattern is the element form, `<string>armv7</string>`, so the explanatory comment
+  in `Info.plist` may name `armv7` — unlike the CSP case, where the comment is worded around the
+  banned string. The difference is that this defect has an exact shape and the scanner matches that
+  shape; it is not being loosened to let a comment through.
+
 - **`Info.plist` answers export compliance up front** — `ITSAppUsesNonExemptEncryption`
   (`guardrail:ios-export-compliance`). Without it, App Store Connect asks on *every* upload and the
   build sits in "Missing Compliance" until someone answers by hand. The app ships no encryption of
