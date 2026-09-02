@@ -12,6 +12,12 @@ name: iOS smoke
 # no-op in the simulator), and real-device performance. Those need a device or a
 # TestFlight tester.
 #
+# It also does NOT see JavaScript errors. Capacitor compiles its console
+# forwarding out of Release builds — the first run captured 998 native log lines
+# with not one from Capacitor — so a console.error in the web layer reaches
+# nothing here. The unit suite and a browser run cover that ground; this covers
+# "does the native shell start, stay up, and draw".
+#
 # Deliberately UNSEEDED, unlike the screenshot workflow. A smoke run should meet
 # the app the way a new player does — fresh install, empty save, onboarding
 # handbook and all — because that is the path every first launch takes and the
@@ -116,22 +122,38 @@ jobs:
               echo "still running"
             fi
 
-            # Capacitor forwards JS console output to the native log, so a
-            # TypeError in the web layer is visible here rather than only in a
-            # browser. Filter to this app's own process.
+            # Native log for this app's process.
+            #
+            # This does NOT see JS console output, and the first run proved it:
+            # 998 captured lines, zero of them from Capacitor. Capacitor's console
+            # forwarding is compiled out of Release builds, so a console.error in
+            # the web layer reaches nothing here. An earlier version of this step
+            # claimed to catch a TypeError and would have reported success forever
+            # whatever the web layer did.
+            #
+            # What the log genuinely covers is the native side: a plugin blowing
+            # up, WebKit failing to load the bundle, the process dying on launch.
+            # That is worth capturing and worth failing on. It is not a substitute
+            # for a browser console, and the verdict step says so.
+            #
+            # Matching is on message text, not on log level. Every error-LEVEL line
+            # in the first run came from Apple's own subsystems — RemoteTextInput,
+            # extensionkit, TextInputUI, WebKit statistics — so a level filter
+            # would fail every run on noise the app has no part in.
             LOG="$OUT/$name.log"
             xcrun simctl spawn "$UDID" log show --style compact \
               --start "$SINCE" \
               --predicate 'processImagePath CONTAINS "Tag Spotter"' > "$LOG" 2>/dev/null || true
 
-            # Match how Capacitor tags forwarded console output, plus the shapes
-            # an uncaught JS failure takes.
+            # Shapes a native failure takes in this log. The JS-flavoured names
+            # are kept because a Swift-side exception can still surface with one,
+            # not because the web layer's console reaches here — it does not.
             if grep -aiE '\[error\]|Uncaught|TypeError|ReferenceError|Unhandled Promise' "$LOG" > "$OUT/$name.errors" 2>/dev/null; then
               echo "::error::$name — errors in the app log:"
               head -20 "$OUT/$name.errors"
               FAILED=1
             else
-              echo "no errors logged ($(wc -l < "$LOG" | tr -d ' ') lines captured)"
+              echo "no native errors in $(wc -l < "$LOG" | tr -d ' ') captured lines"
             fi
 
             xcrun simctl io "$UDID" screenshot --type png "$OUT/$name.png"
@@ -197,7 +219,13 @@ jobs:
             echo "::error::Smoke run failed — see the annotations above and the uploaded evidence."
             exit 1
           fi
-          echo "All five screens launched, stayed running, logged no errors and painted."
+          echo "All five screens launched, stayed running, painted, and logged no"
+          echo "native errors."
           echo
-          echo "Not covered by this run: real GPS and the permission prompt on hardware,"
-          echo "haptics (a simulator no-op), and real-device performance."
+          echo "NOT covered by this run:"
+          echo "  - JS errors. Capacitor's console forwarding is compiled out of Release"
+          echo "    builds, so nothing here sees a TypeError in the web layer. The unit"
+          echo "    suite and a browser run are what cover that."
+          echo "  - Real GPS and the permission prompt on hardware."
+          echo "  - Haptics, which are a no-op in the simulator."
+          echo "  - Real-device performance."
