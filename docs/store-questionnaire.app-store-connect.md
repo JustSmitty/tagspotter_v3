@@ -132,6 +132,8 @@ capability questions are what would move the rating, not the trivia.
 | Field | Answer |
 |---|---|
 | Bundle ID | `com.tagspotter.app` |
+| App Store name | **`Tag Spotter: Road Trip`** — not `Tag Spotter`, which App Store Connect rejected as already in use by another developer. App Store names are globally unique; Play's are not, so the **Play listing and the on-device name both stay `Tag Spotter`**. The two stores deliberately disagree here, and that is not drift to be "fixed" |
+| Subtitle | `Collect all 50 state plates` — reworded because the previous `Road-trip plate collector` repeated the "Road Trip" now in the name |
 | Primary category | Games (`primaryCategory` in the metadata JSON) |
 | Game subcategories | Trivia, then Puzzle. ASC lets a Games primary carry two subcategories, which is where Trivia survives now that `secondaryCategory` is Puzzle |
 | Secondary category | Puzzle (`secondaryCategory`). It must differ from the primary — ASC will not take the same category twice |
