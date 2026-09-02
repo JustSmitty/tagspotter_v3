@@ -106,6 +106,73 @@ they are signing credentials and must never be committed or pasted into a chat:
 Base64 on macOS: `base64 -i cert.p12 | pbcopy`. On Windows:
 `[Convert]::ToBase64String([IO.File]::ReadAllBytes("cert.p12")) | Set-Clipboard`.
 
+#### Producing the signing material without a Mac
+
+Apple's own instructions tell you to create the certificate request in Keychain Access, which does
+not exist on Windows. **It is not actually required.** A certificate signing request is just a CSR,
+and `openssl` makes one — so every secret above can be produced from this machine.
+
+Everything below is a credential. Never commit any of it, never paste it into a chat, and back the
+private key up alongside the Android keystore (see the keystore notes above) — losing it means
+revoking the certificate and reissuing every profile built against it.
+
+**1. Team ID.** developer.apple.com → Membership details. Ten characters.
+
+**2. Distribution certificate.** Generate a key and a CSR locally:
+
+```bash
+openssl genrsa -out ios_distribution.key 2048
+openssl req -new -key ios_distribution.key -out ios_distribution.csr \
+  -subj "/emailAddress=<your Apple ID email>/CN=<your name>/C=US"
+```
+
+Upload `ios_distribution.csr` at developer.apple.com → Certificates → **+** → **Apple Distribution**,
+download the resulting `distribution.cer`, then pair it back with the private key:
+
+```bash
+openssl x509 -inform DER -in distribution.cer -out distribution.pem
+openssl pkcs12 -export -legacy \
+  -inkey ios_distribution.key -in distribution.pem \
+  -out ios_distribution.p12
+```
+
+`openssl` prompts for an export password — that value is `IOS_DIST_CERT_PASSWORD`. `-legacy` matters:
+OpenSSL 3 defaults to AES-256 encryption that Apple's `security import` on the runner cannot read,
+and the failure surfaces as an opaque keychain error rather than anything about ciphers.
+
+**3. App ID.** developer.apple.com → Identifiers → **+** → App IDs → App. Bundle ID
+`com.tagspotter.app`, explicit (not wildcard — App Store distribution requires it). No capabilities
+need enabling: location asks at runtime through `NSLocationWhenInUseUsageDescription` and needs no
+entitlement, and the app has no push, no iCloud and no sign-in.
+
+**4. Provisioning profile.** Profiles → **+** → **App Store Connect** under Distribution, select the
+App ID and the certificate from step 2, download the `.mobileprovision`. The workflow reads the
+profile's own name and UUID out of it and stops early if the bundle id does not match, so nothing
+here needs recording by hand.
+
+**5. App Store Connect API key.** App Store Connect → Users and Access → Integrations → App Store
+Connect API → **+**. Give it the **App Manager** role. The `.p8` downloads **once and only once**;
+the page also shows the Key ID and, above the table, the Issuer ID.
+
+**6. Load them into the repository.** `gh secret set` reads from a file or stdin, so the values never
+appear in a terminal, a shell history, or a chat:
+
+```bash
+base64 -w0 ios_distribution.p12 | gh secret set IOS_DIST_CERT_P12_BASE64
+base64 -w0 profile.mobileprovision | gh secret set IOS_PROVISIONING_PROFILE_BASE64
+base64 -w0 AuthKey_XXXXXXXXXX.p8 | gh secret set APPSTORE_API_PRIVATE_KEY_BASE64
+gh secret set IOS_DIST_CERT_PASSWORD    # prompts, input hidden
+gh secret set IOS_TEAM_ID               # prompts
+gh secret set APPSTORE_API_KEY_ID       # prompts
+gh secret set APPSTORE_API_ISSUER_ID    # prompts
+```
+
+`gh secret list` then confirms all seven are present without revealing any of them.
+
+**7. The app record.** App Store Connect → Apps → **+** → New App, bundle ID `com.tagspotter.app`.
+The **name is claimed globally across the App Store**, so "Tag Spotter" may already be taken by
+someone else; that is the one step here that can fail for a reason outside this repository.
+
 > **Status.** The unsigned `compile` job has run green on `macos-latest`, so the Xcode project
 > itself builds. The `archive` job has **never run** — it is skipped when the signing secrets are
 > absent, and the repository has none yet. Everything about the signed path is reasoned from a
