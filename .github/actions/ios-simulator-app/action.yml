@@ -1,0 +1,189 @@
+name: Build and install the app on an iOS simulator
+description: >-
+  Builds the web assets, injects the screenshot helpers, syncs Capacitor, builds
+  for the simulator, boots a device and installs the app. Shared by the
+  screenshot workflow and the smoke workflow so the device-selection logic exists
+  once — it broke the first time a runner image rolled forward, and two copies
+  would mean fixing it twice.
+
+inputs:
+  device:
+    description: 'Simulator name, or "auto" for the newest runtime largest Pro Max'
+    required: false
+    default: 'auto'
+  seed:
+    description: >-
+      Inject the mid-trip save (screenshot-seed.js). "false" leaves the app on a
+      genuine fresh install, which is what the smoke run wants to exercise.
+    required: false
+    default: 'true'
+
+outputs:
+  udid:
+    description: 'The booted simulator UDID'
+    value: ${{ steps.boot.outputs.udid }}
+  bundle-public:
+    description: 'public/ inside the installed .app — where the route helper lives'
+    value: ${{ steps.install.outputs.bundle-public }}
+
+runs:
+  using: composite
+  steps:
+    # NOT `npm run build:mobile` — that shells out to PowerShell and is
+    # Windows-only. The web build plus a sync is what the native project consumes.
+    - name: Build web assets
+      shell: bash
+      run: npm run build
+
+    # The route helper is always injected: both callers drive the app to specific
+    # screens. The seed is optional, because a smoke run should meet the app the
+    # way a new player does.
+    #
+    # Both are same-origin classic scripts, so `script-src 'self'` is unchanged
+    # (con-0002), and they run before the deferred module bundles.
+    # `guardrail:screenshot-hooks-in-src` keeps them out of the shipped
+    # src/index.html — see dec-0019.
+    - name: Inject the helpers
+      shell: bash
+      env:
+        SEED: ${{ inputs.seed }}
+      run: |
+        cp scripts/screenshot-route.js www/screenshot-route.js
+        TAGS='<script src="screenshot-route.js"></script>'
+        if [ "$SEED" = "true" ]; then
+          node scripts/make-screenshot-seed.mjs --js www/screenshot-seed.js
+          TAGS='<script src="screenshot-seed.js"></script>'$'\n'"$TAGS"
+        fi
+        TAGS="$TAGS" node - <<'NODE'
+        const fs = require('fs');
+        const path = 'www/index.html';
+        let html = fs.readFileSync(path, 'utf8');
+        if (!html.includes('</head>')) {
+          console.error('::error::www/index.html has no </head> to inject before');
+          process.exit(1);
+        }
+        for (const tag of process.env.TAGS.split('\n').filter(Boolean)) {
+          if (html.includes(tag)) continue;
+          html = html.replace('</head>', `  ${tag}\n</head>`);
+        }
+        fs.writeFileSync(path, html);
+        console.log('injected:\n' + process.env.TAGS);
+        NODE
+
+    - name: Sync Capacitor
+      shell: bash
+      run: npx cap sync ios
+
+    - name: Build for the simulator
+      shell: bash
+      run: |
+        set -o pipefail
+        FORMAT=cat
+        command -v xcpretty >/dev/null 2>&1 && FORMAT=xcpretty
+        xcodebuild build \
+          -project ios/App/App.xcodeproj \
+          -scheme App \
+          -configuration Release \
+          -sdk iphonesimulator \
+          -destination 'generic/platform=iOS Simulator' \
+          -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGN_IDENTITY="" \
+          | "$FORMAT"
+
+    - name: Boot a simulator
+      id: boot
+      shell: bash
+      env:
+        DEVICE: ${{ inputs.device }}
+      run: |
+        # Resolve the device by CLASS, not by model name. Pinning an exact model
+        # broke on the first real run: the workflow asked for an iPhone 16 Pro Max
+        # and the image had moved to iOS 26 with the iPhone 17 family. Runner
+        # images roll forward on their own schedule.
+        UDID=$(xcrun simctl list devices available -j \
+          | python3 -c "
+        import json, re, sys
+        want = sys.argv[1]
+        data = json.load(sys.stdin)['devices']
+
+        def runtime_key(runtime):
+            nums = [int(n) for n in re.findall(r'\d+', runtime)]
+            return nums or [0]
+
+        candidates = []
+        for runtime, devices in sorted(data.items(), key=lambda kv: runtime_key(kv[0]), reverse=True):
+            if 'iOS' not in runtime:
+                continue
+            for d in devices:
+                candidates.append((runtime, d['name'], d['udid']))
+
+        if want != 'auto':
+            for runtime, name, udid in candidates:
+                if name == want:
+                    sys.stderr.write('using %s on %s\n' % (name, runtime))
+                    print(udid); sys.exit(0)
+            sys.exit(1)
+
+        # Newest runtime first, and among iPhones prefer Pro Max, then Max/Plus,
+        # then any iPhone. Never an iPad: the target is iPhone-only (dec-0016).
+        def rank(name):
+            if not name.startswith('iPhone'):
+                return None
+            if 'Pro Max' in name: return 0
+            if 'Max' in name or 'Plus' in name: return 1
+            return 2
+
+        best = None
+        for runtime, name, udid in candidates:
+            r = rank(name)
+            if r is None:
+                continue
+            if best is None or r < best[0]:
+                best = (r, runtime, name, udid)
+            if r == 0:
+                break
+
+        if best is None:
+            sys.exit(1)
+        sys.stderr.write('auto-selected %s on %s\n' % (best[2], best[1]))
+        print(best[3])
+        " "$DEVICE") || {
+          echo "::error::Could not resolve a simulator for '$DEVICE' on this runner."
+          echo "Available iOS simulators:"
+          xcrun simctl list devices available | sed -n '/iOS/,$p'
+          exit 1
+        }
+
+        echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+        echo "UDID=$UDID" >> "$GITHUB_ENV"
+        xcrun simctl boot "$UDID" || true
+        xcrun simctl bootstatus "$UDID" -b
+
+    - name: Install the app
+      id: install
+      shell: bash
+      run: |
+        PRODUCTS="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphonesimulator"
+        # The bundle is "Tag Spotter.app", not "App.app" — the target is named App
+        # but PRODUCT_NAME is the display name. Match on the extension and keep
+        # every expansion quoted; there is a space in the name.
+        APP=$(find "$PRODUCTS" -maxdepth 1 -name '*.app' | head -1)
+        if [ -z "$APP" ] || [ ! -d "$APP" ]; then
+          echo "::error::No .app in $PRODUCTS"
+          ls -la "$PRODUCTS" 2>/dev/null || echo "  (missing)"
+          exit 1
+        fi
+        echo "installing: $APP"
+        xcrun simctl install "$UDID" "$APP"
+
+        PUBLIC=$(xcrun simctl get_app_container "$UDID" com.tagspotter.app app)/public
+        if [ ! -f "$PUBLIC/screenshot-route.js" ]; then
+          echo "::error::screenshot-route.js is not in the installed bundle at $PUBLIC"
+          echo "The injection ran before cap sync, or www/ is not the synced webDir."
+          ls -la "$PUBLIC" | head -20
+          exit 1
+        fi
+        echo "bundle-public=$PUBLIC" >> "$GITHUB_OUTPUT"
+        echo "BUNDLE_PUBLIC=$PUBLIC" >> "$GITHUB_ENV"

@@ -1,0 +1,203 @@
+name: iOS smoke
+
+# Does the app actually work on iOS?
+#
+# The maintainer has no iPhone, so there is no hardware to try a build on. This
+# is the closest available substitute: launch the real Release build on a
+# simulator, walk every screen, and fail on the three things that would matter to
+# a player — it crashed, it logged an error, or it never painted.
+#
+# What it cannot cover, stated plainly so nobody reads a green run as more than
+# it is: real GPS behaviour and the permission prompt on hardware, haptics (a
+# no-op in the simulator), and real-device performance. Those need a device or a
+# TestFlight tester.
+#
+# Deliberately UNSEEDED, unlike the screenshot workflow. A smoke run should meet
+# the app the way a new player does — fresh install, empty save, onboarding
+# handbook and all — because that is the path every first launch takes and the
+# one most likely to break.
+#
+# Manual dispatch and v* tags only: macOS runners bill at 10x.
+
+on:
+  workflow_dispatch:
+    inputs:
+      device:
+        description: 'Simulator to run on, or "auto"'
+        type: string
+        default: 'auto'
+      appearance:
+        description: 'Light or dark'
+        type: choice
+        default: 'light'
+        options: [light, dark]
+  push:
+    tags: ['v*']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUNDLE_ID: com.tagspotter.app
+
+jobs:
+  smoke:
+    name: Launch every screen
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build and install on a simulator
+        uses: ./.github/actions/ios-simulator-app
+        with:
+          device: ${{ inputs.device || 'auto' }}
+          # Fresh install, no seeded save — see the note at the top.
+          seed: 'false'
+
+      - name: Set appearance
+        env:
+          APPEARANCE: ${{ inputs.appearance || 'light' }}
+        run: xcrun simctl ui "$UDID" appearance "$APPEARANCE"
+
+      - name: Warm up
+        run: |
+          # The first launch after an install cold-starts the webview and parses
+          # the bundled GeoJSON. Without this the first screen checked is judged
+          # on a slower launch than every other one.
+          xcrun simctl launch "$UDID" "$BUNDLE_ID"
+          sleep 20
+          xcrun simctl terminate "$UDID" "$BUNDLE_ID" || true
+
+      - name: Walk every screen
+        run: |
+          OUT="$RUNNER_TEMP/smoke"
+          mkdir -p "$OUT"
+          HELPER="$BUNDLE_PUBLIC/screenshot-route.js"
+          FAILED=0
+
+          check() {
+            local name="$1" route="$2"
+            echo "::group::$name ($route)"
+
+            python3 - "$HELPER" "$route" <<'PY'
+          import re, sys
+          path, route = sys.argv[1], sys.argv[2]
+          src = open(path, encoding='utf-8').read()
+          new, n = re.subn(r"/\* ROUTE \*/ var route = '[^']*';",
+                           "/* ROUTE */ var route = '%s';" % route, src)
+          if n != 1:
+              sys.exit('screenshot-route.js: expected exactly 1 ROUTE marker, found %d' % n)
+          open(path, 'w', encoding='utf-8').write(new)
+          PY
+
+            xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
+            SINCE=$(date -u '+%Y-%m-%d %H:%M:%S')
+
+            # simctl launch prints "<bundle id>: <pid>". Simulator apps are host
+            # processes, so that pid is checkable with a plain kill -0 later —
+            # which is the crash check: a process that died is a process that
+            # crashed.
+            PID=$(xcrun simctl launch "$UDID" "$BUNDLE_ID" | sed 's/.*: //')
+            echo "pid $PID"
+            sleep 14
+
+            if ! kill -0 "$PID" 2>/dev/null; then
+              echo "::error::$name — the app is no longer running. It crashed after launch."
+              FAILED=1
+            else
+              echo "still running"
+            fi
+
+            # Capacitor forwards JS console output to the native log, so a
+            # TypeError in the web layer is visible here rather than only in a
+            # browser. Filter to this app's own process.
+            LOG="$OUT/$name.log"
+            xcrun simctl spawn "$UDID" log show --style compact \
+              --start "$SINCE" \
+              --predicate 'processImagePath CONTAINS "Tag Spotter"' > "$LOG" 2>/dev/null || true
+
+            # Match how Capacitor tags forwarded console output, plus the shapes
+            # an uncaught JS failure takes.
+            if grep -aiE '\[error\]|Uncaught|TypeError|ReferenceError|Unhandled Promise' "$LOG" > "$OUT/$name.errors" 2>/dev/null; then
+              echo "::error::$name — errors in the app log:"
+              head -20 "$OUT/$name.errors"
+              FAILED=1
+            else
+              echo "no errors logged ($(wc -l < "$LOG" | tr -d ' ') lines captured)"
+            fi
+
+            xcrun simctl io "$UDID" screenshot --type png "$OUT/$name.png"
+            echo "::endgroup::"
+          }
+
+          check 01-explore /home
+          check 02-log     /dashboard
+          check 03-trivia  /trivia
+          check 04-goals   /goals
+          check 05-summary /summary
+
+          echo "FAILED=$FAILED" >> "$GITHUB_ENV"
+
+      - name: Confirm every screen actually painted
+        run: |
+          OUT="$RUNNER_TEMP/smoke"
+          # Same calibrated check the screenshot workflow uses. Luminance variance
+          # is appearance-agnostic, and measured across every capture these
+          # workflows have produced: all-black 0.00, bare paper texture 7.40, real
+          # content 40.82–83.49. A screen that never painted is the failure that
+          # otherwise looks like success — the run is green, the app "launched",
+          # and nothing was on it.
+          #
+          # A venv because the runner's python3 is PEP 668 externally managed and
+          # refuses to install into itself.
+          python3 -m venv "$RUNNER_TEMP/smokevenv"
+          "$RUNNER_TEMP/smokevenv/bin/pip" install --quiet --disable-pip-version-check pillow
+          "$RUNNER_TEMP/smokevenv/bin/python" - "$OUT" <<'PY' || echo "PAINT_FAILED=1" >> "$GITHUB_ENV"
+          import sys, pathlib
+          from PIL import Image, ImageStat
+
+          out = pathlib.Path(sys.argv[1])
+          bad = []
+          for f in sorted(out.glob('*.png')):
+              im = Image.open(f).convert('L')
+              w, h = im.size
+              im = im.crop((0, int(h * 0.05), w, int(h * 0.98)))
+              sd = ImageStat.Stat(im).stddev[0]
+              print(f'{"ok   " if sd >= 20 else "BLANK"} {f.name}  stddev {sd:.2f}')
+              if sd < 20:
+                  bad.append(f.name)
+
+          if bad:
+              print('::error::Nothing drawn in: ' + ', '.join(bad) + ' — the screen never painted.')
+              sys.exit(1)
+          PY
+
+      - name: Upload the logs and screens
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-smoke-evidence
+          path: |
+            ${{ runner.temp }}/smoke/*.png
+            ${{ runner.temp }}/smoke/*.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Verdict
+        run: |
+          if [ "${FAILED:-0}" != "0" ] || [ "${PAINT_FAILED:-0}" != "0" ]; then
+            echo "::error::Smoke run failed — see the annotations above and the uploaded evidence."
+            exit 1
+          fi
+          echo "All five screens launched, stayed running, logged no errors and painted."
+          echo
+          echo "Not covered by this run: real GPS and the permission prompt on hardware,"
+          echo "haptics (a simulator no-op), and real-device performance."
