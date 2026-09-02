@@ -137,8 +137,8 @@ capability questions are what would move the rating, not the trivia.
 | Primary category | Games (`primaryCategory` in the metadata JSON) |
 | Game subcategories | Trivia, then Puzzle. ASC lets a Games primary carry two subcategories, which is where Trivia survives now that `secondaryCategory` is Puzzle |
 | Secondary category | Puzzle (`secondaryCategory`). It must differ from the primary — ASC will not take the same category twice |
-| Price | Free |
-| Availability | All territories (the content is U.S.-specific, but nothing restricts distribution) |
+| Price | **Free.** No marginal cost to serve (`con-0004-no-backend-no-accounts`), and a price is a discovery tax an unlaunched app cannot afford. Charging would also require the Paid Apps agreement plus tax and banking details, which would have delayed submission for revenue in the tens of dollars |
+| Availability | **United States only** — deliberately, and it is load-bearing. See below |
 | Export compliance | **Already answered in the binary.** `ITSAppUsesNonExemptEncryption = false` in `Info.plist`, so ASC will not ask per upload |
 | Content rights — third-party content? | **No.** State flags and the atlas are public-domain/self-generated assets under `src/assets` |
 | Advertising identifier | **No** |
@@ -148,6 +148,25 @@ capability questions are what would move the rating, not the trivia.
 | App Review demo account | **Not required** — no login |
 
 ---
+
+## 3a. Why the App Store listing is United States only
+
+App Store availability is per-territory, and Tag Spotter ships to the **United States alone**. Three
+reasons, in the order that decided it:
+
+1. **It removes the EU trader-status requirement entirely.** The Digital Services Act obligation
+   applies to apps distributed in the EU, and App Store Connect will not accept a submission without
+   it. Satisfying it means publishing a name, address, phone number and email **on the public
+   product page**. Not shipping to the EU means not publishing any of that.
+2. **The content is US-specific.** The game is 50 states plus D.C. A player in Portugal has no plates
+   to spot. The reach given up is close to zero in practice for an unknown app with no marketing.
+3. **It is reversible and cheap to widen.** Territories can be added at any time. The information
+   that would justify the trader paperwork — whether anyone actually plays this — does not exist yet,
+   and shipping is how it gets collected.
+
+**This is the second deliberate divergence from Google Play**, after the listing name. Play is
+worldwide; the App Store is US-only. Neither is drift, and neither should be "corrected" into
+matching without re-deciding the trade above.
 
 ## 4. Notes to the App Review team
 
