@@ -45,24 +45,29 @@ account, a Mac, or a physical device.
 
 ### Left, in the order worth doing it
 
-1. **Start the Play closed test.** A personal Play developer account opened after November 2023
-   cannot apply for production until a closed test has run with 12 or more testers opted in for 14
-   continuous days. It is a calendar constraint, not a work item, so it should start before anything
-   else here. Confirm whether the account is subject to it before assuming either way.
-2. **Play Console questionnaires**: content rating, Data Safety (the answers are drafted in
-   `docs/store-metadata.google-play.json` and in this file), target audience, ads (there are none),
-   and app access (no login exists).
-3. **Apple Developer enrolment, then the signing secrets** listed in `docs/app-store-release.md`.
-   The iOS `archive` job has never run; expect the first dispatch to need adjustment.
-   The App Store Connect App Privacy and age-rating answers are already drafted, with the
-   code evidence for each, in `docs/store-questionnaire.app-store-connect.md` — including
-   the notes-to-reviewer text that pre-empts the "why does a trivia game want location"
-   question. They are answers to transcribe, not decisions to re-make.
-4. **iPhone screenshots** at 6.9" or 6.7", from a Simulator or device running the release build.
-   This is the one asset gap. No iPad set is needed — the target is iPhone-only (`dec-0016`).
-5. **Device QA against the signed build**, not a debug build: first launch clean, the location prompt
-   appearing only when a plate is marked found, denial still recording the plate, and progress
-   surviving a relaunch. Those are the exact behaviours both privacy questionnaires assert, so they
-   should be observed rather than assumed.
-6. **Bump the version** when the store build is cut. `npm run version:bump` moves all three numbers
-   together; `versionCode` may never repeat a value Play has already seen.
+Status as of 2026-09-01, after the App Store submission.
+
+1. **Recruit 12+ Play closed testers.** The whole method, the exact opt-in mechanics, a message to
+   send people, and the production-access questions are in `docs/play-closed-testing.md`. This is the
+   only remaining work in either store that is purely elapsed time — 14 continuous days once twelve
+   people are opted in — so it is the one thing worth starting today.
+2. **Apply for Play production access** once the 14 days are clear. Three sections of questions, and
+   one of them requires summarising real tester feedback, so collect some while the clock runs.
+3. **Get the app onto an iPhone.** Nothing has ever run on iOS hardware. The TestFlight build is
+   installable by anyone invited, and it is the same pool of people as item 1. iOS release is set to
+   **manual**, so an approved build waits in "Pending Developer Release" — that window is the last
+   free chance to catch a device-only bug before anyone can download it.
+4. **Press the iOS release button** after review passes. It will not publish itself.
+
+### Done
+
+- **App Store: submitted 2026-09-01**, "Waiting for Review". Free, **United States only** (which
+  removes the EU trader-status requirement), manual release. Full listing configured — screenshots,
+  copy, categories, age rating, App Privacy, review notes. See
+  `docs/store-questionnaire.app-store-connect.md`.
+- iOS signing end to end: certificate, App ID, profile, API key, all seven CI secrets, and a signed
+  `.ipa` produced and uploaded by `.github/workflows/ios.yml`. All of it built on Windows —
+  `docs/app-store-release.md` records how, including the `-legacy` trap.
+- Play Console questionnaires: content rating, Data Safety, target audience, ads, app access.
+- Version parity at 1.2.0 / versionCode 17; signed AAB and APK build locally.
+
