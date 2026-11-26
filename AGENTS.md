@@ -54,8 +54,8 @@ A green web build does not prove the native shell works. Anything touching nativ
 
 All 41 findings from the 2026-08-15 audit are closed (`audit-2026-08-15`), across the five phases in
 `docs/remediation-plan.md`. Phase 6 — store readiness — is the live one, and what remains in it is
-maintainer-only: iPhone screenshots and the App Store Connect signing secrets
-(`f-044-store-readiness`, `docs/store-assets-checklist.md`).
+maintainer-only: the App Store Connect signing secrets (`f-044-store-readiness`,
+`docs/store-assets-checklist.md`). The iPhone screenshot set is in `store-assets/app-store/iphone/`.
 
 **`docs/remediation-plan.md` is not the source of truth for progress — `.agents/evals/guardrails.json`
 is.** Each guardrail carries a baseline equal to the violation count on the day it was written, and CI

@@ -157,6 +157,49 @@ function runSizeBudget(guardrail) {
 }
 
 const CUSTOM_CHECKS = {
+  /**
+   * Every committed App Store iPhone screenshot is a size App Store Connect
+   * accepts and carries no alpha channel.
+   *
+   * Apple's screenshot specification says "Images can't include alpha channels or
+   * transparencies". simctl writes RGBA PNGs even when every pixel is opaque, and
+   * the first set was committed that way: right size, right content, passed every
+   * check the screenshot workflow ran, and would still have been refused at
+   * upload. The rule is read from the PNG header, not from a file name or a
+   * workflow log, so a hand-edited or re-exported file is held to it too.
+   */
+  'app-store-screenshot-format'() {
+    // Portrait sizes for the two iPhone slots with Dynamic Island, from Apple's
+    // "Screenshot specifications" page (read 2026-11-26). Landscape is not
+    // accepted here because the app is portrait-only (con-0005).
+    const accepted = new Set(['1320x2868', '1290x2796', '1260x2736', '1206x2622', '1179x2556']);
+    const violations = [];
+    for (const file of selectFiles({ include: ['store-assets/app-store/iphone/*.png'] })) {
+      const png = readFileSync(join(ROOT, file));
+      const signature = '89504e470d0a1a0a';
+      if (png.length < 33 || png.subarray(0, 8).toString('hex') !== signature
+          || png.subarray(12, 16).toString('latin1') !== 'IHDR') {
+        violations.push(`${file}: not a PNG`);
+        continue;
+      }
+      const size = `${png.readUInt32BE(16)}x${png.readUInt32BE(20)}`;
+      if (!accepted.has(size)) violations.push(`${file}: ${size} is not an accepted iPhone portrait size`);
+
+      // Colour types 4 (grey + alpha) and 6 (RGBA) carry an alpha channel; any
+      // type can carry transparency through a tRNS chunk instead.
+      const colourType = png[25];
+      if (colourType === 4 || colourType === 6) violations.push(`${file}: has an alpha channel (PNG colour type ${colourType})`);
+      for (let at = 8; at + 8 <= png.length;) {
+        const length = png.readUInt32BE(at);
+        const type = png.subarray(at + 4, at + 8).toString('latin1');
+        if (type === 'tRNS') { violations.push(`${file}: has a tRNS transparency chunk`); break; }
+        if (type === 'IEND') break;
+        at += 12 + length;
+      }
+    }
+    return violations;
+  },
+
   /** package.json version must equal android versionName. */
   'version-parity'() {
     const pkg = JSON.parse(readText('package.json'));

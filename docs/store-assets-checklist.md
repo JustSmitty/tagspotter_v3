@@ -18,7 +18,7 @@ phone-first (`con-0005-portrait-only`).
 
 | Asset | Where | State |
 |---|---|---|
-| iPhone screenshots, 6.9" (1320x2868) | `store-assets/app-store/iphone/` | **present** — 5 captures at 1320x2868 from an iPhone 17 Pro Max simulator, regenerate with the `iOS screenshots` workflow |
+| iPhone screenshots, 6.9" (1320x2868) | `store-assets/app-store/iphone/` | **present** — 5 captures at 1320x2868 from an iPhone 17 Pro Max simulator, opaque RGB (Apple refuses alpha; `guardrail:app-store-screenshot-format`), regenerate with the `iOS screenshots` workflow |
 | iPad screenshots | `store-assets/app-store/ipad/` | **not needed**, the target is iPhone-only (`dec-0016`) |
 | 1024x1024 marketing icon | `ios/App/App/Assets.xcassets/AppIcon.appiconset/` | present, in the app bundle |
 
@@ -27,8 +27,8 @@ There is no way to produce it from this Windows checkout, and a resized Android 
 substitute — the status bar, safe areas and corner radius all differ.
 
 **The Mac is `.github/workflows/ios-screenshots.yml`.** Dispatch it from the Actions tab and it boots
-an iPhone 16 Pro Max simulator, seeds a mid-trip save, captures the same five screens as the Play
-set at 1320x2868, and uploads them as an artifact. Manual dispatch only — macOS runners bill at 10x.
+the largest Pro Max simulator on the runner, seeds a mid-trip save, captures the same five screens as
+the Play set at 1320x2868, strips the alpha channel, and uploads them as an artifact. Manual dispatch only — macOS runners bill at 10x.
 Nothing in it signs or contacts Apple.
 
 Two pieces are worth knowing before reading that workflow:

@@ -411,6 +411,17 @@
       "measuredAt": "2026-09-01"
     },
     {
+      "id": "app-store-screenshot-format",
+      "title": "App Store iPhone screenshots are an accepted portrait size with no alpha channel",
+      "finding": "F-44",
+      "phase": 6,
+      "owner": "tagspotter-release",
+      "type": "custom",
+      "$note": "Apple's screenshot specification: \"Images can't include alpha channels or transparencies.\" simctl writes RGBA PNGs even when every pixel is opaque, and the September set was committed that way - 1320x2868, populated, passing every check ios-screenshots.yml ran, and still refusable at upload. Measured at 5 (all five files RGBA) before the set was converted to RGB (pixel-identical; every alpha value was 255). Reads the PNG header (size, colour type 4/6, tRNS), so a hand-exported file is held to it too. Accepted sizes are the Dynamic Island large (6.9\") and medium (6.3\") portrait sizes from the same Apple page; the workflow's size check lists the same five.",
+      "baseline": 0,
+      "measuredAt": "2026-11-26"
+    },
+    {
       "id": "ios-export-compliance",
       "title": "Info.plist answers the export-compliance question up front",
       "finding": "F-46",
