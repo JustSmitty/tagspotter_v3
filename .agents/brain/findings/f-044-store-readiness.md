@@ -86,8 +86,14 @@ Narrowed by PR #15 and #16 on 2026-08-24, after this record was first written. `
 and `dec-0017-manual-signing-in-ci` carry that work; `docs/store-assets-checklist.md` is the live
 per-asset status and outranks anything restated here.
 
-- **iPhone screenshots at 6.9in (1320x2868) or 6.7in (1290x2796).** `store-assets/app-store/iphone`
-  holds only `.gitkeep`, and App Store Connect will not take the listing without them.
+- ~~**iPhone screenshots at 6.9in (1320x2868) or 6.7in (1290x2796).**~~ Closed. Five captures at
+  1320x2868 landed in `d7cf49c` (2026-09-01), but as RGBA PNGs, and Apple's screenshot specification
+  says "Images can't include alpha channels or transparencies". Converted to RGB on 2026-11-26 (pixel-identical,
+  every alpha value was 255); `ios-screenshots.yml` now strips the channel itself and its run on
+  that date passed every check, and `guardrail:app-store-screenshot-format` holds the committed set
+  to size and no-alpha. Apple lists the 6.3in "Dynamic Island (medium display)"
+  slot as the required one and fills it from the 6.9in set, scaled, when no medium set is given
+  (same page, read 2026-11-26) — confirm in App Store Connect at upload.
 - **App Store Connect signing secrets** for the `archive` job. `dec-0017` moved CI to explicit manual
   signing rather than asking a headless runner to negotiate with Apple, but creating the secrets is
   still the maintainer's job.

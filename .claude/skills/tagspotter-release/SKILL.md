@@ -134,6 +134,13 @@ here is holding the line, not doing the work again.
   Preferences was tried three times across six 10x-billed runs and never worked, and twice the check
   passed while every screenshot came out empty. Verify at the consumer, not at your own write.
 
+- **App Store screenshots are opaque RGB at an accepted size** (`guardrail:app-store-screenshot-format`,
+  F-44). Apple's specification: "Images can't include alpha channels or transparencies." `simctl`
+  writes RGBA even when every pixel is opaque, so `ios-screenshots.yml` strips the channel before
+  its size check, and the guardrail reads each PNG header under `store-assets/app-store/iphone/` so a
+  hand-exported file cannot bring it back. The September set was committed as RGBA and passed every
+  check that existed then; nothing looked wrong until the spec was read against the file.
+
 - **`Info.plist` answers export compliance up front** — `ITSAppUsesNonExemptEncryption`
   (`guardrail:ios-export-compliance`). Without it, App Store Connect asks on *every* upload and the
   build sits in "Missing Compliance" until someone answers by hand. The app ships no encryption of
