@@ -28,7 +28,9 @@ on:
         options: [light, dark]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Per device, so a 6.9" run and a 6.3" run on the same branch do not cancel
+  # each other.
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.device }}
   cancel-in-progress: true
 
 env:
@@ -129,18 +131,61 @@ jobs:
           capture 04-goals   /goals
           capture 05-summary /summary
 
+      # App Store Connect: "Images can't include alpha channels or transparencies."
+      # simctl writes RGBA PNGs - every pixel opaque, but the channel is there,
+      # and the September set went into store-assets/ that way. Strip it here so
+      # the artifact is upload-ready, and refuse rather than flatten if any pixel
+      # is actually translucent: that would mean the capture itself is wrong.
+      # guardrail:app-store-screenshot-format holds the committed set to the same
+      # rule, so an RGBA file cannot be committed by hand either.
+      - name: Remove the alpha channel
+        run: |
+          python3 -m venv "$RUNNER_TEMP/shotvenv"
+          "$RUNNER_TEMP/shotvenv/bin/pip" install --quiet --disable-pip-version-check pillow
+          "$RUNNER_TEMP/shotvenv/bin/python" - "$RUNNER_TEMP/shots" <<'PY'
+          import sys, pathlib
+          from PIL import Image
+
+          bad = []
+          for f in sorted(pathlib.Path(sys.argv[1]).glob('*.png')):
+              im = Image.open(f)
+              before = im.mode
+              if 'A' in im.getbands():
+                  lo, hi = im.getchannel('A').getextrema()
+                  if lo != 255:
+                      bad.append(f'{f.name} (alpha down to {lo})')
+                      continue
+              if im.mode != 'RGB' or 'transparency' in im.info:
+                  im.convert('RGB').save(f, format='PNG', optimize=True)
+              after = Image.open(f)
+              print(f'{f.name}: {before} -> {after.mode}')
+              if after.mode != 'RGB' or 'transparency' in after.info:
+                  bad.append(f'{f.name} (still {after.mode})')
+
+          if bad:
+              print('::error::Not an opaque RGB image: ' + ', '.join(bad))
+              sys.exit(1)
+          PY
+
       - name: Check the captures are the size App Store Connect wants
         run: |
           OUT="$RUNNER_TEMP/shots"
-          # ASC accepts 1320x2868 (6.9") or 1290x2796 (6.7") portrait. A run that
-          # silently produced a different size would be discovered by an upload
-          # rejection weeks later.
+          # Portrait sizes from Apple's "Screenshot specifications" page
+          # (developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/),
+          # read 2026-11-26. "auto" picks a Pro Max, which lands in the first group.
+          #   iPhone with Dynamic Island, large display (6.9"):  1320x2868 1290x2796 1260x2736
+          #   iPhone with Dynamic Island, medium display (6.3"): 1206x2622 1179x2556
+          # The medium slot is the one Apple lists as required; per the same page
+          # it falls back to the large sets, scaled, when no medium set is given.
+          # A run that silently produced any other size would be discovered by an
+          # upload rejection weeks later.
           fail=0
           for f in "$OUT"/*.png; do
             SIZE=$(sips -g pixelWidth -g pixelHeight "$f" | awk '/pixel/ {print $2}' | paste -sd x -)
             case "$SIZE" in
-              1320x2868|1290x2796) echo "ok   $(basename "$f") $SIZE" ;;
-              *) echo "::error::$(basename "$f") is $SIZE — not a 6.9\" or 6.7\" portrait size"; fail=1 ;;
+              1320x2868|1290x2796|1260x2736) echo "ok   $(basename "$f") $SIZE (6.9\" slot)" ;;
+              1206x2622|1179x2556)           echo "ok   $(basename "$f") $SIZE (6.3\" slot)" ;;
+              *) echo "::error::$(basename "$f") is $SIZE — not an accepted iPhone portrait size"; fail=1 ;;
             esac
           done
           # A blank or near-blank capture is the failure mode that looks like
@@ -166,11 +211,10 @@ jobs:
           # 20 sits with a comfortable margin on both sides and catches both
           # failure modes seen so far. The status bar is cropped off first, since
           # its clock and icons are drawn even on a blank screen.
-          # A venv, not a bare `pip install`: the runner's python3 is PEP 668
-          # "externally managed" and refuses to install into itself, which failed
-          # this step while the captures themselves were perfectly good.
-          python3 -m venv "$RUNNER_TEMP/shotvenv"
-          "$RUNNER_TEMP/shotvenv/bin/pip" install --quiet --disable-pip-version-check pillow
+          # Pillow comes from the venv the alpha step made - a venv, not a bare
+          # `pip install`, because the runner's python3 is PEP 668 "externally
+          # managed" and refuses to install into itself.
+          # The venv with Pillow was made by the alpha step above.
           "$RUNNER_TEMP/shotvenv/bin/python" - "$OUT" <<'PY' || fail=1
           import sys, pathlib
           from PIL import Image, ImageStat
